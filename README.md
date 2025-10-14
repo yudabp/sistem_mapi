@@ -23,65 +23,211 @@ If you need the design files, you can download them from Figma's Community 👉 
 
 ## Table of contents
 
-* [Usage](#usage)
-  * [Setup your .env config file](#setup-your-env-config-file)
-  * [Install Laravel dependencies](#install-laravel-dependencies)
-  * [Migrate the tables](#migrate-the-tables)
-  * [Generate some test data](#generate-some-test-data)
-  * [Compile the front-end](#compile-the-front-end)
-  * [Launch the Laravel backend](#launch-the-Laravel-backend)        
+* [Installation](#installation)
+  * [Prerequisites](#prerequisites)
+  * [Setup for Development](#setup-for-development)
+  * [Setup for Production](#setup-for-production)
+  * [Additional Configuration Notes](#additional-configuration-notes)
+  * [Common Commands](#common-commands)
 * [Credits](#credits)
 * [Terms and License](#terms-and-license)
 * [About Us](#about-us)
 * [Stay in the loop](#stay-in-the-loop)
 
-## Usage
+## Installation
 
 This project was built with [Laravel Jetstream](https://jetstream.laravel.com/) and [Livewire + Blade](https://jetstream.laravel.com/2.x/introduction.html#livewire-blade) as Stack.
 
-### Setup your .env config file
-Make sure to add the database configuration in your .env file such as database name, username, password and port.
+### Prerequisites
 
-### Install Laravel dependencies
-In the root of your Laravel application, run the ``php composer.phar install`` (or ``composer install``) command to install all of the framework's dependencies.
+Before you begin, make sure you have the following installed on your system:
+- PHP >= 8.1
+- Composer 
+- Node.js >= 16.x
+- npm or pnpm
+- MySQL / PostgreSQL / SQLite
+- Git
 
-### Migrate the tables
+### Setup for Development
 
-In order to migrate the tables and setup the bare minimum structure for this app
-to display some data you shoud open your terminal, locate and enter this project
-directory and run the following command
+#### 1. Clone the repository
+```bash
+git clone <repository-url>
+cd sistem_mapi
+```
 
-``php artisan migrate``
+#### 2. Copy the environment file
+```bash
+cp .env.example .env
+```
 
-### Generate some test data
+#### 3. Configure the .env file
+Update the following values in your `.env` file:
 
-Once you have all your database tables setup you can then generate some test data
-which will come from our pre-made database table seeders.
-In order to do so, in your terminal run the following command
+```env
+APP_NAME=Laravel
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
 
-``php artisan db:seed``
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=your_database_username
+DB_PASSWORD=your_database_password
 
-N.B. If you run this command twice, all the test data will be duplicated and added to the existing table data, if you want to avoid having duplicate test data please
-make sure to ``truncate`` the following ``datafeeds`` table in your database.
+BROADCAST_DRIVER=log
+CACHE_DRIVER=file
+FILESYSTEM_DISK=local
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
 
-### Compile the front-end
+# For mail configuration (optional)
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=null
+MAIL_FROM_NAME="${APP_NAME}"
+```
 
-In order to compile all the CSS and JS assets for the front-end of this site you need to install NPM dependencies. To do that, open the terminal, type npm install and press the ``Enter`` key.
+#### 4. Generate the application key
+```bash
+php artisan key:generate
+```
 
-Then run ``npm run dev`` in the terminal to run a development server to re-compile static assets when making changes to the template.
+#### 5. Install PHP dependencies
+```bash
+composer install
+```
 
-When you have done with changes, run ``npm run build`` for compiling and minify for production.
+#### 6. Install Node.js dependencies
+```bash
+npm install
+# or if using pnpm
+pnpm install
+```
 
-### Launch the Laravel backend
+#### 7. Run database migrations
+```bash
+php artisan migrate
+```
 
-In order to make this Laravel installation work properly on your local machine you
-can run the following command in your terminal window.
+#### 8. Generate test data (optional)
+```bash
+php artisan db:seed
+```
 
-``php artisan serve``
+#### 9. Compile front-end assets for development
+```bash
+npm run dev
+# or for production build
+npm run build
+```
 
-You should receive a message similar to this
-``Starting Laravel development server: http://127.0.0.1:8000`` simply copy the URL
-in your browser and you'll be ready to test out your new mosaic laravel app.
+#### 10. Start the development server
+```bash
+php artisan serve
+```
+
+The application will be accessible at `http://127.0.0.1:8000`
+
+### Setup for Production
+
+#### 1. Environment Configuration
+
+Set the following environment variables:
+```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+```
+
+#### 2. Install dependencies
+```bash
+composer install --no-dev --optimize-autoloader
+npm ci --production
+```
+
+#### 3. Clear and cache configuration
+```bash
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+```
+
+#### 4. Run database migrations
+```bash
+php artisan migrate --force
+```
+
+#### 5. Compile assets for production
+```bash
+npm run build
+```
+
+#### 6. Set proper permissions
+```bash
+chmod -R 755 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+#### 7. Configure your web server
+
+For Apache, ensure the following in your virtual host:
+```apache
+<VirtualHost *:80>
+    ServerName yourdomain.com
+    DocumentRoot /path/to/your/project/public
+
+    <Directory /path/to/your/project/public>
+        AllowOverride All
+        Require all granted
+    </Directory>
+</VirtualHost>
+```
+
+For Nginx:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /path/to/your/project/public;
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+```
+
+### Additional Configuration Notes
+
+- **Cache Configuration**: In production, consider using Redis or Memcached for better performance
+- **Queue Configuration**: For background jobs, configure a queue driver like Redis or database
+- **Mail Configuration**: Set up SMTP settings for sending emails
+- **SSL**: Always use HTTPS in production environments
+- **Security**: Keep your dependencies updated and monitor for security vulnerabilities
+
+### Common Commands
+
+- **Clear caches**: `php artisan cache:clear && php artisan config:clear && php artisan route:clear && php artisan view:clear`
+- **Optimize installation**: `php artisan optimize` or `php artisan config:cache && php artisan route:cache && php artisan view:cache`
+- **Run cron jobs**: Set up a cron job as required by Laravel: `* * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1`
+- **Backup database**: `php artisan backup:run`
+- **Check application status**: `php artisan down` / `php artisan up`
 
 
 ## Credits
