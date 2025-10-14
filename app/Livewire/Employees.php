@@ -4,6 +4,10 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Employee as EmployeeModel;
+use App\Models\Department;
+use App\Models\Position;
+use App\Models\FamilyComposition;
+use App\Models\EmploymentStatus;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
@@ -22,6 +26,11 @@ class Employees extends Component
     public $phone;
     public $email;
     
+    public $departments = [];
+    public $positions = [];
+    public $family_compositions = [];
+    public $employment_statuses = [];
+    
     public $employees = [];
     public $search = '';
     public $departmentFilter = '';
@@ -33,11 +42,12 @@ class Employees extends Component
         'position' => 'required',
         'monthly_salary' => 'required|numeric',
         'hire_date' => 'required|date',
-        'status' => 'required|in:active,inactive,resigned',
+        'status' => 'required',
     ];
 
     public function mount()
     {
+        $this->loadOptions();
         $this->loadEmployees();
     }
 
@@ -48,6 +58,14 @@ class Employees extends Component
             'total_employees' => $this->employees->count(),
             'total_salary' => $this->employees->sum('monthly_salary'),
         ]);
+    }
+    
+    public function loadOptions()
+    {
+        $this->departments = Department::where('is_active', true)->orderBy('name')->get();
+        $this->positions = Position::where('is_active', true)->orderBy('name')->get();
+        $this->family_compositions = FamilyComposition::where('is_active', true)->orderBy('number')->get();
+        $this->employment_statuses = EmploymentStatus::where('is_active', true)->orderBy('name')->get();
     }
 
     public function saveEmployee()
@@ -71,6 +89,7 @@ class Employees extends Component
 
         // Reset form
         $this->resetForm();
+        $this->loadOptions();
         $this->loadEmployees();
         
         session()->flash('message', 'Employee record created successfully.');

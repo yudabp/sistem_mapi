@@ -108,15 +108,18 @@
                 <!-- Vehicle Number -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_number">
-                        Vehicle Number
+                        Vehicle Number (No Polisi)
                     </label>
-                    <input 
+                    <select 
                         id="vehicle_number"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
                         wire:model="vehicle_number"
-                        placeholder="Enter vehicle number"
-                    />
+                    >
+                        <option value="">Pilih No Polisi</option>
+                        @foreach($vehicle_numbers as $vehicle_number_option)
+                            <option value="{{ $vehicle_number_option->number }}">{{ $vehicle_number_option->number }}</option>
+                        @endforeach
+                    </select>
                     @error('vehicle_number') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -163,13 +166,16 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="division">
                         Division (Afdeling)
                     </label>
-                    <input 
+                    <select 
                         id="division"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
                         wire:model="division"
-                        placeholder="Enter division"
-                    />
+                    >
+                        <option value="">Pilih Afdeling</option>
+                        @foreach($divisions as $division_option)
+                            <option value="{{ $division_option->name }}">{{ $division_option->name }}</option>
+                        @endforeach
+                    </select>
                     @error('division') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -180,13 +186,16 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="pks">
                         Processing Station (PKS)
                     </label>
-                    <input 
+                    <select 
                         id="pks"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
                         wire:model="pks"
-                        placeholder="Enter PKS"
-                    />
+                    >
+                        <option value="">Pilih PKS</option>
+                        @foreach($pks_list as $pks_option)
+                            <option value="{{ $pks_option->name }}">{{ $pks_option->name }}</option>
+                        @endforeach
+                    </select>
                     @error('pks') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror

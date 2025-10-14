@@ -92,15 +92,18 @@
                 <!-- Department -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="department">
-                        Department
+                        Department (Bagian)
                     </label>
-                    <input 
+                    <select 
                         id="department"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
                         wire:model="department"
-                        placeholder="Enter department"
-                    />
+                    >
+                        <option value="">Pilih Bagian</option>
+                        @foreach($departments as $dept)
+                            <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                        @endforeach
+                    </select>
                     @error('department') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -109,15 +112,18 @@
                 <!-- Position -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="position">
-                        Position
+                        Position (Jabatan)
                     </label>
-                    <input 
+                    <select 
                         id="position"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
                         wire:model="position"
-                        placeholder="Enter position"
-                    />
+                    >
+                        <option value="">Pilih Jabatan</option>
+                        @foreach($positions as $pos)
+                            <option value="{{ $pos->name }}">{{ $pos->name }}</option>
+                        @endforeach
+                    </select>
                     @error('position') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -140,15 +146,18 @@
                 <!-- Family Composition -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="family_composition">
-                        Family Composition
+                        Family Composition (Susunan Keluarga)
                     </label>
-                    <input 
+                    <select 
                         id="family_composition"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
                         wire:model="family_composition"
-                        placeholder="Enter family composition"
-                    />
+                    >
+                        <option value="">Pilih Susunan Keluarga</option>
+                        @foreach($family_compositions as $fam_comp)
+                            <option value="{{ $fam_comp->number }}">{{ $fam_comp->number }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Monthly Salary -->
@@ -172,16 +181,17 @@
                 <!-- Status -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="status">
-                        Employment Status
+                        Employment Status (Status Karyawan)
                     </label>
                     <select 
                         id="status"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="status"
                     >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="resigned">Resigned</option>
+                        <option value="">Pilih Status Karyawan</option>
+                        @foreach($employment_statuses as $emp_status)
+                            <option value="{{ $emp_status->value }}">{{ $emp_status->name }}</option>
+                        @endforeach
                     </select>
                     @error('status') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 

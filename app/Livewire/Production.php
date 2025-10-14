@@ -4,6 +4,9 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Production as ProductionModel;
+use App\Models\VehicleNumber;
+use App\Models\Division;
+use App\Models\Pks as PksModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
@@ -20,6 +23,10 @@ class Production extends Component
     public $division;
     public $pks;
     public $sp_photo;
+    
+    public $vehicle_numbers = [];
+    public $divisions = [];
+    public $pks_list = [];
     
     public $productions = [];
     public $search = '';
@@ -40,6 +47,7 @@ class Production extends Component
 
     public function mount()
     {
+        $this->loadOptions();
         $this->loadProductions();
     }
 
@@ -50,6 +58,13 @@ class Production extends Component
             'total_tbs' => $this->productions->sum('tbs_quantity'),
             'total_kg' => $this->productions->sum('kg_quantity'),
         ]);
+    }
+    
+    public function loadOptions()
+    {
+        $this->vehicle_numbers = VehicleNumber::where('is_active', true)->orderBy('number')->get();
+        $this->divisions = Division::where('is_active', true)->orderBy('name')->get();
+        $this->pks_list = PksModel::where('is_active', true)->orderBy('name')->get();
     }
 
     public function saveProduction()
@@ -76,6 +91,7 @@ class Production extends Component
 
         // Reset form
         $this->resetForm();
+        $this->loadOptions();
         $this->loadProductions();
         
         session()->flash('message', 'Production record created successfully.');
