@@ -45,4 +45,9 @@ class PalmOilController extends Controller
     {
         return view('palm-oil.user-access');
     }
+    
+    public function settings()
+    {
+        return view('palm-oil.settings');
+    }
 }
