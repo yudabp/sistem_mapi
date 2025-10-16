@@ -114,6 +114,10 @@ echo "Building frontend assets..."
 echo "Running database migrations..."
 ./vendor/bin/sail artisan migrate --force
 
+# Run database db:seed
+echo "Running database seed..."
+./vendor/bin/sail artisan db:seed --force
+
 echo ""
 echo "Setup complete! Your Laravel application should be available at http://localhost:8001"
 echo ""
