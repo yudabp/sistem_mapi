@@ -137,6 +137,37 @@ php artisan serve
 
 The application will be accessible at `http://127.0.0.1:8000`
 
+### Automated Setup with Docker (Recommended)
+
+For a simpler setup that doesn't require installing PHP, Node.js, or other dependencies on your host system, you can use our automated setup script:
+
+#### Prerequisites
+- Docker Desktop (Windows/Mac) or Docker Engine (Linux)
+- No need for PHP, Composer, Node.js, or MySQL installed on your host
+
+#### Quick Setup
+1. Make the script executable:
+   ```bash
+   chmod +x setup-sail.sh
+   ```
+
+2. Run the automated setup:
+   ```bash
+   ./setup-sail.sh
+   ```
+
+This script will automatically:
+- Install all PHP dependencies using Docker containers
+- Generate the application key
+- Set up Docker services (MySQL, Redis, Mailpit)
+- Install Node.js dependencies
+- Build frontend assets
+- Run database migrations
+
+The application will be accessible at `http://localhost:8001`
+
+For detailed information about the automated setup script, see [SETUP_SCRIPT_DOCS.md](SETUP_SCRIPT_DOCS.md).
+
 ### Setup for Production
 
 #### 1. Environment Configuration

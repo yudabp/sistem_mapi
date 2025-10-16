@@ -2,7 +2,7 @@ services:
     laravel.test:
         build:
             context: ./vendor/laravel/sail/runtimes/8.3
-            dockerfile: Dockerfile.modified
+            dockerfile: Dockerfile
             args:
                 WWWGROUP: '${WWWGROUP}'
                 LARAVEL_SAIL_XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
