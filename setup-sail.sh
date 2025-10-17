@@ -110,9 +110,19 @@ echo "Checking for Node.js dependencies..."
 echo "Building frontend assets..."
 ./vendor/bin/sail exec laravel.test npm run build
 
+# Run clear-cache artisan commands
+echo "Clearing application config & cache..."
+./vendor/bin/sail artisan config:clear
+./vendor/bin/sail artisan cache:clear
+./vendor/bin/sail artisan config:cache
+
+# Run key generate artisan commands
+echo "Running database migrations..."
+./vendor/bin/sail artisan key:generate
+
 # Run database migrations
 echo "Running database migrations..."
-./vendor/bin/sail artisan migrate --force
+./vendor/bin/sail artisan migrate:fresh --force
 
 # Run database db:seed
 echo "Running database seed..."
