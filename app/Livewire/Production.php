@@ -28,10 +28,11 @@ class Production extends Component
     public $divisions = [];
     public $pks_list = [];
     
-    public $productions = [];
     public $search = '';
     public $dateFilter = '';
     public $divisionFilter = '';
+
+    protected $queryString = ['search', 'dateFilter', 'divisionFilter'];
 
     protected $rules = [
         'transaction_number' => 'required|unique:production,transaction_number',
@@ -48,15 +49,16 @@ class Production extends Component
     public function mount()
     {
         $this->loadOptions();
-        $this->loadProductions();
     }
 
     public function render()
     {
+        $filteredProductions = $this->filterProductions();
+
         return view('livewire.production', [
-            'productions' => $this->filterProductions(),
-            'total_tbs' => $this->productions->sum('tbs_quantity'),
-            'total_kg' => $this->productions->sum('kg_quantity'),
+            'productions' => $filteredProductions,
+            'total_tbs' => $filteredProductions->sum('tbs_quantity'),
+            'total_kg' => $filteredProductions->sum('kg_quantity'),
         ]);
     }
     
@@ -92,7 +94,6 @@ class Production extends Component
         // Reset form
         $this->resetForm();
         $this->loadOptions();
-        $this->loadProductions();
         
         session()->flash('message', 'Production record created successfully.');
     }
@@ -110,36 +111,29 @@ class Production extends Component
         $this->sp_photo = null;
     }
 
-    public function loadProductions()
-    {
-        $this->productions = ProductionModel::orderBy('date', 'desc')->get();
-    }
-
     public function filterProductions()
     {
-        $productions = $this->productions;
+        $query = ProductionModel::orderBy('date', 'desc');
 
         if ($this->search) {
-            $productions = $productions->filter(function ($item) {
-                return stripos($item->sp_number, $this->search) !== false ||
-                       stripos($item->vehicle_number, $this->search) !== false ||
-                       stripos($item->division, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('sp_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('vehicle_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('division', 'like', '%' . $this->search . '%')
+                  ->orWhere('transaction_number', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $productions = $productions->filter(function ($item) {
-                return $item->date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('date', '=', substr($this->dateFilter, 5, 2));
         }
 
         if ($this->divisionFilter) {
-            $productions = $productions->filter(function ($item) {
-                return $item->division === $this->divisionFilter;
-            });
+            $query->where('division', '=', $this->divisionFilter);
         }
 
-        return $productions;
+        return $query->get();
     }
 
     public function deleteProduction($id)
@@ -151,7 +145,6 @@ class Production extends Component
                 Storage::disk('public')->delete($production->sp_photo_path);
             }
             $production->delete();
-            $this->loadProductions();
         }
     }
 }

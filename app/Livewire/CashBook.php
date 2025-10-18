@@ -19,11 +19,12 @@ class CashBook extends Component
     public $proof_document;
     public $notes;
     
-    public $transactions = [];
     public $search = '';
     public $dateFilter = '';
     public $typeFilter = '';
     
+    protected $queryString = ['search', 'dateFilter', 'typeFilter'];
+
     protected $rules = [
         'transaction_date' => 'required|date',
         'transaction_type' => 'required|in:income,expense',
@@ -33,16 +34,17 @@ class CashBook extends Component
 
     public function mount()
     {
-        $this->loadTransactions();
     }
 
     public function render()
     {
+        $filteredTransactions = $this->filterTransactions();
+
         return view('livewire.cash-book', [
-            'transactions' => $this->filterTransactions(),
-            'total_income' => $this->transactions->where('transaction_type', 'income')->sum('amount'),
-            'total_expenses' => $this->transactions->where('transaction_type', 'expense')->sum('amount'),
-            'balance' => $this->transactions->where('transaction_type', 'income')->sum('amount') - $this->transactions->where('transaction_type', 'expense')->sum('amount'),
+            'transactions' => $filteredTransactions,
+            'total_income' => $filteredTransactions->where('transaction_type', 'income')->sum('amount'),
+            'total_expenses' => $filteredTransactions->where('transaction_type', 'expense')->sum('amount'),
+            'balance' => $filteredTransactions->where('transaction_type', 'income')->sum('amount') - $filteredTransactions->where('transaction_type', 'expense')->sum('amount'),
         ]);
     }
 
@@ -69,7 +71,6 @@ class CashBook extends Component
 
         // Reset form
         $this->resetForm();
-        $this->loadTransactions();
         
         session()->flash('message', 'Cash book transaction created successfully.');
     }
@@ -85,38 +86,29 @@ class CashBook extends Component
         $this->notes = '';
     }
 
-    public function loadTransactions()
-    {
-        $this->transactions = FinancialTransactionModel::where('category', 'Cash Book')
-            ->orderBy('transaction_date', 'desc')
-            ->get();
-    }
-
     public function filterTransactions()
     {
-        $transactions = $this->transactions;
+        $query = FinancialTransactionModel::where('category', 'Cash Book')
+            ->orderBy('transaction_date', 'desc');
 
         if ($this->search) {
-            $transactions = $transactions->filter(function ($item) {
-                return stripos($item->transaction_number, $this->search) !== false ||
-                       stripos($item->source_destination, $this->search) !== false ||
-                       stripos($item->notes, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('transaction_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('source_destination', 'like', '%' . $this->search . '%')
+                  ->orWhere('notes', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('transaction_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('transaction_date', '=', substr($this->dateFilter, 5, 2));
         }
 
         if ($this->typeFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_type === $this->typeFilter;
-            });
+            $query->where('transaction_type', '=', $this->typeFilter);
         }
 
-        return $transactions;
+        return $query->get();
     }
 
     public function deleteTransaction($id)
@@ -128,7 +120,6 @@ class CashBook extends Component
                 Storage::disk('public')->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
         }
     }
 }
