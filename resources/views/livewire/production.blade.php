@@ -234,12 +234,15 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-            <input 
-                type="text" 
-                wire:model.live="search"
-                placeholder="Search by SP number, vehicle number, or division"
+            <input
+                type="text"
+                wire:model.live.debounce.300ms="search"
+                placeholder="Search by Transaction Number, SP Number, vehicle number, or division"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
+            @if($search)
+                <p class="text-xs text-gray-500 mt-1">Searching for: "{{ $search }}"</p>
+            @endif
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Date</label>
@@ -251,92 +254,110 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Division</label>
-            <input 
-                type="text" 
+            <select
                 wire:model.live="divisionFilter"
-                placeholder="Enter division"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-            />
+            >
+                <option value="">All Divisions</option>
+                @foreach($divisions as $division_option)
+                    <option value="{{ $division_option->name }}">{{ $division_option->name }}</option>
+                @endforeach
+            </select>
         </div>
     </div>
 
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Production Records</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Production Records</h2>
+                <div class="text-sm text-gray-500">
+                    Showing {{ $productions->count() }} records
+                    @if($search || $dateFilter || $divisionFilter)
+                        <span class="text-violet-600">- Filtered</span>
+                    @endif
+                </div>
+            </div>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
-                <table class="table-auto w-full">
-                    <thead>
-                        <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                            <th class="p-2 whitespace-nowrap">Transaction #</th>
-                            <th class="p-2 whitespace-nowrap">Date</th>
-                            <th class="p-2 whitespace-nowrap">SP Number</th>
-                            <th class="p-2 whitespace-nowrap">Vehicle #</th>
-                            <th class="p-2 whitespace-nowrap">TBS (KG)</th>
-                            <th class="p-2 whitespace-nowrap">KG</th>
-                            <th class="p-2 whitespace-nowrap">Division</th>
-                            <th class="p-2 whitespace-nowrap">PKS</th>
-                            <th class="p-2 whitespace-nowrap">SP Photo</th>
-                            <th class="p-2 whitespace-nowrap">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-                        @forelse($productions as $production)
-                            <tr>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $production->transaction_number }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $production->date->format('d M Y') }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $production->sp_number }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $production->vehicle_number }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ number_format($production->tbs_quantity, 2) }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ number_format($production->kg_quantity, 2) }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $production->division }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $production->pks }}</div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    @if($production->sp_photo_path)
-                                        <a href="{{ Storage::url($production->sp_photo_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
-                                            View Photo
-                                        </a>
-                                    @else
-                                        <span class="text-gray-500 dark:text-gray-400">No photo</span>
-                                    @endif
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <button 
-                                        wire:click="deleteProduction({{ $production->id }})"
-                                        class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
-                                        onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                    >
-                                        Delete
-                                    </button>
-                                </td>
+                <!-- Loading indicator -->
+                <div wire:loading class="p-4 text-center text-gray-500">
+                    Loading production records...
+                </div>
+                <!-- Table -->
+                <div wire:loading.remove>
+                    <table class="table-auto w-full">
+                        <thead>
+                            <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
+                                <th class="p-2 whitespace-nowrap">Transaction #</th>
+                                <th class="p-2 whitespace-nowrap">Date</th>
+                                <th class="p-2 whitespace-nowrap">SP Number</th>
+                                <th class="p-2 whitespace-nowrap">Vehicle #</th>
+                                <th class="p-2 whitespace-nowrap">TBS (KG)</th>
+                                <th class="p-2 whitespace-nowrap">KG</th>
+                                <th class="p-2 whitespace-nowrap">Division</th>
+                                <th class="p-2 whitespace-nowrap">PKS</th>
+                                <th class="p-2 whitespace-nowrap">SP Photo</th>
+                                <th class="p-2 whitespace-nowrap">Actions</th>
                             </tr>
-                        @empty
-                            <tr>
-                                <td colspan="10" class="p-2 text-center text-gray-500 dark:text-gray-400">
-                                    No production records found
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
+                            @forelse($productions as $production)
+                                <tr>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $production->transaction_number }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $production->date->format('d M Y') }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $production->sp_number }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $production->vehicle_number }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ number_format($production->tbs_quantity, 2) }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ number_format($production->kg_quantity, 2) }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $production->division }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $production->pks }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        @if($production->sp_photo_path)
+                                            <a href="{{ Storage::url($production->sp_photo_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                                View Photo
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500 dark:text-gray-400">No photo</span>
+                                        @endif
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <button 
+                                            wire:click="deleteProduction({{ $production->id }})"
+                                            class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
+                                            onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="10" class="p-2 text-center text-gray-500 dark:text-gray-400">
+                                        No production records found
+                                    </td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

@@ -22,10 +22,11 @@ class Sales extends Component
     public $customer_name;
     public $customer_address;
     
-    public $sales = [];
     public $search = '';
     public $dateFilter = '';
     
+    protected $queryString = ['search', 'dateFilter'];
+
     protected $rules = [
         'sp_number' => 'required',
         'kg_quantity' => 'required|numeric',
@@ -38,15 +39,16 @@ class Sales extends Component
 
     public function mount()
     {
-        $this->loadSales();
     }
 
     public function render()
     {
+        $filteredSales = $this->filterSales();
+
         return view('livewire.sales', [
-            'sales' => $this->filterSales(),
-            'total_kg' => $this->sales->sum('kg_quantity'),
-            'total_sales' => $this->sales->sum('total_amount'),
+            'sales' => $filteredSales,
+            'total_kg' => $filteredSales->sum('kg_quantity'),
+            'total_sales' => $filteredSales->sum('total_amount'),
         ]);
     }
 
@@ -88,7 +90,6 @@ class Sales extends Component
 
         // Reset form
         $this->resetForm();
-        $this->loadSales();
         
         session()->flash('message', 'Sales record created successfully.');
     }
@@ -106,30 +107,24 @@ class Sales extends Component
         $this->customer_address = '';
     }
 
-    public function loadSales()
-    {
-        $this->sales = SaleModel::orderBy('sale_date', 'desc')->get();
-    }
-
     public function filterSales()
     {
-        $sales = $this->sales;
+        $query = SaleModel::orderBy('sale_date', 'desc');
 
         if ($this->search) {
-            $sales = $sales->filter(function ($item) {
-                return stripos($item->sp_number, $this->search) !== false ||
-                       stripos($item->customer_name, $this->search) !== false ||
-                       stripos($item->customer_address, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('sp_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('customer_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('customer_address', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $sales = $sales->filter(function ($item) {
-                return $item->sale_date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('sale_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('sale_date', '=', substr($this->dateFilter, 5, 2));
         }
 
-        return $sales;
+        return $query->get();
     }
 
     public function deleteSales($id)
@@ -141,7 +136,6 @@ class Sales extends Component
                 Storage::disk('public')->delete($sale->sales_proof_path);
             }
             $sale->delete();
-            $this->loadSales();
         }
     }
 }

@@ -19,10 +19,11 @@ class Debts extends Component
     public $status;
     public $paid_date;
     
-    public $debts = [];
     public $search = '';
     public $statusFilter = '';
     
+    protected $queryString = ['search', 'statusFilter'];
+
     protected $rules = [
         'amount' => 'required|numeric',
         'creditor' => 'required',
@@ -32,16 +33,17 @@ class Debts extends Component
 
     public function mount()
     {
-        $this->loadDebts();
     }
 
     public function render()
     {
+        $filteredDebts = $this->filterDebts();
+
         return view('livewire.debts', [
-            'debts' => $this->filterDebts(),
-            'total_debt' => $this->debts->where('status', 'unpaid')->sum('amount'),
-            'paid_amount' => $this->debts->where('status', 'paid')->sum('amount'),
-            'remaining_debt' => $this->debts->where('status', 'unpaid')->sum('amount'),
+            'debts' => $filteredDebts,
+            'total_debt' => $filteredDebts->where('status', 'unpaid')->sum('amount'),
+            'paid_amount' => $filteredDebts->where('status', 'paid')->sum('amount'),
+            'remaining_debt' => $filteredDebts->where('status', 'unpaid')->sum('amount'),
         ]);
     }
 
@@ -67,7 +69,6 @@ class Debts extends Component
 
         // Reset form
         $this->resetForm();
-        $this->loadDebts();
         
         session()->flash('message', 'Debt record created successfully.');
     }
@@ -83,29 +84,22 @@ class Debts extends Component
         $this->paid_date = '';
     }
 
-    public function loadDebts()
-    {
-        $this->debts = DebtModel::orderBy('due_date', 'desc')->get();
-    }
-
     public function filterDebts()
     {
-        $debts = $this->debts;
+        $query = DebtModel::orderBy('due_date', 'desc');
 
         if ($this->search) {
-            $debts = $debts->filter(function ($item) {
-                return stripos($item->creditor, $this->search) !== false ||
-                       stripos($item->description, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('creditor', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->statusFilter) {
-            $debts = $debts->filter(function ($item) {
-                return $item->status === $this->statusFilter;
-            });
+            $query->where('status', '=', $this->statusFilter);
         }
 
-        return $debts;
+        return $query->get();
     }
 
     public function markAsPaid($id)
@@ -115,7 +109,6 @@ class Debts extends Component
             $debt->status = 'paid';
             $debt->paid_date = now();
             $debt->save();
-            $this->loadDebts();
         }
     }
 
@@ -128,7 +121,6 @@ class Debts extends Component
                 Storage::disk('public')->delete($debt->proof_document_path);
             }
             $debt->delete();
-            $this->loadDebts();
         }
     }
 }

@@ -31,10 +31,11 @@ class Employees extends Component
     public $family_compositions = [];
     public $employment_statuses = [];
     
-    public $employees = [];
     public $search = '';
     public $departmentFilter = '';
     
+    protected $queryString = ['search', 'departmentFilter'];
+
     protected $rules = [
         'ndp' => 'required|unique:employees,ndp',
         'name' => 'required',
@@ -48,15 +49,16 @@ class Employees extends Component
     public function mount()
     {
         $this->loadOptions();
-        $this->loadEmployees();
     }
 
     public function render()
     {
+        $filteredEmployees = $this->filterEmployees();
+
         return view('livewire.employees', [
-            'employees' => $this->filterEmployees(),
-            'total_employees' => $this->employees->count(),
-            'total_salary' => $this->employees->sum('monthly_salary'),
+            'employees' => $filteredEmployees,
+            'total_employees' => $filteredEmployees->count(),
+            'total_salary' => $filteredEmployees->sum('monthly_salary'),
         ]);
     }
     
@@ -90,7 +92,6 @@ class Employees extends Component
         // Reset form
         $this->resetForm();
         $this->loadOptions();
-        $this->loadEmployees();
         
         session()->flash('message', 'Employee record created successfully.');
     }
@@ -111,31 +112,24 @@ class Employees extends Component
         $this->email = '';
     }
 
-    public function loadEmployees()
-    {
-        $this->employees = EmployeeModel::orderBy('name', 'asc')->get();
-    }
-
     public function filterEmployees()
     {
-        $employees = $this->employees;
+        $query = EmployeeModel::orderBy('name', 'asc');
 
         if ($this->search) {
-            $employees = $employees->filter(function ($item) {
-                return stripos($item->ndp, $this->search) !== false ||
-                       stripos($item->name, $this->search) !== false ||
-                       stripos($item->department, $this->search) !== false ||
-                       stripos($item->position, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('ndp', 'like', '%' . $this->search . '%')
+                  ->orWhere('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('department', 'like', '%' . $this->search . '%')
+                  ->orWhere('position', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->departmentFilter) {
-            $employees = $employees->filter(function ($item) {
-                return $item->department === $this->departmentFilter;
-            });
+            $query->where('department', '=', $this->departmentFilter);
         }
 
-        return $employees;
+        return $query->get();
     }
 
     public function deleteEmployee($id)
@@ -143,7 +137,6 @@ class Employees extends Component
         $employee = EmployeeModel::find($id);
         if ($employee) {
             $employee->delete();
-            $this->loadEmployees();
         }
     }
 }
