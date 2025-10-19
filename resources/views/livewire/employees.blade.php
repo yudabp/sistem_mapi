@@ -4,6 +4,20 @@
         <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Karyawan</h1>
     </div>
 
+    <!-- Persistent Message -->
+    @if($persistentMessage)
+        <div class="mb-6">
+            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                <span>{{ $persistentMessage }}</span>
+                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
@@ -42,19 +56,16 @@
         </div>
     </div>
 
-    <!-- Form Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
-        <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Employee Registration</h2>
-        </header>
-        <div class="p-6 space-y-6">
-            @if(session()->has('message'))
-                <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500">
-                    {{ session('message') }}
-                </div>
-            @endif
+    <!-- Employee Data Modal -->
+    <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
+        <x-slot name="title">
+            {{ $isEditing ? 'Edit Employee Record' : 'Add Employee Record' }}
+        </x-slot>
 
-            <form wire:submit.prevent="saveEmployee" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <x-slot name="content">
+
+
+            <form wire:submit.prevent="saveEmployeeModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Employee ID (NDP) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ndp">
@@ -66,6 +77,7 @@
                         type="text" 
                         wire:model="ndp"
                         placeholder="Enter employee ID"
+                        {{ $isEditing ? 'readonly' : '' }}
                     />
                     @error('ndp') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -215,7 +227,7 @@
                 </div>
 
                 <!-- Address -->
-                <div class="md:col-span-2 lg:col-span-3">
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="address">
                         Address
                     </label>
@@ -255,18 +267,55 @@
                         placeholder="Enter email address"
                     />
                 </div>
-
-                <!-- Submit Button -->
-                <div class="md:col-span-2 lg:col-span-3">
-                    <button 
-                        type="submit" 
-                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                    >
-                        Save Employee Record
-                    </button>
-                </div>
             </form>
-        </div>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="saveEmployeeModal" wire:loading.attr="disabled">
+                {{ $isEditing ? 'Update' : 'Save' }} Employee Record
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- Delete Confirmation Modal -->
+    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
+        <x-slot name="title">
+            {{ __('Delete Employee Record') }}
+        </x-slot>
+
+        <x-slot name="content">
+            {{ __('Are you sure you want to delete the employee ":name"?', ['name' => $deletingEmployeeName]) }}
+            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="deleteEmployeeConfirmed" wire:loading.attr="disabled">
+                {{ __('Delete Employee') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <!-- Form Section - Button to open modal -->
+    <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
+        <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Employee Registration</h2>
+                <button 
+                    wire:click="openCreateModal"
+                    class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                    Add Employee Record
+                </button>
+            </div>
+        </header>
     </div>
 
     <!-- Search and Filter Section -->
@@ -341,13 +390,20 @@
                                     </span>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <button 
-                                        wire:click="deleteEmployee({{ $employee->id }})"
-                                        class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
-                                        onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                    >
-                                        Delete
-                                    </button>
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            wire:click="openEditModal({{ $employee->id }})"
+                                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            wire:click="confirmDelete({{ $employee->id }}, '{{ $employee->name }}')"
+                                            class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty

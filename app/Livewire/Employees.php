@@ -33,7 +33,21 @@ class Employees extends Component
     
     public $search = '';
     public $departmentFilter = '';
-    
+
+    // Modal control
+    public $showModal = false;
+    public $isEditing = false;
+    public $editingId = null;
+
+    // Delete confirmation
+    public $showDeleteConfirmation = false;
+    public $deletingEmployeeId = null;
+    public $deletingEmployeeName = '';
+
+    // Persistent message
+    public $persistentMessage = '';
+    public $messageType = 'success'; // success, error, warning, info
+
     protected $queryString = ['search', 'departmentFilter'];
 
     protected $rules = [
@@ -93,7 +107,7 @@ class Employees extends Component
         $this->resetForm();
         $this->loadOptions();
         
-        session()->flash('message', 'Employee record created successfully.');
+        $this->setPersistentMessage('Employee record created successfully.', 'success');
     }
 
     public function resetForm()
@@ -138,5 +152,114 @@ class Employees extends Component
         if ($employee) {
             $employee->delete();
         }
+    }
+
+    public function openCreateModal()
+    {
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->showModal = true;
+    }
+
+    public function openEditModal($id)
+    {
+        $employee = EmployeeModel::find($id);
+        if ($employee) {
+            $this->editingId = $employee->id;
+            $this->ndp = $employee->ndp;
+            $this->name = $employee->name;
+            $this->department = $employee->department;
+            $this->position = $employee->position;
+            $this->grade = $employee->grade;
+            $this->family_composition = $employee->family_composition;
+            $this->monthly_salary = $employee->monthly_salary;
+            $this->status = $employee->status;
+            $this->hire_date = $employee->hire_date->format('Y-m-d');
+            $this->address = $employee->address;
+            $this->phone = $employee->phone;
+            $this->email = $employee->email;
+            $this->isEditing = true;
+            $this->showModal = true;
+        }
+    }
+
+    public function closeCreateModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->editingId = null;
+    }
+
+    public function confirmDelete($id, $name)
+    {
+        $this->deletingEmployeeId = $id;
+        $this->deletingEmployeeName = $name;
+        $this->showDeleteConfirmation = true;
+    }
+
+    public function closeDeleteConfirmation()
+    {
+        $this->showDeleteConfirmation = false;
+        $this->deletingEmployeeId = null;
+        $this->deletingEmployeeName = '';
+    }
+
+    public function deleteEmployeeConfirmed()
+    {
+        $employee = EmployeeModel::find($this->deletingEmployeeId);
+        if ($employee) {
+            $employee->delete();
+            $this->setPersistentMessage('Employee record deleted successfully.', 'success');
+        }
+        
+        $this->closeDeleteConfirmation();
+    }
+
+    public function saveEmployeeModal()
+    {
+        if ($this->isEditing) {
+            $this->updateEmployee();
+        } else {
+            $this->saveEmployee();
+        }
+        
+        $this->closeCreateModal();
+    }
+
+    public function updateEmployee()
+    {
+        $validated = $this->validate();
+        
+        $employee = EmployeeModel::find($this->editingId);
+        if ($employee) {
+            $employee->update([
+                'ndp' => $this->ndp,
+                'name' => $this->name,
+                'department' => $this->department,
+                'position' => $this->position,
+                'grade' => $this->grade,
+                'family_composition' => $this->family_composition,
+                'monthly_salary' => $this->monthly_salary,
+                'status' => $this->status,
+                'hire_date' => $this->hire_date,
+                'address' => $this->address,
+                'phone' => $this->phone,
+                'email' => $this->email,
+            ]);
+
+            $this->setPersistentMessage('Employee record updated successfully.', 'success');
+        }
+    }
+
+    public function setPersistentMessage($message, $type = 'success')
+    {
+        $this->persistentMessage = $message;
+        $this->messageType = $type;
+    }
+
+    public function clearPersistentMessage()
+    {
+        $this->persistentMessage = '';
     }
 }
