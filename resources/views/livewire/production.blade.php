@@ -331,9 +331,17 @@
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
                                         @if($production->sp_photo_path)
-                                            <a href="{{ Storage::url($production->sp_photo_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                            <button
+                                                wire:click="$dispatch('showPhoto', {{
+                                                    json_encode([
+                                                        'url' => Storage::url($production->sp_photo_path),
+                                                        'title' => 'SP Photo - ' . $production->sp_number
+                                                    ])
+                                                }})"
+                                                class="text-blue-600 hover:underline dark:text-blue-400"
+                                            >
                                                 View Photo
-                                            </a>
+                                            </button>
                                         @else
                                             <span class="text-gray-500 dark:text-gray-400">No photo</span>
                                         @endif

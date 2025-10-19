@@ -60,15 +60,21 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
                         SP Number
                     </label>
-                    <input 
+                    <select
                         id="sp_number"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="sp_number"
-                        placeholder="Enter SP number"
-                    />
-                    @error('sp_number') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                        wire:change="$dispatch('spChanged')"
+                    >
+                        <option value="">Select SP Number</option>
+                        @foreach($sp_numbers as $sp)
+                            <option value="{{ $sp->sp_number }}">
+                                {{ $sp->sp_number }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('sp_number')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -77,14 +83,14 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
                         TBS Quantity (KG)
                     </label>
-                    <input 
+                    <input
                         id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $is_fields_disabled ? 'bg-gray-100 dark:bg-gray-600' : '' }}"
+                        type="number"
                         step="0.01"
                         wire:model="tbs_quantity"
-                        placeholder="Enter TBS quantity"
-                        readonly
+                        placeholder="Auto-filled from SP"
+                        {{ $is_fields_disabled ? 'readonly' : '' }}
                     />
                 </div>
 
@@ -93,16 +99,17 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
                         KG Quantity
                     </label>
-                    <input 
+                    <input
                         id="kg_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $is_fields_disabled ? 'bg-gray-100 dark:bg-gray-600' : '' }}"
+                        type="number"
                         step="0.01"
                         wire:model="kg_quantity"
-                        placeholder="Enter KG quantity"
+                        placeholder="Auto-filled from SP"
+                        {{ $is_fields_disabled ? 'readonly' : '' }}
                     />
-                    @error('kg_quantity') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('kg_quantity')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -111,12 +118,12 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="price_per_kg">
                         Price per KG (Rp)
                     </label>
-                    <input 
+                    <input
                         id="price_per_kg"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="number"
                         step="0.01"
-                        wire:model="price_per_kg"
+                        wire:model.live="price_per_kg"
                         placeholder="Enter price per KG"
                     />
                     @error('price_per_kg') 
@@ -129,10 +136,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="total_amount">
                         Total Amount (Rp)
                     </label>
-                    <input 
+                    <input
                         id="total_amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600"
+                        type="number"
                         step="0.01"
                         wire:model="total_amount"
                         readonly
@@ -158,14 +165,14 @@
                 <!-- Customer Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_name">
-                        Customer Name
+                        Customer Name <span class="text-gray-400 text-xs">(Optional)</span>
                     </label>
                     <input 
                         id="customer_name"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="customer_name"
-                        placeholder="Enter customer name"
+                        placeholder="Enter customer name (optional)"
                     />
                     @error('customer_name') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -175,13 +182,13 @@
                 <!-- Customer Address -->
                 <div class="md:col-span-2 lg:col-span-3">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_address">
-                        Customer Address
+                        Customer Address <span class="text-gray-400 text-xs">(Optional)</span>
                     </label>
                     <textarea 
                         id="customer_address"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="customer_address"
-                        placeholder="Enter customer address"
+                        placeholder="Enter customer address (optional)"
                         rows="2"
                     ></textarea>
                     @error('customer_address') 
@@ -285,9 +292,17 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($sale->sales_proof_path)
-                                        <a href="{{ Storage::url($sale->sales_proof_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button
+                                            wire:click="$dispatch('showPhoto', {{
+                                                json_encode([
+                                                    'url' => Storage::url($sale->sales_proof_path),
+                                                    'title' => 'Sales Proof - ' . $sale->sp_number
+                                                ])
+                                            }})"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             View Proof
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">No proof</span>
                                     @endif

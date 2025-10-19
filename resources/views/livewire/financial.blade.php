@@ -64,7 +64,15 @@
     <!-- Form Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Financial Transaction Input</h2>
+            <div class="flex items-center justify-between">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Financial Transaction Input</h2>
+                <div class="flex items-center text-sm text-emerald-600 dark:text-emerald-400">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-9h-7z"></path>
+                    </svg>
+                    Auto-creates income in Buku Kas
+                </div>
+            </div>
         </header>
         <div class="p-6 space-y-6">
             @if(session()->has('message'))
@@ -91,23 +99,8 @@
                     @enderror
                 </div>
 
-                <!-- Transaction Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
-                        Transaction Type
-                    </label>
-                    <select 
-                        id="transaction_type"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="transaction_type"
-                    >
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
-                    @error('transaction_type') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
+                <!-- Transaction Type (Hidden - Always Expense) -->
+                <input type="hidden" wire:model="transaction_type" value="expense">
 
                 <!-- Amount -->
                 <div>
@@ -219,7 +212,7 @@
     </div>
 
     <!-- Search and Filter Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
             <input 
@@ -237,17 +230,7 @@
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
         </div>
-        <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Type</label>
-            <select 
-                wire:model.live="typeFilter"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-            >
-                <option value="">All Types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-            </select>
-        </div>
+
     </div>
 
     <!-- Data Table -->
@@ -262,7 +245,6 @@
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
                             <th class="p-2 whitespace-nowrap">Date</th>
                             <th class="p-2 whitespace-nowrap">Transaction #</th>
-                            <th class="p-2 whitespace-nowrap">Type</th>
                             <th class="p-2 whitespace-nowrap">Source/Destination</th>
                             <th class="p-2 whitespace-nowrap">Amount</th>
                             <th class="p-2 whitespace-nowrap">Category</th>
@@ -279,13 +261,7 @@
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $transaction->transaction_number }}</div>
                                 </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {{ $transaction->transaction_type === 'income' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500' : 
-                                           'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-500' }}">
-                                        {{ ucfirst($transaction->transaction_type) }}
-                                    </span>
-                                </td>
+
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">{{ $transaction->source_destination }}</div>
                                     @if($transaction->received_by)
@@ -302,9 +278,17 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($transaction->proof_document_path)
-                                        <a href="{{ Storage::url($transaction->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button
+                                            wire:click="$dispatch('showPhoto', {{
+                                                json_encode([
+                                                    'url' => Storage::url($transaction->proof_document_path),
+                                                    'title' => 'Financial Proof - ' . $transaction->transaction_number
+                                                ])
+                                            }})"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             View Document
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">No proof</span>
                                     @endif
@@ -321,7 +305,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="7" class="p-2 text-center text-gray-500 dark:text-gray-400">
                                     No financial transactions found
                                 </td>
                             </tr>

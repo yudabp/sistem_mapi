@@ -96,34 +96,59 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
                         Jenis Transaksi
                     </label>
-                    <select 
+                    <select
                         id="transaction_type"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="transaction_type"
                     >
                         <option value="income">Pemasukan</option>
                         <option value="expense">Pengeluaran</option>
                     </select>
-                    @error('transaction_type') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('transaction_type')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
+
+                <!-- Debt Selection (only show for expense) -->
+                @if($transaction_type === 'expense')
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="selected_debt_id">
+                            Pilih Hutang
+                        </label>
+                        <select
+                            id="selected_debt_id"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                            wire:model="selected_debt_id"
+                        >
+                            <option value="">-- Pilih Hutang --</option>
+                            @foreach($debts as $debt)
+                                <option value="{{ $debt->id }}">
+                                    {{ $debt->creditor }} - Rp {{ number_format($debt->amount, 2, ',', '.') }} (Jatuh Tempo: {{ $debt->due_date->format('d M Y') }})
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('selected_debt_id')
+                            <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                        @enderror
+                    </div>
+                @endif
 
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
                         Jumlah (Rp)
                     </label>
-                    <input 
+                    <input
                         id="amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $selected_debt_id ? 'bg-gray-100 dark:bg-gray-600' : '' }}"
+                        type="number"
                         step="0.01"
                         wire:model="amount"
                         placeholder="Masukkan jumlah"
+                        {{ $selected_debt_id ? 'readonly' : '' }}
                     />
-                    @error('amount') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('amount')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -132,15 +157,16 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="purpose">
                         Tujuan
                     </label>
-                    <input 
+                    <input
                         id="purpose"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $selected_debt_id ? 'bg-gray-100 dark:bg-gray-600' : '' }}"
+                        type="text"
                         wire:model="purpose"
                         placeholder="Masukkan tujuan transaksi"
+                        {{ $selected_debt_id ? 'readonly' : '' }}
                     />
-                    @error('purpose') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('purpose')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -149,12 +175,13 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
                         Deskripsi
                     </label>
-                    <textarea 
+                    <textarea
                         id="description"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $selected_debt_id ? 'bg-gray-100 dark:bg-gray-600' : '' }}"
                         wire:model="description"
                         placeholder="Masukkan deskripsi lengkap"
                         rows="2"
+                        {{ $selected_debt_id ? 'readonly' : '' }}
                     ></textarea>
                 </div>
 
@@ -281,9 +308,17 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($transaction->proof_document_path)
-                                        <a href="{{ Storage::url($transaction->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button
+                                            wire:click="$dispatch('showPhoto', {{
+                                                json_encode([
+                                                    'url' => Storage::url($transaction->proof_document_path),
+                                                    'title' => 'Dokumen Bukti - ' . $transaction->source_destination
+                                                ])
+                                            }})"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             Lihat Dokumen
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\FinancialTransaction as FinancialTransactionModel;
+use App\Models\Debt as DebtModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
@@ -18,6 +19,8 @@ class CashBook extends Component
     public $description;
     public $proof_document;
     public $notes;
+    public $selected_debt_id;
+    public $unpaid_debts = [];
     
     public $search = '';
     public $dateFilter = '';
@@ -34,6 +37,22 @@ class CashBook extends Component
 
     public function mount()
     {
+        $this->loadUnpaidDebts();
+    }
+
+    public function loadUnpaidDebts()
+    {
+        $this->unpaid_debts = DebtModel::where('status', '!=', 'lunas')
+            ->orderBy('due_date', 'asc')
+            ->get();
+    }
+
+    public function updatedTransactionType()
+    {
+        // Reset debt selection when switching to income
+        if ($this->transaction_type === 'income') {
+            $this->selected_debt_id = '';
+        }
     }
 
     public function render()
@@ -45,6 +64,7 @@ class CashBook extends Component
             'total_income' => $filteredTransactions->where('transaction_type', 'income')->sum('amount'),
             'total_expenses' => $filteredTransactions->where('transaction_type', 'expense')->sum('amount'),
             'balance' => $filteredTransactions->where('transaction_type', 'income')->sum('amount') - $filteredTransactions->where('transaction_type', 'expense')->sum('amount'),
+            'unpaid_debts' => $this->unpaid_debts,
         ]);
     }
 
@@ -56,6 +76,21 @@ class CashBook extends Component
         $proofPath = null;
         if ($this->proof_document) {
             $proofPath = $this->proof_document->store('cashbook_proofs', 'public');
+        }
+
+        // If this is a debt payment, handle debt status update
+        if ($this->transaction_type === 'expense' && $this->selected_debt_id) {
+            $debt = DebtModel::find($this->selected_debt_id);
+            if ($debt) {
+                // Update debt status to paid
+                $debt->update([
+                    'status' => 'lunas',
+                    'paid_date' => $this->transaction_date,
+                ]);
+                
+                // Set purpose to indicate debt payment
+                $this->purpose = 'Pembayaran Hutang - ' . $debt->creditor;
+            }
         }
 
         FinancialTransactionModel::create([
@@ -71,8 +106,10 @@ class CashBook extends Component
 
         // Reset form
         $this->resetForm();
+        $this->loadUnpaidDebts(); // Reload unpaid debts
         
-        session()->flash('message', 'Cash book transaction created successfully.');
+        $message = $this->selected_debt_id ? 'Debt payment recorded successfully.' : 'Cash book transaction created successfully.';
+        session()->flash('message', $message);
     }
 
     public function resetForm()
@@ -84,6 +121,7 @@ class CashBook extends Component
         $this->description = '';
         $this->proof_document = null;
         $this->notes = '';
+        $this->selected_debt_id = '';
     }
 
     public function filterTransactions()

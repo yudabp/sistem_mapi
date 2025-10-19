@@ -1,0 +1,3 @@
+- show modal untuk foto/bukti masih belum berfungsi
+- nonaktifkan alpinejs debuger atau apapun itu yang selalu muncul sekilas setiap kali refresh atau mengganti halaman
+- di keuangan perusahaan yang saya maksud 1 tipe tadi hanya untuk expense yang memiliki 1 tipe/kategori dan tehubung langsung ke buku kas sebagai income, namun tetap memiliki income dan expense di keuangan perusahaan

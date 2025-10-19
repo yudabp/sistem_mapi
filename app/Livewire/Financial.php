@@ -12,7 +12,6 @@ class Financial extends Component
     use WithFileUploads;
 
     public $transaction_date;
-    public $transaction_type;
     public $amount;
     public $source_destination;
     public $received_by;
@@ -23,11 +22,9 @@ class Financial extends Component
     public $transactions = [];
     public $search = '';
     public $dateFilter = '';
-    public $typeFilter = '';
     
     protected $rules = [
         'transaction_date' => 'required|date',
-        'transaction_type' => 'required|in:income,expense',
         'amount' => 'required|numeric',
         'source_destination' => 'required',
         'category' => 'required',
@@ -51,17 +48,18 @@ class Financial extends Component
     public function saveTransaction()
     {
         $validated = $this->validate();
-        
+
         // Handle file upload
         $proofPath = null;
         if ($this->proof_document) {
             $proofPath = $this->proof_document->store('financial_proofs', 'public');
         }
 
-        FinancialTransactionModel::create([
+        // Create financial transaction (always expense type)
+        $financialTransaction = FinancialTransactionModel::create([
             'transaction_date' => $this->transaction_date,
             'transaction_number' => 'TXN' . date('Ymd') . rand(1000, 9999), // Generate transaction number
-            'transaction_type' => $this->transaction_type,
+            'transaction_type' => 'expense',
             'amount' => $this->amount,
             'source_destination' => $this->source_destination,
             'received_by' => $this->received_by,
@@ -70,17 +68,35 @@ class Financial extends Component
             'category' => $this->category,
         ]);
 
+        // Always create corresponding income in cash book for financial expenses
+        $this->createCashBookIncome($financialTransaction);
+
         // Reset form
         $this->resetForm();
         $this->loadTransactions();
-        
+
         session()->flash('message', 'Financial transaction created successfully.');
+    }
+
+    private function createCashBookIncome($financialTransaction)
+    {
+        // Create corresponding income transaction in cash book using same model
+        FinancialTransactionModel::create([
+            'transaction_date' => $financialTransaction->transaction_date,
+            'transaction_number' => 'CBI' . date('Ymd') . rand(1000, 9999), // Cash Book Income prefix
+            'transaction_type' => 'income',
+            'amount' => $financialTransaction->amount,
+            'source_destination' => 'Keuangan Perusahaan - ' . $financialTransaction->category,
+            'received_by' => $financialTransaction->received_by,
+            'proof_document_path' => $financialTransaction->proof_document_path,
+            'notes' => 'Income dari expense keuangan perusahaan: ' . ($financialTransaction->notes ?? $financialTransaction->source_destination),
+            'category' => 'transfer_from_financial',
+        ]);
     }
 
     public function resetForm()
     {
         $this->transaction_date = date('Y-m-d');
-        $this->transaction_type = 'income';
         $this->amount = '';
         $this->source_destination = '';
         $this->received_by = '';
@@ -110,12 +126,6 @@ class Financial extends Component
         if ($this->dateFilter) {
             $transactions = $transactions->filter(function ($item) {
                 return $item->transaction_date->format('Y-m') === $this->dateFilter;
-            });
-        }
-
-        if ($this->typeFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_type === $this->typeFilter;
             });
         }
 

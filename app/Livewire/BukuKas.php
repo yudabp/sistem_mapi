@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\FinancialTransaction;
+use App\Models\Debt;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,6 +20,9 @@ class BukuKas extends Component
     public $proof_document;
     public $notes;
     public $category;
+    public $selected_debt_id;
+
+    public $debts = [];
     
     public $search = '';
     public $dateFilter = '';
@@ -38,6 +42,38 @@ class BukuKas extends Component
     {
         $this->transaction_date = date('Y-m-d');
         $this->transaction_type = 'income';
+        $this->loadDebts();
+    }
+
+    public function loadDebts()
+    {
+        $this->debts = Debt::where('status', 'unpaid')->orderBy('due_date', 'asc')->get();
+    }
+
+    public function updatedTransactionType()
+    {
+        if ($this->transaction_type === 'expense') {
+            $this->category = 'debt_payment';
+        } else {
+            $this->selected_debt_id = null;
+            $this->category = '';
+        }
+    }
+
+    public function updatedSelectedDebtId()
+    {
+        if ($this->selected_debt_id) {
+            $debt = Debt::find($this->selected_debt_id);
+            if ($debt) {
+                $this->amount = $debt->amount;
+                $this->purpose = 'Pembayaran Hutang - ' . $debt->creditor;
+                $this->description = $debt->description;
+            }
+        } else {
+            $this->amount = '';
+            $this->purpose = '';
+            $this->description = '';
+        }
     }
 
     public function render()
@@ -55,7 +91,7 @@ class BukuKas extends Component
     public function saveTransaction()
     {
         $validated = $this->validate();
-        
+
         // Handle file upload
         $proofPath = null;
         if ($this->proof_document) {
@@ -73,10 +109,26 @@ class BukuKas extends Component
             'proof_document_path' => $proofPath,
         ]);
 
+        // If this is a debt payment, update debt status
+        if ($this->transaction_type === 'expense' && $this->selected_debt_id) {
+            $this->markDebtAsPaid($this->selected_debt_id);
+        }
+
         // Reset form
         $this->resetForm();
-        
+
         session()->flash('message', 'Transaksi buku kas berhasil disimpan.');
+    }
+
+    private function markDebtAsPaid($debtId)
+    {
+        $debt = Debt::find($debtId);
+        if ($debt) {
+            $debt->update([
+                'status' => 'paid',
+                'paid_date' => now(),
+            ]);
+        }
     }
 
     public function resetForm()
@@ -89,6 +141,10 @@ class BukuKas extends Component
         $this->proof_document = null;
         $this->notes = '';
         $this->category = '';
+        $this->selected_debt_id = null;
+
+        // Reload debts
+        $this->loadDebts();
     }
 
     public function filterTransactions()

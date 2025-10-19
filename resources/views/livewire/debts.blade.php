@@ -238,9 +238,17 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($debt->proof_document_path)
-                                        <a href="{{ Storage::url($debt->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button
+                                            wire:click="$dispatch('showPhoto', {{
+                                                json_encode([
+                                                    'url' => Storage::url($debt->proof_document_path),
+                                                    'title' => 'Dokumen Bukti - ' . $debt->creditor_name
+                                                ])
+                                            }})"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             Lihat Dokumen
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif

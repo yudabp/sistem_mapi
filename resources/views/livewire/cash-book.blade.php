@@ -109,6 +109,37 @@
                     @enderror
                 </div>
 
+                <!-- Debt Selection (only for expense type) -->
+                <div wire:show="transaction_type === 'expense'">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="selected_debt_id">
+                        Select Debt to Pay <span class="text-gray-400 text-xs">(Optional)</span>
+                    </label>
+                    <select 
+                        id="selected_debt_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        wire:model="selected_debt_id"
+                    >
+                        <option value="">-- Select Debt --</option>
+                        @foreach($unpaid_debts as $debt)
+                            <option value="{{ $debt->id }}">
+                                {{ $debt->creditor }} - Rp {{ number_format($debt->amount, 2, ',', '.') }} (Due: {{ $debt->due_date->format('d M Y') }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        @if($selected_debt_id)
+                            @php
+                                $selectedDebt = $unpaid_debts->firstWhere('id', $selected_debt_id);
+                            @endphp
+                            @if($selectedDebt)
+                                Debt: {{ $selectedDebt->description }} - Due: {{ $selectedDebt->due_date->format('d M Y') }}
+                            @endif
+                        @else
+                            Select a debt to automatically mark it as paid
+                        @endif
+                    </div>
+                </div>
+
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
@@ -134,11 +165,20 @@
                     </label>
                     <input 
                         id="purpose"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $selected_debt_id ? 'bg-emerald-50 dark:bg-emerald-500/10' : '' }}" 
                         type="text" 
                         wire:model="purpose"
-                        placeholder="Enter purpose of transaction"
+                        placeholder="{{ $selected_debt_id ? 'Auto-filled for debt payment' : 'Enter purpose of transaction' }}"
+                        {{ $selected_debt_id ? 'readonly' : '' }}
                     />
+                    @if($selected_debt_id)
+                        <div class="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
+                            <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Will auto-fill as debt payment
+                        </div>
+                    @endif
                     @error('purpose') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -281,9 +321,17 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($transaction->proof_document_path)
-                                        <a href="{{ Storage::url($transaction->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button
+                                            wire:click="$dispatch('showPhoto', {{
+                                                json_encode([
+                                                    'url' => Storage::url($transaction->proof_document_path),
+                                                    'title' => 'Document Proof - ' . $transaction->description
+                                                ])
+                                            }})"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             View Document
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">No proof</span>
                                     @endif

@@ -259,7 +259,79 @@
             </div>
         </div>
 
-        @livewireScripts
-        @livewireScriptConfig
+        <!-- Photo Modal -->
+    <div x-data="{ photoModal: Alpine.store('photoModal') }"
+         x-show="photoModal.open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75"
+         @keydown.escape.window="photoModal.close()"
+         @click.self="photoModal.close()">
+
+        <div class="flex min-h-screen items-center justify-center p-4">
+            <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+                 @click.stop>
+
+                <!-- Header -->
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100" x-text="photoModal.title"></h3>
+                    <button @click="photoModal.close()"
+                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+                    <img :src="photoModal.url"
+                         :alt="photoModal.title"
+                         class="w-full h-auto rounded-lg"
+                         @click="photoModal.close()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function photoModal() {
+            return {
+                open: false,
+                url: '',
+                title: '',
+                show(url, title) {
+                    this.url = url;
+                    this.title = title;
+                    this.open = true;
+                },
+                close() {
+                    this.open = false;
+                    this.url = '';
+                    this.title = '';
+                }
+            }
+        }
+
+        // Event listener for photo modal
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('showPhoto', (data) => {
+                const modalData = typeof data === 'string' ? JSON.parse(data) : data;
+                Alpine.store('photoModal').show(modalData.url, modalData.title);
+            });
+        });
+
+        // Initialize Alpine store for photo modal
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('photoModal', photoModal());
+        });
+    </script>
+
+    @livewireScripts
+    @livewireScriptConfig
     </body>
 </html>
