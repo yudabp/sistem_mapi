@@ -145,13 +145,20 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
                         SP Number
                     </label>
-                    <input 
+                    <select 
                         id="sp_number"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="sp_number"
-                        placeholder="Enter SP number"
-                    />
+                        wire:model.live="sp_number"
+                    >
+                        <option value="">Select SP Number</option>
+                        @foreach($productionData as $production)
+                            <option value="{{ $production->sp_number }}" 
+                                    data-tbs="{{ $production->tbs_quantity }}" 
+                                    data-kg="{{ $production->kg_quantity }}">
+                                {{ $production->sp_number }}
+                            </option>
+                        @endforeach
+                    </select>
                     @error('sp_number') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
@@ -164,12 +171,12 @@
                     </label>
                     <input 
                         id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $sp_number ? 'bg-gray-100 dark:bg-gray-600' : '' }}" 
                         type="number" 
                         step="0.01"
                         wire:model="tbs_quantity"
                         placeholder="Enter TBS quantity"
-                        readonly
+                        {{ $sp_number ? 'readonly' : '' }}
                     />
                 </div>
 
@@ -180,11 +187,12 @@
                     </label>
                     <input 
                         id="kg_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $sp_number ? 'bg-gray-100 dark:bg-gray-600' : '' }}" 
                         type="number" 
                         step="0.01"
                         wire:model="kg_quantity"
                         placeholder="Enter KG quantity"
+                        {{ $sp_number ? 'readonly' : '' }}
                     />
                     @error('kg_quantity') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -201,7 +209,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="number" 
                         step="0.01"
-                        wire:model="price_per_kg"
+                        wire:model.live="price_per_kg"
                         placeholder="Enter price per KG"
                     />
                     @error('price_per_kg') 
@@ -216,7 +224,7 @@
                     </label>
                     <input 
                         id="total_amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600" 
                         type="number" 
                         step="0.01"
                         wire:model="total_amount"
@@ -477,14 +485,41 @@
 </div>
 
 <script>
-    // Auto-calculate total amount when kg quantity or price per kg changes
     document.addEventListener('livewire:init', () => {
+        // Debug SP Number changes
+        Livewire.on('updatedSpNumber', () => {
+            console.log('SP Number updated');
+        });
+        
         Livewire.on('updatedKgQuantity', () => {
-            // This will be handled by the backend
+            console.log('KG Quantity updated');
         });
         
         Livewire.on('updatedPricePerKg', () => {
-            // This will be handled by the backend
+            console.log('Price per KG updated');
         });
+        
+        // Additional real-time calculation for better UX
+        const pricePerKgInput = document.getElementById('price_per_kg');
+        const kgQuantityInput = document.getElementById('kg_quantity');
+        const totalAmountInput = document.getElementById('total_amount');
+        
+        if (pricePerKgInput && kgQuantityInput && totalAmountInput) {
+            const calculateTotal = () => {
+                const price = parseFloat(pricePerKgInput.value) || 0;
+                const kg = parseFloat(kgQuantityInput.value) || 0;
+                const total = price * kg;
+                
+                if (total > 0) {
+                    totalAmountInput.value = total.toFixed(2);
+                } else {
+                    totalAmountInput.value = '';
+                }
+            };
+            
+            // Add input event listeners for immediate feedback
+            pricePerKgInput.addEventListener('input', calculateTotal);
+            kgQuantityInput.addEventListener('input', calculateTotal);
+        }
     });
 </script>
