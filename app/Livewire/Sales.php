@@ -67,11 +67,15 @@ class Sales extends Component
     public function render()
     {
         $filteredSales = $this->filterSales();
+        $productionData = ProductionModel::select('sp_number', 'tbs_quantity', 'kg_quantity')
+                                        ->orderBy('sp_number')
+                                        ->get();
 
         return view('livewire.sales', [
             'sales' => $filteredSales,
             'total_kg' => $this->getTotalKg(),
             'total_sales' => $this->getTotalSales(),
+            'productionData' => $productionData,
         ]);
     }
 
@@ -79,6 +83,8 @@ class Sales extends Component
     {
         if ($this->kg_quantity && $this->price_per_kg) {
             $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+        } else {
+            $this->total_amount = '';
         }
     }
 
@@ -86,6 +92,31 @@ class Sales extends Component
     {
         if ($this->kg_quantity && $this->price_per_kg) {
             $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+        }
+    }
+
+    public function updatedSpNumber()
+    {
+        if ($this->sp_number) {
+            $production = ProductionModel::where('sp_number', $this->sp_number)->first();
+            if ($production) {
+                $this->tbs_quantity = $production->tbs_quantity;
+                $this->kg_quantity = $production->kg_quantity;
+                
+                // Auto-calculate total amount if price per kg is already set
+                if ($this->kg_quantity && $this->price_per_kg) {
+                    $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+                }
+            } else {
+                // Reset if production not found
+                $this->tbs_quantity = '';
+                $this->kg_quantity = '';
+                $this->total_amount = '';
+            }
+        } else {
+            $this->tbs_quantity = '';
+            $this->kg_quantity = '';
+            $this->total_amount = '';
         }
     }
 
