@@ -142,24 +142,24 @@
             <form wire:submit.prevent="saveSalesModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- SP Number -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="production_id">
                         SP Number
                     </label>
                     <select 
-                        id="sp_number"
+                        id="production_id"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model.live="sp_number"
+                        wire:model.live="production_id"
                     >
                         <option value="">Select SP Number</option>
                         @foreach($productionData as $production)
-                            <option value="{{ $production->sp_number }}" 
+                            <option value="{{ $production->id }}" 
                                     data-tbs="{{ $production->tbs_quantity }}" 
                                     data-kg="{{ $production->kg_quantity }}">
                                 {{ $production->sp_number }}
                             </option>
                         @endforeach
                     </select>
-                    @error('sp_number') 
+                    @error('production_id') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
@@ -347,7 +347,7 @@
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ Storage::url($photoToView) }}" alt="Sales Proof" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Sales Proof" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>

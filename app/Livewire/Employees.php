@@ -15,10 +15,13 @@ class Employees extends Component
 {
     public $ndp; // Employee ID
     public $name;
-    public $department;
-    public $position;
+    public $department; // Keep for backward compatibility
+    public $department_id;
+    public $position; // Keep for backward compatibility
+    public $position_id;
     public $grade;
-    public $family_composition;
+    public $family_composition; // Keep for backward compatibility
+    public $family_composition_id;
     public $monthly_salary;
     public $status;
     public $hire_date;
@@ -53,8 +56,8 @@ class Employees extends Component
     protected $rules = [
         'ndp' => 'required|unique:employees,ndp',
         'name' => 'required',
-        'department' => 'required',
-        'position' => 'required',
+        'department_id' => 'required|exists:departments,id',
+        'position_id' => 'required|exists:positions,id',
         'monthly_salary' => 'required|numeric',
         'hire_date' => 'required|date',
         'status' => 'required',
@@ -91,10 +94,13 @@ class Employees extends Component
         EmployeeModel::create([
             'ndp' => $this->ndp,
             'name' => $this->name,
-            'department' => $this->department,
-            'position' => $this->position,
+            'department' => $this->department, // Keep for backward compatibility
+            'department_id' => $this->department_id,
+            'position' => $this->position, // Keep for backward compatibility
+            'position_id' => $this->position_id,
             'grade' => $this->grade,
-            'family_composition' => $this->family_composition,
+            'family_composition' => $this->family_composition, // Keep for backward compatibility
+            'family_composition_id' => $this->family_composition_id,
             'monthly_salary' => $this->monthly_salary,
             'status' => $this->status,
             'hire_date' => $this->hire_date,
@@ -114,10 +120,13 @@ class Employees extends Component
     {
         $this->ndp = '';
         $this->name = '';
-        $this->department = '';
-        $this->position = '';
+        $this->department = ''; // Keep for backward compatibility
+        $this->department_id = '';
+        $this->position = ''; // Keep for backward compatibility
+        $this->position_id = '';
         $this->grade = '';
-        $this->family_composition = 0;
+        $this->family_composition = 0; // Keep for backward compatibility
+        $this->family_composition_id = '';
         $this->monthly_salary = '';
         $this->status = 'active';
         $this->hire_date = '';
