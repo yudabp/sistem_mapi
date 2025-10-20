@@ -4,6 +4,20 @@
         <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Buku Kas</h1>
     </div>
 
+    <!-- Persistent Message -->
+    @if($persistentMessage)
+        <div class="mb-6">
+            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                <span>{{ $persistentMessage }}</span>
+                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
@@ -15,13 +29,50 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Income</div>
+                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
+                            <span>Total Income</span>
+                            <select 
+                                wire:model.live="metricFilter" 
+                                class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
+                            >
+                                <option value="all">Total Semua</option>
+                                <option value="today">Hari ini</option>
+                                <option value="yesterday">Kemarin</option>
+                                <option value="this_week">Minggu ini</option>
+                                <option value="last_week">Minggu kemarin</option>
+                                <option value="this_month">Bulan ini</option>
+                                <option value="last_month">Bulan kemarin</option>
+                                <option value="custom">Custom tanggal</option>
+                            </select>
+                        </div>
                         <div class="flex items-baseline">
                             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($total_income, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Custom date range inputs when 'custom' filter is selected -->
+            @if($metricFilter === 'custom')
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal awal</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="startDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal akhir</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="endDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+            </div>
+            @endif
         </div>
         
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
@@ -33,13 +84,50 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Expenses</div>
+                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
+                            <span>Total Expenses</span>
+                            <select 
+                                wire:model.live="metricFilter" 
+                                class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
+                            >
+                                <option value="all">Total Semua</option>
+                                <option value="today">Hari ini</option>
+                                <option value="yesterday">Kemarin</option>
+                                <option value="this_week">Minggu ini</option>
+                                <option value="last_week">Minggu kemarin</option>
+                                <option value="this_month">Bulan ini</option>
+                                <option value="last_month">Bulan kemarin</option>
+                                <option value="custom">Custom tanggal</option>
+                            </select>
+                        </div>
                         <div class="flex items-baseline">
                             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($total_expenses, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Custom date range inputs when 'custom' filter is selected -->
+            @if($metricFilter === 'custom')
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal awal</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="startDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal akhir</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="endDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+            </div>
+            @endif
         </div>
         
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
@@ -51,29 +139,74 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Balance</div>
+                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
+                            <span>Balance</span>
+                            <select 
+                                wire:model.live="metricFilter" 
+                                class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
+                            >
+                                <option value="all">Total Semua</option>
+                                <option value="today">Hari ini</option>
+                                <option value="yesterday">Kemarin</option>
+                                <option value="this_week">Minggu ini</option>
+                                <option value="last_week">Minggu kemarin</option>
+                                <option value="this_month">Bulan ini</option>
+                                <option value="last_month">Bulan kemarin</option>
+                                <option value="custom">Custom tanggal</option>
+                            </select>
+                        </div>
                         <div class="flex items-baseline">
                             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($balance, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <!-- Custom date range inputs when 'custom' filter is selected -->
+            @if($metricFilter === 'custom')
+            <div class="mt-4 grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal awal</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="startDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal akhir</label>
+                    <input 
+                        type="date" 
+                        wire:model.live="endDate"
+                        class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 
     <!-- Form Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Cash Transaction Input</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Cash Transaction Input</h2>
+                <button 
+                    wire:click="openCreateModal"
+                    class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                    Add Transaction
+                </button>
+            </div>
         </header>
         <div class="p-6 space-y-6">
-            @if(session()->has('message'))
+
+
+            @if($persistentMessage)
                 <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500">
-                    {{ session('message') }}
+                    {{ $persistentMessage }}
                 </div>
             @endif
-
-            <form wire:submit.prevent="saveTransaction" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Transaction Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
@@ -197,7 +330,6 @@
                         Save Cash Transaction
                     </button>
                 </div>
-            </form>
         </div>
     </div>
 
@@ -281,21 +413,31 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($transaction->proof_document_path)
-                                        <a href="{{ Storage::url($transaction->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button 
+                                            wire:click="showPhoto('{{ $transaction->proof_document_path }}')"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             View Document
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">No proof</span>
                                     @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <button 
-                                        wire:click="deleteTransaction({{ $transaction->id }})"
-                                        class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
-                                        onclick="confirm('Are you sure?') || event.stopImmediatePropagation()"
-                                    >
-                                        Delete
-                                    </button>
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            wire:click="openEditModal({{ $transaction->id }})"
+                                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
+                                            class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -310,4 +452,187 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction Modal Form -->
+    <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
+        <x-slot name="title">
+            {{ $isEditing ? 'Edit Cash Transaction' : 'Add Cash Transaction' }}
+        </x-slot>
+
+        <x-slot name="content">
+            <form wire:submit.prevent="saveTransactionModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Transaction Date -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
+                        Transaction Date
+                    </label>
+                    <input 
+                        id="transaction_date"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="date" 
+                        wire:model="transaction_date"
+                        value="{{ date('Y-m-d') }}"
+                    />
+                    @error('transaction_date') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Transaction Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
+                        Transaction Type
+                    </label>
+                    <select 
+                        id="transaction_type"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        wire:model="transaction_type"
+                    >
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                    @error('transaction_type') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
+                        Amount (Rp)
+                    </label>
+                    <input 
+                        id="amount"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="number" 
+                        step="0.01"
+                        wire:model="amount"
+                        placeholder="Enter amount"
+                    />
+                    @error('amount') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Purpose -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="purpose">
+                        Purpose
+                    </label>
+                    <input 
+                        id="purpose"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="text" 
+                        wire:model="purpose"
+                        placeholder="Enter purpose of transaction"
+                    />
+                    @error('purpose') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
+                        Description
+                    </label>
+                    <textarea 
+                        id="description"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        wire:model="description"
+                        placeholder="Enter detailed description"
+                        rows="2"
+                    ></textarea>
+                </div>
+
+                <!-- Notes -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="notes">
+                        Notes
+                    </label>
+                    <textarea 
+                        id="notes"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        wire:model="notes"
+                        placeholder="Enter additional notes"
+                        rows="2"
+                    ></textarea>
+                </div>
+
+                <!-- Proof Document -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
+                        Proof Document
+                    </label>
+                    <input 
+                        id="proof_document"
+                        type="file" 
+                        wire:model="proof_document"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                    @if($isEditing && $proof_document === null)
+                        <div class="mt-2">
+                            <small class="text-gray-500">Leave blank to keep existing document</small>
+                        </div>
+                    @endif
+                    @error('proof_document') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+            </form>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="saveTransactionModal" wire:loading.attr="disabled">
+                {{ $isEditing ? 'Update' : 'Save' }} Transaction
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- Delete Confirmation Modal -->
+    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
+        <x-slot name="title">
+            {{ __('Delete Cash Transaction') }}
+        </x-slot>
+
+        <x-slot name="content">
+            {{ __('Are you sure you want to delete the cash transaction ":name"?', ['name' => $deletingTransactionName]) }}
+            {{ __('Once the transaction is deleted, all of its data will be permanently removed.') }}
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="deleteTransactionConfirmed" wire:loading.attr="disabled">
+                {{ __('Delete Transaction') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <!-- Photo Preview Modal -->
+    <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
+        <x-slot name="title">
+            Transaction Proof Preview
+        </x-slot>
+
+        <x-slot name="content">
+            @if($photoToView)
+                <div class="flex justify-center">
+                    <img src="{{ Storage::url($photoToView) }}" alt="Transaction Proof" class="max-w-full h-auto rounded-lg shadow-md">
+                </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closePhotoModal" wire:loading.attr="disabled">
+                {{ __('Close') }}
+            </x-secondary-button>
+        </x-slot>
+    </x-dialog-modal>
 </div>

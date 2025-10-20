@@ -24,8 +24,31 @@ class Sales extends Component
     
     public $search = '';
     public $dateFilter = '';
-    
-    protected $queryString = ['search', 'dateFilter'];
+
+    // Modal control
+    public $showModal = false;
+    public $isEditing = false;
+    public $editingId = null;
+
+    // Delete confirmation
+    public $showDeleteConfirmation = false;
+    public $deletingSaleId = null;
+    public $deletingSaleName = '';
+
+    // Photo viewing
+    public $showPhotoModal = false;
+    public $photoToView = null;
+
+    // Metric filter
+    public $metricFilter = 'all'; // Default to all time
+    public $startDate = null;
+    public $endDate = null;
+
+    // Persistent message
+    public $persistentMessage = '';
+    public $messageType = 'success'; // success, error, warning, info
+
+    protected $queryString = ['search', 'dateFilter', 'metricFilter'];
 
     protected $rules = [
         'sp_number' => 'required',
@@ -47,8 +70,8 @@ class Sales extends Component
 
         return view('livewire.sales', [
             'sales' => $filteredSales,
-            'total_kg' => $filteredSales->sum('kg_quantity'),
-            'total_sales' => $filteredSales->sum('total_amount'),
+            'total_kg' => $this->getTotalKg(),
+            'total_sales' => $this->getTotalSales(),
         ]);
     }
 
@@ -91,7 +114,7 @@ class Sales extends Component
         // Reset form
         $this->resetForm();
         
-        session()->flash('message', 'Sales record created successfully.');
+        $this->setPersistentMessage('Sales record created successfully.', 'success');
     }
 
     public function resetForm()
@@ -124,7 +147,73 @@ class Sales extends Component
                   ->whereMonth('sale_date', '=', substr($this->dateFilter, 5, 2));
         }
 
+        // Apply metric filter
+        $query = $this->applyMetricFilter($query);
+
         return $query->get();
+    }
+
+    public function applyMetricFilter($query)
+    {
+        $now = now();
+        
+        switch ($this->metricFilter) {
+            case 'today':
+                $query->whereDate('sale_date', $now->toDateString());
+                break;
+            case 'yesterday':
+                $yesterday = $now->subDay();
+                $query->whereDate('sale_date', $yesterday->toDateString());
+                break;
+            case 'this_week':
+                $query->whereBetween('sale_date', [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString()
+                ]);
+                break;
+            case 'last_week':
+                $lastWeekStart = $now->subWeek()->startOfWeek();
+                $lastWeekEnd = $now->subWeek()->endOfWeek();
+                $query->whereBetween('sale_date', [
+                    $lastWeekStart->toDateString(),
+                    $lastWeekEnd->toDateString()
+                ]);
+                break;
+            case 'this_month':
+                $query->whereYear('sale_date', $now->year)
+                      ->whereMonth('sale_date', $now->month);
+                break;
+            case 'last_month':
+                $lastMonth = $now->subMonth();
+                $query->whereYear('sale_date', $lastMonth->year)
+                      ->whereMonth('sale_date', $lastMonth->month);
+                break;
+            case 'custom':
+                if ($this->startDate && $this->endDate) {
+                    $query->whereBetween('sale_date', [$this->startDate, $this->endDate]);
+                }
+                break;
+            case 'all':
+            default:
+                // No additional filtering for 'all' option
+                break;
+        }
+        
+        return $query;
+    }
+
+    public function getTotalKg()
+    {
+        $query = SaleModel::query();
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('kg_quantity');
+    }
+
+    public function getTotalSales()
+    {
+        $query = SaleModel::query();
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('total_amount');
     }
 
     public function deleteSales($id)
@@ -137,5 +226,128 @@ class Sales extends Component
             }
             $sale->delete();
         }
+    }
+
+    public function openCreateModal()
+    {
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->showModal = true;
+    }
+
+    public function openEditModal($id)
+    {
+        $sale = SaleModel::find($id);
+        if ($sale) {
+            $this->editingId = $sale->id;
+            $this->sp_number = $sale->sp_number;
+            $this->tbs_quantity = $sale->tbs_quantity;
+            $this->kg_quantity = $sale->kg_quantity;
+            $this->price_per_kg = $sale->price_per_kg;
+            $this->total_amount = $sale->total_amount;
+            $this->sale_date = $sale->sale_date->format('Y-m-d');
+            $this->customer_name = $sale->customer_name;
+            $this->customer_address = $sale->customer_address;
+            $this->sales_proof = null; // We don't load the file, just the path
+            $this->isEditing = true;
+            $this->showModal = true;
+        }
+    }
+
+    public function closeCreateModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->editingId = null;
+    }
+
+    public function confirmDelete($id, $sp_number)
+    {
+        $this->deletingSaleId = $id;
+        $this->deletingSaleName = $sp_number;
+        $this->showDeleteConfirmation = true;
+    }
+
+    public function closeDeleteConfirmation()
+    {
+        $this->showDeleteConfirmation = false;
+        $this->deletingSaleId = null;
+        $this->deletingSaleName = '';
+    }
+
+    public function deleteSalesConfirmed()
+    {
+        $sale = SaleModel::find($this->deletingSaleId);
+        if ($sale) {
+            // Delete the proof if it exists
+            if ($sale->sales_proof_path) {
+                Storage::disk('public')->delete($sale->sales_proof_path);
+            }
+            $sale->delete();
+            $this->setPersistentMessage('Sales record deleted successfully.', 'success');
+        }
+        
+        $this->closeDeleteConfirmation();
+    }
+
+    public function saveSalesModal()
+    {
+        if ($this->isEditing) {
+            $this->updateSale();
+        } else {
+            $this->saveSales();
+        }
+        
+        $this->closeCreateModal();
+    }
+
+    public function updateSale()
+    {
+        $validated = $this->validate();
+        
+        $sale = SaleModel::find($this->editingId);
+        if ($sale) {
+            // Handle file upload
+            $proofPath = $sale->sales_proof_path; // Keep existing path if no new file
+            if ($this->sales_proof) {
+                // Delete old proof if exists
+                if ($sale->sales_proof_path) {
+                    Storage::disk('public')->delete($sale->sales_proof_path);
+                }
+                $proofPath = $this->sales_proof->store('sales_proofs', 'public');
+            }
+
+            $sale->update([
+                'sp_number' => $this->sp_number,
+                'tbs_quantity' => $this->tbs_quantity,
+                'kg_quantity' => $this->kg_quantity,
+                'price_per_kg' => $this->price_per_kg,
+                'total_amount' => $this->total_amount,
+                'sale_date' => $this->sale_date,
+                'customer_name' => $this->customer_name,
+                'customer_address' => $this->customer_address,
+                'sales_proof_path' => $proofPath,
+            ]);
+
+            $this->setPersistentMessage('Sales record updated successfully.', 'success');
+        }
+    }
+
+    public function showPhoto($path)
+    {
+        $this->photoToView = $path;
+        $this->showPhotoModal = true;
+    }
+
+    public function setPersistentMessage($message, $type = 'success')
+    {
+        $this->persistentMessage = $message;
+        $this->messageType = $type;
+    }
+
+    public function clearPersistentMessage()
+    {
+        $this->persistentMessage = '';
     }
 }

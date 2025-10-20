@@ -4,6 +4,20 @@
         <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Hutang</h1>
     </div>
 
+    <!-- Persistent Message -->
+    @if($persistentMessage)
+        <div class="mb-6">
+            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                <span>{{ $persistentMessage }}</span>
+                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    @endif
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
@@ -61,114 +75,19 @@
         </div>
     </div>
 
-    <!-- Form Section -->
+    <!-- Form Section - Button to open modal -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Registrasi Hutang</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Registrasi Hutang</h2>
+                <button 
+                    wire:click="openCreateModal"
+                    class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                    Add Debt Record
+                </button>
+            </div>
         </header>
-        <div class="p-6 space-y-6">
-            @if(session()->has('message'))
-                <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500">
-                    {{ session('message') }}
-                </div>
-            @endif
-
-            <form wire:submit.prevent="saveDebt" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Amount -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
-                        Jumlah Hutang (Rp)
-                    </label>
-                    <input 
-                        id="amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model="amount"
-                        placeholder="Masukkan jumlah hutang"
-                    />
-                    @error('amount') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Creditor -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
-                        Pemberi Hutang
-                    </label>
-                    <input 
-                        id="creditor"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="creditor"
-                        placeholder="Masukkan nama pemberi hutang"
-                    />
-                    @error('creditor') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Due Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="due_date">
-                        Tanggal Jatuh Tempo
-                    </label>
-                    <input 
-                        id="due_date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="date" 
-                        wire:model="due_date"
-                    />
-                    @error('due_date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2 lg:col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
-                        Keterangan
-                    </label>
-                    <textarea 
-                        id="description"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="description"
-                        placeholder="Masukkan keterangan detail hutang"
-                        rows="2"
-                    ></textarea>
-                    @error('description') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Proof Document -->
-                <div class="md:col-span-2 lg:col-span-3">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
-                        Bukti Dokumen
-                    </label>
-                    <input 
-                        id="proof_document"
-                        type="file" 
-                        wire:model="proof_document"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                    />
-                    @error('proof_document') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Submit Button -->
-                <div class="md:col-span-2 lg:col-span-3">
-                    <button 
-                        type="submit" 
-                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                    >
-                        Simpan Data Hutang
-                    </button>
-                </div>
-            </form>
-        </div>
     </div>
 
     <!-- Search and Filter Section -->
@@ -238,9 +157,12 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($debt->proof_document_path)
-                                        <a href="{{ Storage::url($debt->proof_document_path) }}" target="_blank" class="text-blue-600 hover:underline dark:text-blue-400">
+                                        <button 
+                                            wire:click="showPhoto('{{ $debt->proof_document_path }}')"
+                                            class="text-blue-600 hover:underline dark:text-blue-400"
+                                        >
                                             Lihat Dokumen
-                                        </a>
+                                        </button>
                                     @else
                                         <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif
@@ -254,13 +176,20 @@
                                             Tandai Lunas
                                         </button>
                                     @endif
-                                    <button 
-                                        wire:click="deleteDebt({{ $debt->id }})"
-                                        class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
-                                        onclick="confirm('Apakah Anda yakin?') || event.stopImmediatePropagation()"
-                                    >
-                                        Hapus
-                                    </button>
+                                    <div class="flex space-x-2">
+                                        <button 
+                                            wire:click="openEditModal({{ $debt->id }})"
+                                            class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            wire:click="confirmDelete({{ $debt->id }}, '{{ $debt->creditor }}')"
+                                            class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
+                                        >
+                                            Hapus
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -275,4 +204,163 @@
             </div>
         </div>
     </div>
+
+    <!-- Debt Data Modal -->
+    <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
+        <x-slot name="title">
+            {{ $isEditing ? 'Edit Debt Record' : 'Add Debt Record' }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if(session()->has('message'))
+                <div class="mb-4 bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500">
+                    {{ session('message') }}
+                </div>
+            @endif
+
+            <form wire:submit.prevent="saveDebtModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Amount -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
+                        Jumlah Hutang (Rp)
+                    </label>
+                    <input 
+                        id="amount"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="number" 
+                        step="0.01"
+                        wire:model="amount"
+                        placeholder="Masukkan jumlah hutang"
+                    />
+                    @error('amount') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Creditor -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
+                        Pemberi Hutang
+                    </label>
+                    <input 
+                        id="creditor"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="text" 
+                        wire:model="creditor"
+                        placeholder="Masukkan nama pemberi hutang"
+                    />
+                    @error('creditor') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Due Date -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="due_date">
+                        Tanggal Jatuh Tempo
+                    </label>
+                    <input 
+                        id="due_date"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        type="date" 
+                        wire:model="due_date"
+                    />
+                    @error('due_date') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Description -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
+                        Keterangan
+                    </label>
+                    <textarea 
+                        id="description"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        wire:model="description"
+                        placeholder="Masukkan keterangan detail hutang"
+                        rows="2"
+                    ></textarea>
+                    @error('description') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+
+                <!-- Proof Document -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
+                        Bukti Dokumen
+                    </label>
+                    <input 
+                        id="proof_document"
+                        type="file" 
+                        wire:model="proof_document"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                    @if($isEditing && $proof_document === null)
+                        <div class="mt-2">
+                            <small class="text-gray-500">Biarkan kosong untuk menyimpan dokumen yang ada</small>
+                        </div>
+                    @endif
+                    @error('proof_document') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+            </form>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="saveDebtModal" wire:loading.attr="disabled">
+                {{ $isEditing ? 'Update' : 'Save' }} Debt Record
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- Delete Confirmation Modal -->
+    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
+        <x-slot name="title">
+            {{ __('Delete Debt Record') }}
+        </x-slot>
+
+        <x-slot name="content">
+            {{ __('Are you sure you want to delete the debt record ":name"?', ['name' => $deletingDebtName]) }}
+            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-danger-button class="ms-3" wire:click="deleteDebtConfirmed" wire:loading.attr="disabled">
+                {{ __('Delete Debt') }}
+            </x-danger-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <!-- Photo Preview Modal -->
+    <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
+        <x-slot name="title">
+            Debt Document Preview
+        </x-slot>
+
+        <x-slot name="content">
+            @if($photoToView)
+                <div class="flex justify-center">
+                    <img src="{{ Storage::url($photoToView) }}" alt="Debt Document" class="max-w-full h-auto rounded-lg shadow-md">
+                </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="$set('showPhotoModal', false)" wire:loading.attr="disabled">
+                {{ __('Close') }}
+            </x-secondary-button>
+        </x-slot>
+    </x-dialog-modal>
 </div>
