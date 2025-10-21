@@ -17,11 +17,14 @@ class Production extends Component
     public $transaction_number;
     public $date;
     public $sp_number;
-    public $vehicle_number;
+    public $vehicle_number; // Keep for backward compatibility
+    public $vehicle_id;
     public $tbs_quantity;
     public $kg_quantity;
-    public $division;
-    public $pks;
+    public $division; // Keep for backward compatibility
+    public $division_id;
+    public $pks; // Keep for backward compatibility
+    public $pks_id;
     public $sp_photo;
     
     public $vehicle_numbers = [];
@@ -57,17 +60,28 @@ class Production extends Component
 
     protected $queryString = ['search', 'dateFilter', 'divisionFilter', 'metricFilter'];
 
-    protected $rules = [
-        'transaction_number' => 'required|unique:production,transaction_number',
-        'date' => 'required|date',
-        'sp_number' => 'required',
-        'vehicle_number' => 'required',
-        'tbs_quantity' => 'required|numeric',
-        'kg_quantity' => 'required|numeric',
-        'division' => 'required',
-        'pks' => 'required',
-        'sp_photo' => 'nullable|image|max:10240', // Max 10MB
-    ];
+    protected function rules()
+    {
+        $rules = [
+            'date' => 'required|date',
+            'sp_number' => 'required',
+            'vehicle_id' => 'required|exists:vehicle_numbers,id',
+            'tbs_quantity' => 'required|numeric',
+            'kg_quantity' => 'required|numeric',
+            'division_id' => 'required|exists:divisions,id',
+            'pks_id' => 'required|exists:pks,id',
+            'sp_photo' => 'nullable|image|max:10240', // Max 10MB
+        ];
+
+        // For transaction_number, add unique validation except for current record
+        if ($this->isEditing) {
+            $rules['transaction_number'] = 'required|unique:production,transaction_number,' . $this->editingId;
+        } else {
+            $rules['transaction_number'] = 'required|unique:production,transaction_number';
+        }
+
+        return $rules;
+    }
 
     public function mount()
     {
@@ -106,11 +120,14 @@ class Production extends Component
             'transaction_number' => $this->transaction_number,
             'date' => $this->date,
             'sp_number' => $this->sp_number,
-            'vehicle_number' => $this->vehicle_number,
+            'vehicle_number' => $this->vehicle_number, // Keep for backward compatibility
+            'vehicle_id' => $this->vehicle_id,
             'tbs_quantity' => $this->tbs_quantity,
             'kg_quantity' => $this->kg_quantity,
-            'division' => $this->division,
-            'pks' => $this->pks,
+            'division' => $this->division, // Keep for backward compatibility
+            'division_id' => $this->division_id,
+            'pks' => $this->pks, // Keep for backward compatibility
+            'pks_id' => $this->pks_id,
             'sp_photo_path' => $photoPath,
         ]);
 
@@ -126,24 +143,36 @@ class Production extends Component
         $this->transaction_number = '';
         $this->date = '';
         $this->sp_number = '';
-        $this->vehicle_number = '';
+        $this->vehicle_number = ''; // Keep for backward compatibility
+        $this->vehicle_id = '';
         $this->tbs_quantity = '';
         $this->kg_quantity = '';
-        $this->division = '';
-        $this->pks = '';
+        $this->division = ''; // Keep for backward compatibility
+        $this->division_id = '';
+        $this->pks = ''; // Keep for backward compatibility
+        $this->pks_id = '';
         $this->sp_photo = null;
     }
 
     public function filterProductions()
     {
-        $query = ProductionModel::orderBy('date', 'desc');
+        $query = ProductionModel::with(['vehicle', 'divisionRel', 'pksRel'])->orderBy('date', 'desc');
 
         if ($this->search) {
             $query->where(function($q) {
                 $q->where('sp_number', 'like', '%' . $this->search . '%')
                   ->orWhere('vehicle_number', 'like', '%' . $this->search . '%')
                   ->orWhere('division', 'like', '%' . $this->search . '%')
-                  ->orWhere('transaction_number', 'like', '%' . $this->search . '%');
+                  ->orWhere('transaction_number', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('vehicle', function($subQ) {
+                      $subQ->where('vehicle_number', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('divisionRel', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('pksRel', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  });
             });
         }
 
@@ -252,11 +281,14 @@ class Production extends Component
             $this->transaction_number = $production->transaction_number;
             $this->date = $production->date->format('Y-m-d');
             $this->sp_number = $production->sp_number;
-            $this->vehicle_number = $production->vehicle_number;
+            $this->vehicle_number = $production->vehicle_number; // Keep for backward compatibility
+            $this->vehicle_id = $production->vehicle_id;
             $this->tbs_quantity = $production->tbs_quantity;
             $this->kg_quantity = $production->kg_quantity;
-            $this->division = $production->division;
-            $this->pks = $production->pks;
+            $this->division = $production->division; // Keep for backward compatibility
+            $this->division_id = $production->division_id;
+            $this->pks = $production->pks; // Keep for backward compatibility
+            $this->pks_id = $production->pks_id;
             $this->sp_photo = null; // We don't load the file, just the path
             $this->isEditing = true;
             $this->showModal = true;
@@ -331,11 +363,14 @@ class Production extends Component
                 'transaction_number' => $this->transaction_number,
                 'date' => $this->date,
                 'sp_number' => $this->sp_number,
-                'vehicle_number' => $this->vehicle_number,
+                'vehicle_number' => $this->vehicle_number, // Keep for backward compatibility
+                'vehicle_id' => $this->vehicle_id,
                 'tbs_quantity' => $this->tbs_quantity,
                 'kg_quantity' => $this->kg_quantity,
-                'division' => $this->division,
-                'pks' => $this->pks,
+                'division' => $this->division, // Keep for backward compatibility
+                'division_id' => $this->division_id,
+                'pks' => $this->pks, // Keep for backward compatibility
+                'pks_id' => $this->pks_id,
                 'sp_photo_path' => $photoPath,
             ]);
 

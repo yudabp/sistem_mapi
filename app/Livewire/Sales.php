@@ -12,7 +12,8 @@ class Sales extends Component
 {
     use WithFileUploads;
 
-    public $sp_number;
+    public $sp_number; // Keep for backward compatibility
+    public $production_id;
     public $tbs_quantity;
     public $kg_quantity;
     public $price_per_kg;
@@ -51,7 +52,7 @@ class Sales extends Component
     protected $queryString = ['search', 'dateFilter', 'metricFilter'];
 
     protected $rules = [
-        'sp_number' => 'required',
+        'production_id' => 'required|exists:production,id',
         'kg_quantity' => 'required|numeric',
         'price_per_kg' => 'required|numeric',
         'sale_date' => 'required|date',
@@ -67,7 +68,7 @@ class Sales extends Component
     public function render()
     {
         $filteredSales = $this->filterSales();
-        $productionData = ProductionModel::select('sp_number', 'tbs_quantity', 'kg_quantity')
+        $productionData = ProductionModel::select('id', 'sp_number', 'tbs_quantity', 'kg_quantity')
                                         ->orderBy('sp_number')
                                         ->get();
 
@@ -97,9 +98,11 @@ class Sales extends Component
 
     public function updatedSpNumber()
     {
+        // Keep for backward compatibility
         if ($this->sp_number) {
             $production = ProductionModel::where('sp_number', $this->sp_number)->first();
             if ($production) {
+                $this->production_id = $production->id;
                 $this->tbs_quantity = $production->tbs_quantity;
                 $this->kg_quantity = $production->kg_quantity;
                 
@@ -109,11 +112,41 @@ class Sales extends Component
                 }
             } else {
                 // Reset if production not found
+                $this->production_id = '';
                 $this->tbs_quantity = '';
                 $this->kg_quantity = '';
                 $this->total_amount = '';
             }
         } else {
+            $this->production_id = '';
+            $this->tbs_quantity = '';
+            $this->kg_quantity = '';
+            $this->total_amount = '';
+        }
+    }
+
+    public function updatedProductionId()
+    {
+        if ($this->production_id) {
+            $production = ProductionModel::find($this->production_id);
+            if ($production) {
+                $this->sp_number = $production->sp_number;
+                $this->tbs_quantity = $production->tbs_quantity;
+                $this->kg_quantity = $production->kg_quantity;
+                
+                // Auto-calculate total amount if price per kg is already set
+                if ($this->kg_quantity && $this->price_per_kg) {
+                    $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+                }
+            } else {
+                // Reset if production not found
+                $this->sp_number = '';
+                $this->tbs_quantity = '';
+                $this->kg_quantity = '';
+                $this->total_amount = '';
+            }
+        } else {
+            $this->sp_number = '';
             $this->tbs_quantity = '';
             $this->kg_quantity = '';
             $this->total_amount = '';
@@ -131,7 +164,8 @@ class Sales extends Component
         }
 
         SaleModel::create([
-            'sp_number' => $this->sp_number,
+            'sp_number' => $this->sp_number, // Keep for backward compatibility
+            'production_id' => $this->production_id,
             'tbs_quantity' => $this->tbs_quantity,
             'kg_quantity' => $this->kg_quantity,
             'price_per_kg' => $this->price_per_kg,
@@ -150,7 +184,8 @@ class Sales extends Component
 
     public function resetForm()
     {
-        $this->sp_number = '';
+        $this->sp_number = ''; // Keep for backward compatibility
+        $this->production_id = '';
         $this->tbs_quantity = '';
         $this->kg_quantity = '';
         $this->price_per_kg = '';
