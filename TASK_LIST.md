@@ -7,7 +7,21 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 ## 🔥 **HIGH PRIORITY** 
 *Deadline: 1-2 Minggu*
 
-### **1. Database Schema Restructuring** ✅ **COMPLETED**
+### **1. Implementasi Fitur Pajak Penjualan**
+- [ ] **Database Schema**
+  - [ ] Buat migrasi untuk menambahkan kolom `is_taxable`, `tax_percentage`, dan `tax_amount` ke tabel `data_penjualan`.
+- [ ] **Backend Logic**
+  - [ ] Update model `Sale` untuk menyertakan field baru.
+  - [ ] Implementasikan logika di backend untuk menghitung `tax_amount` secara otomatis berdasarkan `total_penjualan` dan `tax_percentage`.
+- [ ] **Frontend (Livewire Component)**
+  - [ ] Tambahkan checkbox "Kena Pajak" di form input penjualan.
+  - [ ] Tampilkan input untuk "Total Pajak (%)" (default 11%, editable) dan "Total Nominal Pajak" (auto-calculated, editable) secara kondisional.
+  - [ ] Pastikan kalkulasi berjalan secara real-time di frontend.
+- [ ] **Fitur Ekspor Laporan**
+  - [ ] Buat fungsionalitas untuk mengekspor data penjualan (misalnya ke Excel/CSV).
+  - [ ] Tambahkan filter pada ekspor: semua penjualan, hanya yang kena pajak, dan hanya yang tidak kena pajak.
+
+### **2. Database Schema Restructuring** ✅ **COMPLETED**
 - [x] **Create migration for proper foreign key relations**
   - [x] Add `vehicle_id` FK to production table
   - [x] Add `division_id` FK to production table  
@@ -27,7 +41,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [x] Add ON DELETE CASCADE/SET NULL constraints
   - [x] Test data integrity after constraints
 
-### **2. Separate Financial Tables (KP & BKK)**
+### **3. Separate Financial Tables (KP & BKK)**
 - [ ] **Create new tables**
   - [ ] Create `keuangan_perusahaan` table migration
   - [ ] Create `buku_kas_kebun` table migration
@@ -43,7 +57,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Update views to handle separate tables
   - [ ] Update routing and navigation
 
-### **3. Implement KP → BKK Auto-create Business Logic**
+### **4. Implement KP → BKK Auto-create Business Logic**
 - [ ] **Backend Logic**
   - [ ] Create observer/service for KP expense creation
   - [ ] Auto-create BKK income entry when KP expense is created
@@ -55,7 +69,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Add visual indicators for auto-created entries
   - [ ] Add confirmation dialogs for KP expense creation
 
-### **4. Debt Payment Cycle Implementation**
+### **5. Debt Payment Cycle Implementation**
 - [ ] **Create missing tables**
   - [ ] Create `hutang_pembayaran` table migration
   - [ ] Create `master_debt_types` table migration
@@ -83,7 +97,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 ## ⚡ **MEDIUM PRIORITY**
 *Deadline: 2-4 Minggu*
 
-### **5. User Roles & Access Control**
+### **6. User Roles & Access Control**
 - [ ] **Database Setup**
   - [ ] Create `roles` table (Direksi, Superadmin)
   - [ ] Create `permissions` table
@@ -102,7 +116,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Add role indicators in UI
   - [ ] Create role management interface for Superadmin
 
-### **6. API Endpoints Implementation**
+### **7. API Endpoints Implementation**
 - [ ] **Setup API Infrastructure**
   - [ ] Create API authentication (Sanctum/Passport)
   - [ ] Setup API rate limiting
@@ -132,7 +146,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Implement data aggregation logic
   - [ ] Add caching for performance
 
-### **7. Enhanced Dashboard & Reporting**
+### **8. Enhanced Dashboard & Reporting**
 - [ ] **Advanced Metrics**
   - [ ] Total produksi KG (with date range filtering)
   - [ ] Total penjualan RP (with profit calculations)
@@ -157,7 +171,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 ## 🔧 **LOW PRIORITY**
 *Deadline: 4-6 Minggu*
 
-### **8. Testing & Quality Assurance**
+### **9. Testing & Quality Assurance**
 - [ ] **Unit Tests**
   - [ ] Model relationship tests
   - [ ] Business logic tests (KP→BKK, debt payments)
@@ -175,7 +189,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Load testing for concurrent users
   - [ ] Large dataset handling
 
-### **9. Code Quality & Documentation**
+### **10. Code Quality & Documentation**
 - [ ] **Code Refactoring**
   - [ ] Extract business logic to service classes
   - [ ] Implement repository pattern
@@ -188,7 +202,7 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
   - [ ] Developer documentation
   - [ ] Deployment guide
 
-### **10. Advanced Features**
+### **11. Advanced Features**
 - [ ] **Notifications System**
   - [ ] Debt due date reminders
   - [ ] Low stock alerts (if applicable)

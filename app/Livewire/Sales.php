@@ -7,6 +7,9 @@ use App\Models\Sale as SaleModel;
 use App\Models\Production as ProductionModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\SalesExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class Sales extends Component
 {
@@ -22,6 +25,9 @@ class Sales extends Component
     public $sale_date;
     public $customer_name;
     public $customer_address;
+    public $is_taxable = false;
+    public $tax_percentage = 11.00;
+    public $tax_amount = 0;
     
     public $search = '';
     public $dateFilter = '';
@@ -49,6 +55,9 @@ class Sales extends Component
     public $persistentMessage = '';
     public $messageType = 'success'; // success, error, warning, info
 
+    // Export filter
+    public $exportFilter = 'all'; // all, taxable, non_taxable
+
     protected $queryString = ['search', 'dateFilter', 'metricFilter'];
 
     protected $rules = [
@@ -59,6 +68,9 @@ class Sales extends Component
         'customer_name' => 'required',
         'customer_address' => 'required',
         'sales_proof' => 'nullable|image|max:10240', // Max 10MB
+        'is_taxable' => 'boolean',
+        'tax_percentage' => 'nullable|numeric|min:0|max:100',
+        'tax_amount' => 'nullable|numeric|min:0',
     ];
 
     public function mount()
@@ -82,18 +94,14 @@ class Sales extends Component
 
     public function updatedPricePerKg()
     {
-        if ($this->kg_quantity && $this->price_per_kg) {
-            $this->total_amount = $this->kg_quantity * $this->price_per_kg;
-        } else {
-            $this->total_amount = '';
-        }
+        $this->calculateTotal();
+        $this->calculateTax();
     }
 
     public function updatedKgQuantity()
     {
-        if ($this->kg_quantity && $this->price_per_kg) {
-            $this->total_amount = $this->kg_quantity * $this->price_per_kg;
-        }
+        $this->calculateTotal();
+        $this->calculateTax();
     }
 
     public function updatedSpNumber()
@@ -107,22 +115,21 @@ class Sales extends Component
                 $this->kg_quantity = $production->kg_quantity;
                 
                 // Auto-calculate total amount if price per kg is already set
-                if ($this->kg_quantity && $this->price_per_kg) {
-                    $this->total_amount = $this->kg_quantity * $this->price_per_kg;
-                }
+                $this->calculateTotal();
             } else {
                 // Reset if production not found
                 $this->production_id = '';
                 $this->tbs_quantity = '';
                 $this->kg_quantity = '';
-                $this->total_amount = '';
+                $this->total_amount = 0;
             }
         } else {
             $this->production_id = '';
             $this->tbs_quantity = '';
             $this->kg_quantity = '';
-            $this->total_amount = '';
+            $this->total_amount = 0;
         }
+        $this->calculateTax();
     }
 
     public function updatedProductionId()
@@ -135,21 +142,53 @@ class Sales extends Component
                 $this->kg_quantity = $production->kg_quantity;
                 
                 // Auto-calculate total amount if price per kg is already set
-                if ($this->kg_quantity && $this->price_per_kg) {
-                    $this->total_amount = $this->kg_quantity * $this->price_per_kg;
-                }
+                $this->calculateTotal();
             } else {
                 // Reset if production not found
                 $this->sp_number = '';
                 $this->tbs_quantity = '';
                 $this->kg_quantity = '';
-                $this->total_amount = '';
+                $this->total_amount = 0;
             }
         } else {
             $this->sp_number = '';
             $this->tbs_quantity = '';
             $this->kg_quantity = '';
-            $this->total_amount = '';
+            $this->total_amount = 0;
+        }
+        $this->calculateTax();
+    }
+
+    public function updatedIsTaxable()
+    {
+        $this->calculateTax();
+    }
+
+    public function updatedTaxPercentage()
+    {
+        $this->calculateTax();
+    }
+
+    public function updatedTotalAmount()
+    {
+        $this->calculateTax();
+    }
+
+    public function calculateTotal()
+    {
+        if ($this->kg_quantity && $this->price_per_kg) {
+            $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+        } else {
+            $this->total_amount = 0;
+        }
+    }
+
+    public function calculateTax()
+    {
+        if ($this->is_taxable && $this->total_amount > 0 && $this->tax_percentage > 0) {
+            $this->tax_amount = ($this->total_amount * $this->tax_percentage) / 100;
+        } else {
+            $this->tax_amount = 0;
         }
     }
 
@@ -174,6 +213,9 @@ class Sales extends Component
             'sale_date' => $this->sale_date,
             'customer_name' => $this->customer_name,
             'customer_address' => $this->customer_address,
+            'is_taxable' => $this->is_taxable,
+            'tax_percentage' => $this->is_taxable ? $this->tax_percentage : null,
+            'tax_amount' => $this->tax_amount,
         ]);
 
         // Reset form
@@ -189,11 +231,14 @@ class Sales extends Component
         $this->tbs_quantity = '';
         $this->kg_quantity = '';
         $this->price_per_kg = '';
-        $this->total_amount = '';
+        $this->total_amount = 0;
         $this->sales_proof = null;
         $this->sale_date = '';
         $this->customer_name = '';
         $this->customer_address = '';
+        $this->is_taxable = false;
+        $this->tax_percentage = 11.00;
+        $this->tax_amount = 0;
     }
 
     public function filterSales()
@@ -314,6 +359,9 @@ class Sales extends Component
             $this->sale_date = $sale->sale_date->format('Y-m-d');
             $this->customer_name = $sale->customer_name;
             $this->customer_address = $sale->customer_address;
+            $this->is_taxable = $sale->is_taxable ?? false;
+            $this->tax_percentage = $sale->tax_percentage ?? 11.00;
+            $this->tax_amount = $sale->tax_amount ?? 0;
             $this->sales_proof = null; // We don't load the file, just the path
             $this->isEditing = true;
             $this->showModal = true;
@@ -394,6 +442,9 @@ class Sales extends Component
                 'customer_name' => $this->customer_name,
                 'customer_address' => $this->customer_address,
                 'sales_proof_path' => $proofPath,
+                'is_taxable' => $this->is_taxable,
+                'tax_percentage' => $this->is_taxable ? $this->tax_percentage : null,
+                'tax_amount' => $this->tax_amount,
             ]);
 
             $this->setPersistentMessage('Sales record updated successfully.', 'success');
@@ -415,5 +466,12 @@ class Sales extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+
+    public function exportSales()
+    {
+        $filename = 'sales_data_' . date('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download(new SalesExport($this->exportFilter), $filename);
     }
 }

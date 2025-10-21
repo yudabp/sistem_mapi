@@ -190,7 +190,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $sp_number ? 'bg-gray-100 dark:bg-gray-600' : '' }}" 
                         type="number" 
                         step="0.01"
-                        wire:model="kg_quantity"
+                        wire:model.live="kg_quantity"
                         placeholder="Enter KG quantity"
                         {{ $sp_number ? 'readonly' : '' }}
                     />
@@ -282,6 +282,76 @@
                     @enderror
                 </div>
 
+                <!-- Tax Fields -->
+                <div class="md:col-span-2">
+                    <label class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            wire:model.live="is_taxable"
+                            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 focus:ring-opacity-50"
+                        />
+                        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Kena Pajak</span>
+                    </label>
+                </div>
+
+                <!-- Tax fields that show/hide based on checkbox -->
+                @if($is_taxable)
+                <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Tax Percentage -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_percentage">
+                                Total Pajak (%)
+                            </label>
+                            <input 
+                                id="tax_percentage"
+                                type="number" 
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model.live="tax_percentage"
+                                placeholder="11.00"
+                            />
+                            @error('tax_percentage') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Tax Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_amount">
+                                Total Nominal Pajak
+                            </label>
+                            <input 
+                                id="tax_amount"
+                                type="number" 
+                                step="0.01"
+                                min="0"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600" 
+                                wire:model="tax_amount"
+                                placeholder="0"
+                                readonly
+                            />
+                            <small class="text-gray-500">Terhitung otomatis: Rp {{ number_format($tax_amount, 2, ',', '.') }}</small>
+                            @error('tax_amount') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <!-- Tax Summary -->
+                    <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div class="text-sm text-blue-800 dark:text-blue-200">
+                            <strong>Ringkasan Pajak:</strong><br>
+                            Total Penjualan: Rp {{ number_format($total_amount, 2, ',', '.') }}<br>
+                            Pajak ({{ $tax_percentage }}%): Rp {{ number_format($tax_amount, 2, ',', '.') }}<br>
+                            <strong>Total + Pajak: Rp {{ number_format($total_amount + $tax_amount, 2, ',', '.') }}</strong>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Sales Proof -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
@@ -366,12 +436,31 @@
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Sales Data Input</h2>
-                <button 
-                    wire:click="openCreateModal"
-                    class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                >
-                    Add Sales Record
-                </button>
+                <div class="flex space-x-3">
+                    <!-- Export Section -->
+                    <div class="flex items-center space-x-2">
+                        <select 
+                            wire:model="exportFilter"
+                            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 text-sm"
+                        >
+                            <option value="all">Semua Data</option>
+                            <option value="taxable">Kena Pajak</option>
+                            <option value="non_taxable">Tidak Kena Pajak</option>
+                        </select>
+                        <a 
+                            href="{{ route('sales.export', ['filter' => $exportFilter]) }}"
+                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm"
+                        >
+                            Export Excel
+                        </a>
+                    </div>
+                    <button 
+                        wire:click="openCreateModal"
+                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                    >
+                        Add Sales Record
+                    </button>
+                </div>
             </div>
         </header>
     </div>
@@ -412,6 +501,8 @@
                             <th class="p-2 whitespace-nowrap">KG</th>
                             <th class="p-2 whitespace-nowrap">Price/KG</th>
                             <th class="p-2 whitespace-nowrap">Total Amount</th>
+                            <th class="p-2 whitespace-nowrap">Pajak</th>
+                            <th class="p-2 whitespace-nowrap">Total + Pajak</th>
                             <th class="p-2 whitespace-nowrap">Customer</th>
                             <th class="p-2 whitespace-nowrap">Sales Proof</th>
                             <th class="p-2 whitespace-nowrap">Actions</th>
@@ -434,6 +525,23 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">Rp {{ number_format($sale->total_amount, 2, ',', '.') }}</div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left">
+                                        @if($sale->is_taxable)
+                                            <span class="text-green-600 dark:text-green-400">
+                                                {{ $sale->tax_percentage }}%<br>
+                                                <small>Rp {{ number_format($sale->tax_amount, 2, ',', '.') }}</small>
+                                            </span>
+                                        @else
+                                            <span class="text-gray-500 dark:text-gray-400">Tidak</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left font-medium">
+                                        Rp {{ number_format($sale->total_amount + ($sale->tax_amount ?? 0), 2, ',', '.') }}
+                                    </div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">

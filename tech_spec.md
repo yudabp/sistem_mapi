@@ -64,6 +64,9 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
     * `tanggal_jual` (date)
     * `harga_jual_per_kg` (decimal)
     * `total_penjualan` (decimal, **dihitung otomatis**)
+    * `is_taxable` (boolean, default: false)
+    * `tax_percentage` (decimal, nullable, default: 11)
+    * `tax_amount` (decimal, nullable)
     * `created_by_user_id` (FK ke `users.id`)
     * `created_at`, `updated_at`
 
