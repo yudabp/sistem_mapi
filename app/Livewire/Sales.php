@@ -7,9 +7,13 @@ use App\Models\Sale as SaleModel;
 use App\Models\Production as ProductionModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
-use App\Exports\SalesExport;
+use App\Imports\SalesImport;
+use App\Exports\SalesExportWithHeaders;
+use App\Exports\SalesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Support\Facades\View;
 
 class Sales extends Component
 {
@@ -65,12 +69,17 @@ class Sales extends Component
 
     protected $queryString = ['search', 'dateFilter', 'metricFilter'];
 
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+
     protected $rules = [
         'sp_number' => 'required|string|max:255',
         'production_id' => 'nullable|exists:production,id',
         'kg_quantity' => 'required|numeric',
         'price_per_kg' => 'required|numeric',
-        'sale_date' => 'required|date',
+        'sale_date' => 'required|date_format:d-m-Y',
         'customer_name' => 'required',
         'customer_address' => 'required',
         'sales_proof' => 'nullable|image|max:10240', // Max 10MB
@@ -94,6 +103,13 @@ class Sales extends Component
 
     public function mount()
     {
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
     }
 
     public function render()
@@ -230,6 +246,9 @@ class Sales extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->sale_date)->format('Y-m-d');
+        
         // Handle file upload
         $proofPath = null;
         if ($this->sales_proof) {
@@ -244,7 +263,7 @@ class Sales extends Component
             'price_per_kg' => $this->price_per_kg,
             'total_amount' => $this->total_amount,
             'sales_proof_path' => $proofPath,
-            'sale_date' => $this->sale_date,
+            'sale_date' => $dateForDb,
             'customer_name' => $this->customer_name,
             'customer_address' => $this->customer_address,
             'is_taxable' => $this->is_taxable,
@@ -396,7 +415,7 @@ class Sales extends Component
             $this->kg_quantity = $sale->kg_quantity;
             $this->price_per_kg = $sale->price_per_kg;
             $this->total_amount = $sale->total_amount;
-            $this->sale_date = $sale->sale_date->format('Y-m-d');
+            $this->sale_date = $sale->sale_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->customer_name = $sale->customer_name;
             $this->customer_address = $sale->customer_address;
             $this->is_taxable = $sale->is_taxable ?? false;
@@ -466,6 +485,9 @@ class Sales extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->sale_date)->format('Y-m-d');
+        
         $sale = SaleModel::find($this->editingId);
         if ($sale) {
             // Handle file upload
@@ -484,7 +506,7 @@ class Sales extends Component
                 'kg_quantity' => $this->kg_quantity,
                 'price_per_kg' => $this->price_per_kg,
                 'total_amount' => $this->total_amount,
-                'sale_date' => $this->sale_date,
+                'sale_date' => $dateForDb,
                 'customer_name' => $this->customer_name,
                 'customer_address' => $this->customer_address,
                 'sales_proof_path' => $proofPath,
@@ -513,11 +535,69 @@ class Sales extends Component
     {
         $this->persistentMessage = '';
     }
-
-    public function exportSales()
+    
+    // Import methods
+    public function openImportModal()
     {
-        $filename = 'sales_data_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importSales()
+    {
+        $this->validate();
         
-        return Excel::download(new SalesExport($this->exportFilter), $filename);
+        try {
+            Excel::import(new SalesImport, $this->importFile);
+            $this->setPersistentMessage('Sales data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+        }
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new SalesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $exporter = new SalesPdfExporter($this->exportStartDate, $this->exportEndDate);
+        
+        $html = $exporter->generate();
+        
+        // Ensure proper UTF-8 encoding with fallback
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        } else {
+            $html = utf8_encode($html);
+        }
+        
+        $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        // Create DomPDF instance
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

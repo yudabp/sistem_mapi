@@ -6,6 +6,12 @@ use Livewire\Component;
 use App\Models\FinancialTransaction as FinancialTransactionModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Imports\CashBookImport;
+use App\Exports\CashBookExportWithHeaders;
+use App\Exports\CashBookPdfExporter;
+use Maatwebsite\Excel\Facades\Excel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class CashBook extends Component
 {
@@ -49,14 +55,30 @@ class CashBook extends Component
     protected $queryString = ['search', 'dateFilter', 'typeFilter', 'metricFilter'];
 
     protected $rules = [
-        'transaction_date' => 'required|date',
+        'transaction_date' => 'required|date_format:d-m-Y',
         'transaction_type' => 'required|in:income,expense',
         'amount' => 'required|numeric',
         'purpose' => 'required',
+        'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
     {
+        // Set default filter dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->startDate) {
+            $this->startDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->endDate) {
+            $this->endDate = now()->format('d-m-Y');
+        }
+        
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
     }
 
     public function render()
@@ -75,6 +97,9 @@ class CashBook extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d');
+        
         // Handle file upload
         $proofPath = null;
         if ($this->proof_document) {
@@ -82,7 +107,7 @@ class CashBook extends Component
         }
 
         FinancialTransactionModel::create([
-            'transaction_date' => $this->transaction_date,
+            'transaction_date' => $dateForDb,
             'transaction_number' => 'CB' . date('Ymd') . rand(1000, 9999), // Generate transaction number for cash book
             'transaction_type' => $this->transaction_type,
             'amount' => $this->amount,
@@ -100,7 +125,7 @@ class CashBook extends Component
 
     public function resetForm()
     {
-        $this->transaction_date = date('Y-m-d');
+        $this->transaction_date = date('d-m-Y'); // Format for DD-MM-YYYY display
         $this->transaction_type = 'income';
         $this->amount = '';
         $this->purpose = '';
@@ -174,7 +199,9 @@ class CashBook extends Component
                 break;
             case 'custom':
                 if ($this->startDate && $this->endDate) {
-                    $query->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
+                    $startDate = \DateTime::createFromFormat('d-m-Y', $this->startDate)->format('Y-m-d');
+                    $endDate = \DateTime::createFromFormat('d-m-Y', $this->endDate)->format('Y-m-d');
+                    $query->whereBetween('transaction_date', [$startDate, $endDate]);
                 }
                 break;
             case 'all':
@@ -230,7 +257,7 @@ class CashBook extends Component
         $transaction = FinancialTransactionModel::find($id);
         if ($transaction) {
             $this->editingId = $transaction->id;
-            $this->transaction_date = $transaction->transaction_date->format('Y-m-d');
+            $this->transaction_date = $transaction->transaction_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->transaction_type = $transaction->transaction_type;
             $this->amount = $transaction->amount;
             $this->purpose = $transaction->source_destination;
@@ -293,6 +320,9 @@ class CashBook extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d');
+        
         $transaction = FinancialTransactionModel::find($this->editingId);
         if ($transaction) {
             // Handle file upload
@@ -306,7 +336,7 @@ class CashBook extends Component
             }
 
             $transaction->update([
-                'transaction_date' => $this->transaction_date,
+                'transaction_date' => $dateForDb,
                 'transaction_type' => $this->transaction_type,
                 'amount' => $this->amount,
                 'source_destination' => $this->purpose,
@@ -339,5 +369,77 @@ class CashBook extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+    
+    // Import methods
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+    
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importTransaction()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+        
+        try {
+            Excel::import(new CashBookImport, $this->importFile);
+            $this->setPersistentMessage('Cash book data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+        }
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new CashBookExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'cash_book_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $exporter = new CashBookPdfExporter($this->exportStartDate, $this->exportEndDate);
+        
+        $html = $exporter->generate();
+        
+        // Ensure proper UTF-8 encoding with fallback
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        } else {
+            $html = utf8_encode($html);
+        }
+        
+        $filename = 'cash_book_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        // Create DomPDF instance
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }
