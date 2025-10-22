@@ -170,7 +170,7 @@
                             <ul class="mt-3">
                                 <!-- Profile -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0">
-                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition hover:text-gray-900 dark:hover:text-white" href="{{ route('profile') }}">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition hover:text-gray-900 dark:hover:text-white" href="{{ route('profile.show') }}">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center">
                                                 <svg class="shrink-0 fill-current text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">

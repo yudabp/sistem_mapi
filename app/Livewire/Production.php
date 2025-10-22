@@ -9,13 +9,20 @@ use App\Models\Division;
 use App\Models\Pks as PksModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Imports\ProductionImport;
+use App\Exports\ProductionExportWithHeaders;
+use App\Exports\ProductionPdfExporter;
+use Maatwebsite\Excel\Facades\Excel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class Production extends Component
 {
     use WithFileUploads;
 
     public $transaction_number;
-    public $date;
+    public $date; // This will hold the DD-MM-YYYY format from the view
+    public $dateFormatted; // This will hold the YYYY-MM-DD format for processing
     public $sp_number;
     public $vehicle_number;
     public $tbs_quantity;
@@ -54,12 +61,18 @@ class Production extends Component
     // Persistent message
     public $persistentMessage = '';
     public $messageType = 'success'; // success, error, warning, info
+    
+    // Import/Export properties
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
 
     protected $queryString = ['search', 'dateFilter', 'divisionFilter', 'metricFilter'];
 
     protected $rules = [
         'transaction_number' => 'required|unique:production,transaction_number',
-        'date' => 'required|date',
+        'date' => 'required|date_format:d-m-Y',
         'sp_number' => 'required',
         'vehicle_number' => 'required',
         'tbs_quantity' => 'required|numeric',
@@ -67,11 +80,26 @@ class Production extends Component
         'division' => 'required',
         'pks' => 'required',
         'sp_photo' => 'nullable|image|max:10240', // Max 10MB
+        'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
     {
         $this->loadOptions();
+        // Set default export dates: start date 1 month ago, end date today
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('Y-m-d');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('Y-m-d');
+        }
+    }
+    
+    public function loadOptions()
+    {
+        $this->vehicle_numbers = VehicleNumber::where('is_active', true)->orderBy('number')->get();
+        $this->divisions = Division::where('is_active', true)->orderBy('name')->get();
+        $this->pks_list = PksModel::where('is_active', true)->orderBy('name')->get();
     }
 
     public function render()
@@ -84,17 +112,13 @@ class Production extends Component
             'total_kg' => $this->getTotalKg(),
         ]);
     }
-    
-    public function loadOptions()
-    {
-        $this->vehicle_numbers = VehicleNumber::where('is_active', true)->orderBy('number')->get();
-        $this->divisions = Division::where('is_active', true)->orderBy('name')->get();
-        $this->pks_list = PksModel::where('is_active', true)->orderBy('name')->get();
-    }
 
     public function saveProduction()
     {
         $validated = $this->validate();
+        
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->date)->format('Y-m-d');
         
         // Handle file upload
         $photoPath = null;
@@ -104,7 +128,7 @@ class Production extends Component
 
         ProductionModel::create([
             'transaction_number' => $this->transaction_number,
-            'date' => $this->date,
+            'date' => $dateForDb,
             'sp_number' => $this->sp_number,
             'vehicle_number' => $this->vehicle_number,
             'tbs_quantity' => $this->tbs_quantity,
@@ -250,7 +274,7 @@ class Production extends Component
         if ($production) {
             $this->editingId = $production->id;
             $this->transaction_number = $production->transaction_number;
-            $this->date = $production->date->format('Y-m-d');
+            $this->date = $production->date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->sp_number = $production->sp_number;
             $this->vehicle_number = $production->vehicle_number;
             $this->tbs_quantity = $production->tbs_quantity;
@@ -317,6 +341,9 @@ class Production extends Component
         
         $production = ProductionModel::find($this->editingId);
         if ($production) {
+            // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+            $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->date)->format('Y-m-d');
+            
             // Handle file upload
             $photoPath = $production->sp_photo_path; // Keep existing path if no new file
             if ($this->sp_photo) {
@@ -329,7 +356,7 @@ class Production extends Component
 
             $production->update([
                 'transaction_number' => $this->transaction_number,
-                'date' => $this->date,
+                'date' => $dateForDb,
                 'sp_number' => $this->sp_number,
                 'vehicle_number' => $this->vehicle_number,
                 'tbs_quantity' => $this->tbs_quantity,
@@ -358,5 +385,99 @@ class Production extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+    
+    // Import methods
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importProduction()
+    {
+        $this->validate();
+        
+        try {
+            Excel::import(new ProductionImport, $this->importFile);
+            $this->setPersistentMessage('Production data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+        }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        $sampleData = [
+            ['transaction_number', 'date', 'sp_number', 'vehicle_number', 'tbs_quantity', 'kg_quantity', 'division', 'pks'],
+            ['TRX001', now()->format('Y-m-d'), 'SP001', 'B1234XYZ', '1000.50', '950.20', 'Afdeling A', 'PKS 1'],
+            ['TRX002', now()->format('Y-m-d'), 'SP002', 'B5678XYZ', '1200.75', '1140.80', 'Afdeling B', 'PKS 2'],
+            ['TRX003', now()->format('Y-m-d'), 'SP003', 'B9012XYZ', '950.25', '902.75', 'Afdeling C', 'PKS 3'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_production_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new ProductionExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'production_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $exporter = new ProductionPdfExporter($this->exportStartDate, $this->exportEndDate);
+        
+        $html = $exporter->generate();
+        
+        // Ensure proper UTF-8 encoding with fallback
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        } else {
+            $html = utf8_encode($html);
+        }
+        
+        $filename = 'production_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        // Create DomPDF instance
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

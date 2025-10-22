@@ -195,7 +195,7 @@
                                 
                                 <!-- Profile -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('profile') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
-                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('profile') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('profile') }}">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('profile') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('profile.show') }}">
                                         <div class="flex items-center">
                                             <svg class="shrink-0 fill-current {{ Request::is('profile') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
