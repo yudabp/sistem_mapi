@@ -69,9 +69,22 @@ class Sales extends Component
         'customer_address' => 'required',
         'sales_proof' => 'nullable|image|max:10240', // Max 10MB
         'is_taxable' => 'boolean',
-        'tax_percentage' => 'nullable|numeric|min:0|max:100',
-        'tax_amount' => 'nullable|numeric|min:0',
+        'tax_percentage' => 'required|numeric|min:0|max:100',
+        'tax_amount' => 'required|numeric|min:0',
     ];
+
+    protected function rules()
+    {
+        $rules = $this->rules;
+        
+        // If not taxable, make tax fields optional
+        if (!$this->is_taxable) {
+            $rules['tax_percentage'] = 'nullable|numeric|min:0|max:100';
+            $rules['tax_amount'] = 'nullable|numeric|min:0';
+        }
+        
+        return $rules;
+    }
 
     public function mount()
     {
@@ -214,7 +227,7 @@ class Sales extends Component
             'customer_name' => $this->customer_name,
             'customer_address' => $this->customer_address,
             'is_taxable' => $this->is_taxable,
-            'tax_percentage' => $this->is_taxable ? $this->tax_percentage : null,
+            'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
             'tax_amount' => $this->tax_amount,
         ]);
 
@@ -443,7 +456,7 @@ class Sales extends Component
                 'customer_address' => $this->customer_address,
                 'sales_proof_path' => $proofPath,
                 'is_taxable' => $this->is_taxable,
-                'tax_percentage' => $this->is_taxable ? $this->tax_percentage : null,
+                'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
                 'tax_amount' => $this->tax_amount,
             ]);
 
