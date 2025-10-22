@@ -46,7 +46,8 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/data-penjualan', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('data-penjualan');
     Route::get('/data-penjualan/export', [App\Http\Controllers\SalesController::class, 'export'])->name('sales.export');
     Route::get('/data-karyawan', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('data-karyawan');
-    Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'financial'])->name('keuangan-perusahaan');
+    Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'keuanganPerusahaan'])->name('keuangan-perusahaan');
+    Route::get('/buku-kas-kebun', [App\Http\Controllers\PalmOilController::class, 'bukuKasKebun'])->name('buku-kas-kebun');
     Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
     Route::get('/keuangan-perusahaan/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
     Route::get('/akses-user', [App\Http\Controllers\PalmOilController::class, 'userAccess'])->name('akses-user');
