@@ -60,10 +60,19 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 
 3.  **`data_penjualan` (Diperbarui)**
     * `id` (PK)
-    * `produksi_id` (FK ke `data_produksi.id`, **relasi kunci via No. SP**)
-    * `tanggal_jual` (date)
-    * `harga_jual_per_kg` (decimal)
-    * `total_penjualan` (decimal, **dihitung otomatis**)
+    * `sp_number` (string, **bisa manual atau dari produksi**)
+    * `produksi_id` (FK ke `data_produksi.id`, **nullable untuk support input manual**)
+    * `tbs_quantity` (decimal, **bisa manual atau dari produksi**)
+    * `kg_quantity` (decimal, **bisa manual atau dari produksi**)
+    * `price_per_kg` (decimal)
+    * `total_amount` (decimal, **dihitung otomatis: kg_quantity × price_per_kg**)
+    * `is_taxable` (boolean, default: false)
+    * `tax_percentage` (decimal, default: 11.00, **0 jika tidak taxable**)
+    * `tax_amount` (decimal, **dihitung otomatis: total_amount × tax_percentage / 100**)
+    * `sale_date` (date)
+    * `customer_name` (string)
+    * `customer_address` (text)
+    * `sales_proof_path` (string, nullable, path ke file bukti penjualan)
     * `created_by_user_id` (FK ke `users.id`)
     * `created_at`, `updated_at`
 
@@ -127,15 +136,21 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 
 ## 3. Logika Bisnis Kunci (Wajib Diimplementasikan) - Diperbarui
 
-1.  **Alur Pembuatan Data Penjualan (BARU):**
+1.  **Alur Pembuatan Data Penjualan (Diperbarui dengan Pajak & Autocomplete):**
     * **Trigger:** User memulai input data penjualan.
     * **Aksi:**
-        1.  UI menyediakan input untuk `No. SP`.
-        2.  Setelah `No. SP` dimasukkan, sistem melakukan *lookup* ke tabel `data_produksi`.
-        3.  Jika ditemukan, data terkait (seperti `Jumlah KG`, `Tanggal Produksi`, dll.) ditampilkan di form dan bersifat *read-only*.
-        4.  User menginput `Harga Jual / kg`.
-        5.  `Total Penjualan` dihitung secara otomatis (`Harga Jual / kg` * `jumlah_kg` dari data produksi) dan ditampilkan.
-        6.  Saat disimpan, `produksi_id` dan data lainnya disimpan ke tabel `data_penjualan`.
+        1.  UI menyediakan **search autocomplete** untuk `SP Number` (minimal 2 karakter).
+        2.  Sistem menampilkan suggestions dari tabel `data_produksi` dengan info TBS & KG quantity.
+        3.  **Jika user pilih suggestion:** Data TBS & KG quantity terisi otomatis (bisa diedit).
+        4.  **Jika user input manual SP Number:** User bisa input semua data secara manual.
+        5.  User menginput `Price per KG` dan `Customer Information`.
+        6.  `Total Amount` dihitung otomatis (`KG Quantity` × `Price per KG`).
+        7.  **Fitur Pajak:** User bisa centang "Kena Pajak" untuk mengaktifkan kalkulasi pajak:
+            - Default tax percentage: 11%
+            - Tax amount dihitung otomatis: `Total Amount × Tax Percentage / 100`
+            - Total dengan pajak: `Total Amount + Tax Amount`
+        8.  User bisa upload `Sales Proof` (file gambar).
+        9.  Saat disimpan, semua data disimpan ke tabel `data_penjualan` dengan proper validation.
 
 2.  **Alur Keterkaitan KP ke BKK (Tetap):**
     * Saat Superadmin membuat entri `Pengeluaran` di KP, sistem secara otomatis membuat entri `Pemasukan` di BKK.
@@ -166,6 +181,23 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 
 #### Endpoints Transaksional
 * `POST /penjualan`: Body request kini cukup berisi `{ "no_sp": "...", "harga_jual_per_kg": ... }`. Backend akan menangani sisanya.
+* `POST /penjualan`: Body request menyertakan data lengkap penjualan dengan fitur pajak:
+  ```json
+  {
+    "sp_number": "SP-2025-001",
+    "production_id": 123, // nullable untuk input manual
+    "tbs_quantity": 1500.50,
+    "kg_quantity": 1200.75,
+    "price_per_kg": 1500,
+    "customer_name": "Customer Name",
+    "customer_address": "Customer Address",
+    "is_taxable": true,
+    "tax_percentage": 11.00,
+    "sales_proof": "file" // optional
+  }
+  ```
+* `GET /penjualan/search?q={query}`: Search autocomplete untuk SP number
+* `GET /penjualan/export?filter={all|taxable|non_taxable}`: Export data penjualan dengan filter pajak
 * `POST /produksi`, `POST /keuangan/kp`, `POST /keuangan/bkk`: Endpoint ini harus mendukung `multipart/form-data` untuk menangani unggahan file.
 * `GET /dashboard/insights`: Endpoint ini harus diperbarui untuk memberikan data agregat seperti yang digambarkan di "Sistem Digital Map":
     * `total_produksi_kg`

@@ -18,6 +18,9 @@ class Sale extends Model
         'sale_date',
         'customer_name',
         'customer_address',
+        'is_taxable',
+        'tax_percentage',
+        'tax_amount',
     ];
 
     protected $casts = [
@@ -25,6 +28,9 @@ class Sale extends Model
         'kg_quantity' => 'decimal:2',
         'price_per_kg' => 'decimal:2',
         'total_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'tax_percentage' => 'decimal:2',
+        'is_taxable' => 'boolean',
         'sale_date' => 'date',
     ];
 
@@ -67,11 +73,27 @@ class Sale extends Model
     {
         parent::boot();
 
-        // Auto-calculate total amount when price per kg or kg quantity changes
+        // Auto-calculate total amount and tax when relevant fields change
         static::saving(function ($sale) {
+            // Calculate total amount
             if ($sale->kg_quantity && $sale->price_per_kg) {
                 $sale->total_amount = $sale->kg_quantity * $sale->price_per_kg;
             }
+
+            // Calculate tax amount if taxable
+            if ($sale->is_taxable && $sale->total_amount && $sale->tax_percentage) {
+                $sale->tax_amount = ($sale->total_amount * $sale->tax_percentage) / 100;
+            } else {
+                $sale->tax_amount = 0;
+            }
         });
+    }
+
+    /**
+     * Get the total amount including tax.
+     */
+    public function getTotalWithTaxAttribute(): float
+    {
+        return $this->total_amount + $this->tax_amount;
     }
 }

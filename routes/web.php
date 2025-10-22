@@ -44,6 +44,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     // Palm Oil Management System routes - Indonesian versions (matching sidebar menu)
     Route::get('/data-produksi', [App\Http\Controllers\PalmOilController::class, 'production'])->name('data-produksi');
     Route::get('/data-penjualan', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('data-penjualan');
+    Route::get('/data-penjualan/export', [App\Http\Controllers\SalesController::class, 'export'])->name('sales.export');
     Route::get('/data-karyawan', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('data-karyawan');
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'financial'])->name('keuangan-perusahaan');
     Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
