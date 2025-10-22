@@ -231,20 +231,20 @@
 
                 <!-- Vehicle Number -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_number">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_id">
                         Vehicle Number (No Polisi)
                     </label>
                     <select 
-                        id="vehicle_number"
+                        id="vehicle_id"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="vehicle_number"
+                        wire:model="vehicle_id"
                     >
                         <option value="">Pilih No Polisi</option>
                         @foreach($vehicle_numbers as $vehicle_number_option)
-                            <option value="{{ $vehicle_number_option->number }}">{{ $vehicle_number_option->number }}</option>
+                            <option value="{{ $vehicle_number_option->id }}">{{ $vehicle_number_option->number }}</option>
                         @endforeach
                     </select>
-                    @error('vehicle_number') 
+                    @error('vehicle_id') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
@@ -287,40 +287,40 @@
 
                 <!-- Division -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="division">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="division_id">
                         Division (Afdeling)
                     </label>
                     <select 
-                        id="division"
+                        id="division_id"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="division"
+                        wire:model="division_id"
                     >
                         <option value="">Pilih Afdeling</option>
                         @foreach($divisions as $division_option)
-                            <option value="{{ $division_option->name }}">{{ $division_option->name }}</option>
+                            <option value="{{ $division_option->id }}">{{ $division_option->name }}</option>
                         @endforeach
                     </select>
-                    @error('division') 
+                    @error('division_id') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
 
                 <!-- PKS -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="pks">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="pks_id">
                         Processing Station (PKS)
                     </label>
                     <select 
-                        id="pks"
+                        id="pks_id"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="pks"
+                        wire:model="pks_id"
                     >
                         <option value="">Pilih PKS</option>
                         @foreach($pks_list as $pks_option)
-                            <option value="{{ $pks_option->name }}">{{ $pks_option->name }}</option>
+                            <option value="{{ $pks_option->id }}">{{ $pks_option->name }}</option>
                         @endforeach
                     </select>
-                    @error('pks') 
+                    @error('pks_id') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
@@ -390,7 +390,7 @@
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ Storage::url($photoToView) }}" alt="SP Photo" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="SP Photo" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif>
         </x-slot>
@@ -725,7 +725,7 @@
                                         <div class="text-left">{{ $production->sp_number }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="text-left">{{ $production->vehicle_number }}</div>
+                                        <div class="text-left">{{ $production->vehicle ? $production->vehicle->number : $production->vehicle_number }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
                                         <div class="text-left">{{ number_format($production->tbs_quantity, 2) }}</div>
@@ -734,10 +734,10 @@
                                         <div class="text-left">{{ number_format($production->kg_quantity, 2) }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="text-left">{{ $production->division }}</div>
+                                        <div class="text-left">{{ $production->divisionRel ? $production->divisionRel->name : $production->division }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="text-left">{{ $production->pks }}</div>
+                                        <div class="text-left">{{ $production->pksRel ? $production->pksRel->name : $production->pks }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
                                         @if($production->sp_photo_path)

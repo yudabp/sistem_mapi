@@ -555,7 +555,7 @@
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ Storage::url($photoToView) }}" alt="Debt Document" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Debt Document" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>

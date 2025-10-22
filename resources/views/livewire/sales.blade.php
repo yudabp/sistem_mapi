@@ -140,27 +140,74 @@
 
 
             <form wire:submit.prevent="saveSalesModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- SP Number -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
+                <!-- SP Number with Autocomplete -->
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_search">
                         SP Number
                     </label>
-                    <input 
-                        id="sp_number"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="sp_number"
-                        placeholder="Enter SP number"
-                    />
+                    <div class="relative">
+                        <input 
+                            id="sp_search"
+                            type="text" 
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                            wire:model.live="sp_search"
+                            placeholder="Ketik SP Number..."
+                            autocomplete="off"
+                        />
+                        @if($sp_search)
+                            <button 
+                                type="button"
+                                wire:click="clearSpSelection"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                    
+                    <!-- Autocomplete Suggestions -->
+                    @if($showSpSuggestions && count($spSuggestions) > 0)
+                        <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            @foreach($spSuggestions as $suggestion)
+                                <button 
+                                    type="button"
+                                    wire:click="selectSpSuggestion({{ json_encode($suggestion) }})"
+                                    class="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 transition-colors duration-150"
+                                >
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $suggestion['sp_number'] }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        TBS: {{ number_format($suggestion['tbs_quantity'], 2) }} KG | 
+                                        KG: {{ number_format($suggestion['kg_quantity'], 2) }}
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                    
                     @error('sp_number') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
 
+                <!-- Script for autocomplete -->
+                <script>
+                    document.addEventListener('click', function(event) {
+                        const spContainer = event.target.closest('.relative');
+                        if (!spContainer || !spContainer.querySelector('[wire\\:model\\.live="sp_search"]')) {
+                            @this.set('showSpSuggestions', false);
+                        }
+                    });
+                </script>
+
                 <!-- TBS Quantity -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
                         TBS Quantity (KG)
+                        @if($production_id)
+                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                        @endif
                     </label>
                     <input 
                         id="tbs_quantity"
@@ -169,21 +216,26 @@
                         step="0.01"
                         wire:model="tbs_quantity"
                         placeholder="Enter TBS quantity"
-                        readonly
                     />
+                    @error('tbs_quantity') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
                 </div>
 
                 <!-- KG Quantity -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
                         KG Quantity
+                        @if($production_id)
+                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                        @endif
                     </label>
                     <input 
                         id="kg_quantity"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="number" 
                         step="0.01"
-                        wire:model="kg_quantity"
+                        wire:model.live="kg_quantity"
                         placeholder="Enter KG quantity"
                     />
                     @error('kg_quantity') 
@@ -201,7 +253,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="number" 
                         step="0.01"
-                        wire:model="price_per_kg"
+                        wire:model.live="price_per_kg"
                         placeholder="Enter price per KG"
                     />
                     @error('price_per_kg') 
@@ -216,7 +268,7 @@
                     </label>
                     <input 
                         id="total_amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600" 
                         type="number" 
                         step="0.01"
                         wire:model="total_amount"
@@ -312,6 +364,76 @@
                     @enderror
                 </div>
 
+                <!-- Tax Fields -->
+                <div class="md:col-span-2">
+                    <label class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            wire:model.live="is_taxable"
+                            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 focus:ring-opacity-50"
+                        />
+                        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Kena Pajak</span>
+                    </label>
+                </div>
+
+                <!-- Tax fields that show/hide based on checkbox -->
+                @if($is_taxable)
+                <div class="md:col-span-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Tax Percentage -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_percentage">
+                                Total Pajak (%)
+                            </label>
+                            <input 
+                                id="tax_percentage"
+                                type="number" 
+                                step="0.01"
+                                min="0"
+                                max="100"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model.live="tax_percentage"
+                                placeholder="11.00"
+                            />
+                            @error('tax_percentage') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Tax Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_amount">
+                                Total Nominal Pajak
+                            </label>
+                            <input 
+                                id="tax_amount"
+                                type="number" 
+                                step="0.01"
+                                min="0"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600" 
+                                wire:model="tax_amount"
+                                placeholder="0"
+                                readonly
+                            />
+                            <small class="text-gray-500">Terhitung otomatis: Rp {{ number_format($tax_amount, 2, ',', '.') }}</small>
+                            @error('tax_amount') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
+                    
+                    <!-- Tax Summary -->
+                    <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div class="text-sm text-blue-800 dark:text-blue-200">
+                            <strong>Ringkasan Pajak:</strong><br>
+                            Total Penjualan: Rp {{ number_format($total_amount, 2, ',', '.') }}<br>
+                            Pajak ({{ $tax_percentage }}%): Rp {{ number_format($tax_amount, 2, ',', '.') }}<br>
+                            <strong>Total + Pajak: Rp {{ number_format($total_amount + $tax_amount, 2, ',', '.') }}</strong>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Sales Proof -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
@@ -377,7 +499,7 @@
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ Storage::url($photoToView) }}" alt="Sales Proof" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Sales Proof" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>
@@ -607,6 +729,8 @@
                             <th class="p-2 whitespace-nowrap">KG</th>
                             <th class="p-2 whitespace-nowrap">Price/KG</th>
                             <th class="p-2 whitespace-nowrap">Total Amount</th>
+                            <th class="p-2 whitespace-nowrap">Pajak</th>
+                            <th class="p-2 whitespace-nowrap">Total + Pajak</th>
                             <th class="p-2 whitespace-nowrap">Customer</th>
                             <th class="p-2 whitespace-nowrap">Sales Proof</th>
                             <th class="p-2 whitespace-nowrap">Actions</th>
@@ -629,6 +753,23 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">Rp {{ number_format($sale->total_amount, 2, ',', '.') }}</div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left">
+                                        @if($sale->is_taxable)
+                                            <span class="text-green-600 dark:text-green-400">
+                                                {{ $sale->tax_percentage }}%<br>
+                                                <small>Rp {{ number_format($sale->tax_amount, 2, ',', '.') }}</small>
+                                            </span>
+                                        @else
+                                            <span class="text-gray-500 dark:text-gray-400">Tidak</span>
+                                        @endif
+                                    </div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left font-medium">
+                                        Rp {{ number_format($sale->total_amount + ($sale->tax_amount ?? 0), 2, ',', '.') }}
+                                    </div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">
@@ -737,14 +878,41 @@
 </div>
 
 <script>
-    // Auto-calculate total amount when kg quantity or price per kg changes
     document.addEventListener('livewire:init', () => {
+        // Debug SP Number changes
+        Livewire.on('updatedSpNumber', () => {
+            console.log('SP Number updated');
+        });
+        
         Livewire.on('updatedKgQuantity', () => {
-            // This will be handled by the backend
+            console.log('KG Quantity updated');
         });
         
         Livewire.on('updatedPricePerKg', () => {
-            // This will be handled by the backend
+            console.log('Price per KG updated');
         });
+        
+        // Additional real-time calculation for better UX
+        const pricePerKgInput = document.getElementById('price_per_kg');
+        const kgQuantityInput = document.getElementById('kg_quantity');
+        const totalAmountInput = document.getElementById('total_amount');
+        
+        if (pricePerKgInput && kgQuantityInput && totalAmountInput) {
+            const calculateTotal = () => {
+                const price = parseFloat(pricePerKgInput.value) || 0;
+                const kg = parseFloat(kgQuantityInput.value) || 0;
+                const total = price * kg;
+                
+                if (total > 0) {
+                    totalAmountInput.value = total.toFixed(2);
+                } else {
+                    totalAmountInput.value = '';
+                }
+            };
+            
+            // Add input event listeners for immediate feedback
+            pricePerKgInput.addEventListener('input', calculateTotal);
+            kgQuantityInput.addEventListener('input', calculateTotal);
+        }
     });
 </script>
