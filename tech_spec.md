@@ -238,12 +238,143 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 
 ---
 
-## 6. Kriteria Penerimaan Teknis (Ditambahkan)
+## 6. Implementasi KP → BKK Auto-create (Update Terbaru)
+
+### **Arsitektur Implementasi**
+
+#### **Backend Components**
+1. **KeuanganPerusahaanObserver** (`app/Observers/KeuanganPerusahaanObserver.php`)
+   - Mendengarkan event `created` pada model KeuanganPerusahaan
+   - Otomatis membuat BKK entry untuk KP expense transactions
+   - Menangani error scenarios dengan proper rollback
+   - Logging lengkap untuk audit trail
+
+2. **FinancialTransactionService** (`app/Services/FinancialTransactionService.php`)
+   - Service layer untuk semua logika transaksi keuangan
+   - Method `createKpWithAutoBkk()` untuk pembuatan transaksi terintegrasi
+   - Category mapping antara KP dan BKK
+   - Relationship management antara KP dan BKK
+
+3. **Model Relationships**
+   - `KeuanganPerusahaan` has many `BukuKasKebun`
+   - `BukuKasKebun` belongs to `KeuanganPerusahaan`
+   - Foreign key constraint dengan `ON DELETE SET NULL`
+
+#### **Frontend Components**
+1. **KeuanganPerusahaanComponent** (`app/Livewire/KeuanganPerusahaanComponent.php`)
+   - Menggunakan FinancialTransactionService untuk pembuatan transaksi
+   - Menampilkan related BKK transactions
+   - Visual indicators untuk auto-generated entries
+   - Modal untuk melihat detail hubungan KP → BKK
+
+2. **BukuKasKebunComponent** (`app/Livewire/BukuKasKebunComponent.php`)
+   - Menampilkan related KP transaction
+   - Method untuk mengecek auto-generated entries
+   - Integration dengan KP data untuk audit trail
+
+### **Flow Implementation**
+
+#### **Alur KP → BKK Auto-create**
+1. **Trigger**: User membuat KP expense transaction
+2. **Observer Activation**: `KeuanganPerusahaanObserver` menangkap event `created`
+3. **BKK Creation**: 
+   - Generate BKK transaction number dengan prefix "BKK-AUTO-"
+   - Set transaction type sebagai "income" (berlawanan dengan KP "expense")
+   - Copy amount, date, dan metadata dari KP
+   - Set `kp_id` foreign key untuk relasi
+   - Map category dari KP ke BKK
+4. **Error Handling**: Database transaction dengan rollback jika gagal
+5. **Logging**: Catat semua aktivitas untuk audit trail
+6. **UI Update**: Tampilkan notifikasi ke user tentang BKK auto-created
+
+#### **Category Mapping Logic**
+```php
+$mapping = [
+    'Personnel Cost' => 'Operational Cost',
+    'Administrative Cost' => 'Operational Cost', 
+    'Financial Cost' => 'Operational Cost',
+    'Investment' => 'Operational Cost',
+    'Other Expense' => 'Operational Cost',
+    'default' => 'Other Income'
+];
+```
+
+### **Database Schema Implementation**
+
+#### **Tabel keuangan_perusahaan**
+```sql
+CREATE TABLE keuangan_perusahaan (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    transaction_date DATE NOT NULL,
+    transaction_number VARCHAR(255) UNIQUE NOT NULL,
+    transaction_type ENUM('income', 'expense') NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    source_destination VARCHAR(255),
+    received_by VARCHAR(255),
+    proof_document_path VARCHAR(255),
+    notes TEXT,
+    category VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_transaction_date (transaction_date),
+    INDEX idx_transaction_type (transaction_type),
+    INDEX idx_category (category)
+);
+```
+
+#### **Tabel buku_kas_kebun**
+```sql
+CREATE TABLE buku_kas_kebun (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    transaction_date DATE NOT NULL,
+    transaction_number VARCHAR(255) UNIQUE NOT NULL,
+    transaction_type ENUM('income', 'expense') NOT NULL,
+    amount DECIMAL(15,2) NOT NULL,
+    source_destination VARCHAR(255),
+    received_by VARCHAR(255),
+    proof_document_path VARCHAR(255),
+    notes TEXT,
+    category VARCHAR(255),
+    kp_id BIGINT UNSIGNED NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    INDEX idx_transaction_date (transaction_date),
+    INDEX idx_transaction_type (transaction_type),
+    INDEX idx_category (category),
+    INDEX idx_kp_id (kp_id),
+    
+    FOREIGN KEY (kp_id) REFERENCES keuangan_perusahaan(id) ON DELETE SET NULL
+);
+```
+
+### **Testing & Validation**
+
+#### **Test Cases Covered**
+1. **KP Expense Creation**: Verify BKK income auto-created
+2. **KP Income Creation**: Verify no BKK auto-created
+3. **Error Handling**: Verify rollback on failure
+4. **Data Integrity**: Verify foreign key constraints
+5. **Category Mapping**: Verify proper category transformation
+6. **Audit Trail**: Verify logging functionality
+
+#### **Performance Considerations**
+- Database indexing untuk query optimization
+- Eager loading untuk relationships
+- Proper memory management untuk large datasets
+- Caching strategy untuk frequently accessed data
+
+---
+
+## 7. Kriteria Penerimaan Teknis (Ditambahkan)
 * **Alur Penjualan:** Membuat entri penjualan harus berhasil menarik data KG dari produksi dan menghitung total secara akurat.
-* **Alur Keuangan:** Transaksi pengeluaran dari KP harus secara otomatis tercermin sebagai pemasukan di BKK.
+* **Alur Keuangan:** ✅ **COMPLETED** - Transaksi pengeluaran dari KP harus secara otomatis tercermin sebagai pemasukan di BKK.
 * **Alur Hutang:** Pembayaran hutang melalui BKK harus mengurangi sisa hutang dan mencatat riwayat pembayaran.
 * **Unggah File:** Pengguna harus bisa mengunggah dan melihat kembali gambar bukti pada modul Produksi dan Keuangan.
 * **Data Master:** Superadmin harus bisa menambahkan opsi baru pada form (misal: No. Polisi baru) melalui antarmuka manajemen data master.
+* **KP → BKK Integration:** ✅ **COMPLETED** - Sistem harus otomatis membuat entri BKK saat ada pengeluaran KP dengan proper audit trail.
+* **Data Integrity:** ✅ **COMPLETED** - Semua relasi foreign key harus terjaga dengan proper constraints dan error handling.
 
 ---
 
@@ -308,10 +439,12 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 - **Current Implementation**: String lookup tanpa foreign key constraint
 
 #### **Financial Structure**
-- **Status**: ✅ Basic financial transactions work
-- **Issue**: ❌ Satu tabel `financial_transactions` instead of separate `keuangan_perusahaan (KP)` dan `buku_kas_kebun (BKK)`
-- **Spec Requirement**: Dua tabel terpisah dengan relasi KP → BKK
-- **Current Implementation**: Single table dengan category differentiation
+- **Status**: ✅ **COMPLETED** - KP & BKK tables separated with full integration
+- **Implementation**: ✅ Separate `keuangan_perusahaan` and `buku_kas_kebun` tables
+- **Relations**: ✅ Foreign key `kp_id` in BKK table linking to KP table
+- **Data Migration**: ✅ All existing financial_transactions data migrated to proper tables
+- **Components**: ✅ Separate Livewire components for KP and BKK management
+- **Auto-create Logic**: ✅ KP → BKK auto-create business logic implemented
 
 #### **Debt Management**
 - **Status**: ✅ Basic CRUD works
@@ -331,7 +464,11 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 ### ❌ **NOT DONE (Belum Ada Sama Sekali)**
 
 #### **Business Logic Implementation**
-- **KP → BKK Auto-create**: Saat membuat pengeluaran di KP, otomatis create pemasukan di BKK
+- **KP → BKK Auto-create**: ✅ **COMPLETED** - Saat membuat pengeluaran di KP, otomatis create pemasukan di BKK
+  - Observer pattern implemented for automatic BKK creation
+  - Service layer with comprehensive error handling and logging
+  - Category mapping between KP and BKK transactions
+  - Visual indicators in UI for auto-generated entries
 - **Debt Payment Cycle**: Pembayaran hutang melalui BKK dengan:
   - Dropdown pilih hutang yang belum lunas
   - Update otomatis `sisa_hutang`
@@ -342,6 +479,13 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 - `hutang_pembayaran`: Tracking pembayaran hutang
 - `master_debt_types`: Kategori hutang (Susu Tunggakan, Investor, etc)
 - `master_bkk_expense_categories`: Kategori pengeluaran BKK (Gaji, Hutang, Operasional)
+
+#### **Implemented Database Tables** ✅ **NEW**
+- `keuangan_perusahaan`: Company-level financial transactions (KP)
+- `buku_kas_kebun`: Garden-level financial transactions (BKK) with KP foreign key
+- **Migration Scripts**: Complete data migration from financial_transactions to separate tables
+- **Observer System**: KeuanganPerusahaanObserver for auto BKK creation
+- **Service Layer**: FinancialTransactionService for business logic management
 
 #### **Advanced Features**
 - **User Roles Management**: Direksi (read-only) vs Superadmin (full access)
@@ -359,22 +503,24 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 | **Production** | 100% ✅ | **FK relations implemented** |
 | **Sales** | 95% ✅ | **FK relations implemented** |
 | **Employees** | 100% ✅ | **FK relations implemented** |
-| **Financial** | 70% ⚠️ | Needs KP/BKK separation |
-| **Cash Book** | 80% ⚠️ | Works but needs business logic |
+| **Financial (KP)** | 100% ✅ | **Separate table with auto-create logic** |
+| **Cash Book (BKK)** | 100% ✅ | **Separate table with KP integration** |
+| **KP → BKK Logic** | 100% ✅ | **Auto-create business logic implemented** |
 | **Debts** | 60% ⚠️ | Missing payment cycle |
 | **Dashboard** | 70% ⚠️ | Basic metrics only |
 | **User Roles** | 0% ❌ | Not implemented |
 | **API** | 0% ❌ | Not implemented |
 
-**Overall Completion: ~80%** (+5% from FK implementation)
+**Overall Completion: ~85%** (+5% from KP/BKK implementation)
 
 ### 🎯 **Next Priority Tasks**
 
 1. **HIGH PRIORITY**
    - ~~Fix database schema dengan proper foreign keys~~ ✅ **COMPLETED**
-   - Implement KP → BKK auto-create business logic
+   - ~~Implement KP → BKK auto-create business logic~~ ✅ **COMPLETED**
+   - ~~Separate financial tables (KP & BKK)~~ ✅ **COMPLETED**
    - Add debt payment cycle dengan BKK integration
-   - Separate financial tables (KP & BKK)
+   - Implement missing tables (`hutang_pembayaran`, `master_debt_types`, etc)
 
 2. **MEDIUM PRIORITY**
    - Add missing tables (`hutang_pembayaran`, `master_debt_types`, etc)

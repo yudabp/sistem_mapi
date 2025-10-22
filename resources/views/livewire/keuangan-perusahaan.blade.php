@@ -255,12 +255,19 @@
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                         @forelse($transactions as $transaction)
-                            <tr>
+                            <tr id="transaction-{{ $transaction->id }}">
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">{{ $transaction->transaction_date->format('d M Y') }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $transaction->transaction_number }}</div>
+                                    <div class="text-left font-medium text-gray-800 dark:text-gray-100">
+                                        {{ $transaction->transaction_number }}
+                                        @if($transaction->transaction_type === 'expense' && $transaction->bukuKasKebun && $transaction->bukuKasKebun->count() > 0)
+                                            <span class="ml-2 px-2 py-1 text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500 rounded-full">
+                                                BKK Created
+                                            </span>
+                                        @endif
+                                    </div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
@@ -297,6 +304,15 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="flex space-x-2">
+                                        @if($transaction->transaction_type === 'expense' && $transaction->bukuKasKebun->count() > 0)
+                                            <button 
+                                                wire:click="showRelatedBkkTransactions({{ $transaction->id }})"
+                                                class="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm"
+                                                title="View related BKK entries"
+                                            >
+                                                BKK ({{ $transaction->bukuKasKebun->count() }})
+                                            </button>
+                                        @endif
                                         <button 
                                             wire:click="openEditModal({{ $transaction->id }})"
                                             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -520,6 +536,174 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closePhotoModal" wire:loading.attr="disabled">
+                {{ __('Close') }}
+            </x-secondary-button>
+        </x-slot>
+    </x-dialog-modal>
+
+    <!-- KP Expense Creation Confirmation Modal -->
+    <x-confirmation-modal wire:model.live="showExpenseConfirmation">
+        <x-slot name="title">
+            {{ __('Confirm KP Expense Creation') }}
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:border-amber-500/30 dark:text-amber-500 mb-4">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="font-medium">Auto-BKK Creation Notice</span>
+                </div>
+                <p class="text-sm mt-1">Creating this KP expense will automatically generate a corresponding BKK income entry.</p>
+            </div>
+            
+            <div class="space-y-2">
+                <p><strong>Transaction Details:</strong></p>
+                <ul class="list-disc list-inside text-sm space-y-1">
+                    <li><strong>Type:</strong> Expense (Rp {{ number_format((float)$amount, 2, ',', '.') }})</li>
+                    <li><strong>Source/Destination:</strong> {{ $source_destination }}</li>
+                    <li><strong>Category:</strong> {{ $category }}</li>
+                    <li><strong>Date:</strong> {{ $transaction_date ? \Carbon\Carbon::parse($transaction_date)->format('d M Y') : '' }}</li>
+                </ul>
+            </div>
+            
+            <div class="mt-4 p-3 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700/30 dark:border-gray-600">
+                <p class="text-sm"><strong>Auto-generated BKK Entry:</strong></p>
+                <ul class="list-disc list-inside text-sm space-y-1 mt-1">
+                    <li><strong>Type:</strong> Income (Rp {{ number_format((float)$amount, 2, ',', '.') }})</li>
+                    <li><strong>Source:</strong> Keuangan Perusahaan (Auto-generated)</li>
+                    <li><strong>Category:</strong> Operational Cost</li>
+                    <li><strong>Transaction #:</strong> BKK-AUTO-XXXXXX</li>
+                </ul>
+            </div>
+            
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-4">
+                {{ __('Are you sure you want to proceed with creating this KP expense and the auto-generated BKK entry?') }}
+            </p>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeExpenseConfirmation" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="confirmExpenseCreation" wire:loading.attr="disabled">
+                {{ __('Create Expense & Auto-BKK') }}
+            </x-button>
+        </x-slot>
+    </x-confirmation-modal>
+
+    <!-- Related BKK Transactions Modal -->
+    <x-dialog-modal wire:model.live="showRelatedBkk" maxWidth="4xl">
+        <x-slot name="title">
+            Related BKK Transactions for KP #{{ $selectedKpId ? \App\Models\KeuanganPerusahaan::find($selectedKpId)?->transaction_number : '' }}
+        </x-slot>
+
+        <x-slot name="content">
+            @if($relatedBkkTransactions->count() > 0)
+                <div class="mb-4">
+                    <div class="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg dark:bg-blue-500/10 dark:border-blue-500/30 dark:text-blue-500">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="font-medium">Auto-generated BKK entries found</span>
+                        </div>
+                        <p class="text-sm mt-1">These BKK transactions were automatically created when KP expenses were recorded.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="table-auto w-full">
+                        <thead>
+                            <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
+                                <th class="p-2 whitespace-nowrap">BKK Transaction #</th>
+                                <th class="p-2 whitespace-nowrap">Date</th>
+                                <th class="p-2 whitespace-nowrap">Type</th>
+                                <th class="p-2 whitespace-nowrap">Amount</th>
+                                <th class="p-2 whitespace-nowrap">Category</th>
+                                <th class="p-2 whitespace-nowrap">Source/Destination</th>
+                                <th class="p-2 whitespace-nowrap">Status</th>
+                                <th class="p-2 whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
+                            @foreach($relatedBkkTransactions as $bkkTransaction)
+                                <tr>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left font-medium text-gray-800 dark:text-gray-100">
+                                            {{ $bkkTransaction->transaction_number }}
+                                            @if(str_contains($bkkTransaction->transaction_number, 'BKK-AUTO'))
+                                                <span class="ml-2 px-2 py-1 text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500 rounded-full">
+                                                    Auto
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $bkkTransaction->transaction_date->format('d M Y') }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                            {{ $bkkTransaction->transaction_type === 'income' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500' : 
+                                               'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-500' }}">
+                                            {{ ucfirst($bkkTransaction->transaction_type) }}
+                                        </span>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left font-medium text-emerald-600 dark:text-emerald-400">
+                                            +Rp {{ number_format($bkkTransaction->amount, 2, ',', '.') }}
+                                        </div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $bkkTransaction->category }}</div>
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="text-left">{{ $bkkTransaction->source_destination }}</div>
+                                        @if($bkkTransaction->received_by)
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">Received by: {{ $bkkTransaction->received_by }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        @if(str_contains($bkkTransaction->transaction_number, 'BKK-AUTO'))
+                                            <span class="px-2 py-1 text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500 rounded-full">
+                                                Auto-generated
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-800 dark:bg-gray-700/30 dark:text-gray-500 rounded-full">
+                                                Manual
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="p-2 whitespace-nowrap">
+                                        <div class="flex space-x-2">
+                                            <a 
+                                                href="{{ route('buku-kas-kebun') }}#transaction-{{ $bkkTransaction->id }}"
+                                                class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+                                                target="_blank"
+                                            >
+                                                View in BKK
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="text-gray-500 dark:text-gray-400">No related BKK transactions found for this KP entry.</p>
+                </div>
+            @endif
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="hideRelatedBkkTransactions" wire:loading.attr="disabled">
                 {{ __('Close') }}
             </x-secondary-button>
         </x-slot>
