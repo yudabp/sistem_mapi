@@ -7,19 +7,38 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 ## 🔥 **HIGH PRIORITY** 
 *Deadline: 1-2 Minggu*
 
-### **1. Implementasi Fitur Pajak Penjualan**
-- [ ] **Database Schema**
-  - [ ] Buat migrasi untuk menambahkan kolom `is_taxable`, `tax_percentage`, dan `tax_amount` ke tabel `data_penjualan`.
-- [ ] **Backend Logic**
-  - [ ] Update model `Sale` untuk menyertakan field baru.
-  - [ ] Implementasikan logika di backend untuk menghitung `tax_amount` secara otomatis berdasarkan `total_penjualan` dan `tax_percentage`.
-- [ ] **Frontend (Livewire Component)**
-  - [ ] Tambahkan checkbox "Kena Pajak" di form input penjualan.
-  - [ ] Tampilkan input untuk "Total Pajak (%)" (default 11%, editable) dan "Total Nominal Pajak" (auto-calculated, editable) secara kondisional.
-  - [ ] Pastikan kalkulasi berjalan secara real-time di frontend.
-- [ ] **Fitur Ekspor Laporan**
-  - [ ] Buat fungsionalitas untuk mengekspor data penjualan (misalnya ke Excel/CSV).
-  - [ ] Tambahkan filter pada ekspor: semua penjualan, hanya yang kena pajak, dan hanya yang tidak kena pajak.
+### **1. Implementasi Fitur Pajak Penjualan** ✅ **COMPLETED**
+- [x] **Database Schema**
+  - [x] Buat migrasi untuk menambahkan kolom `is_taxable`, `tax_percentage`, dan `tax_amount` ke tabel `data_penjualan`.
+- [x] **Backend Logic**
+  - [x] Update model `Sale` untuk menyertakan field baru.
+  - [x] Implementasikan logika di backend untuk menghitung `tax_amount` secara otomatis berdasarkan `total_penjualan` dan `tax_percentage`.
+- [x] **Frontend (Livewire Component)**
+  - [x] Tambahkan checkbox "Kena Pajak" di form input penjualan.
+  - [x] Tampilkan input untuk "Total Pajak (%)" (default 11%, editable) dan "Total Nominal Pajak" (auto-calculated, editable) secara kondisional.
+  - [x] Pastikan kalkulasi berjalan secara real-time di frontend.
+- [x] **Fitur Ekspor Laporan**
+  - [x] Buat fungsionalitas untuk mengekspor data penjualan (misalnya ke Excel/CSV).
+  - [x] Tambahkan filter pada ekspor: semua penjualan, hanya yang kena pajak, dan hanya yang tidak kena pajak.
+
+### **1.1. Implementasi SP Number Autocomplete** ✅ **COMPLETED**
+- [x] **Search Autocomplete UI**
+  - [x] Ganti dropdown production_id menjadi search autocomplete untuk SP number.
+  - [x] Implementasi real-time search dengan minimal 2 karakter.
+  - [x] Tampilkan suggestions dengan info TBS dan KG quantity.
+- [x] **Backend Logic**
+  - [x] Tambah property sp_search, spSuggestions, showSpSuggestions.
+  - [x] Implementasi updatedSpSearch() untuk real-time search.
+  - [x] Tambah selectSpSuggestion() untuk auto-fill data produksi.
+  - [x] Tambah clearSpSelection() untuk input manual.
+- [x] **Validation & Data Handling**
+  - [x] Update validation rules: sp_number required, production_id nullable.
+  - [x] Support input manual SP number yang tidak ada di tabel produksi.
+  - [x] Hapus readonly attribute dari TBS dan KG quantity fields.
+- [x] **UI/UX Improvements**
+  - [x] Tambah indikator visual saat data auto-filled dari produksi.
+  - [x] Implementasi click-outside listener untuk menutup suggestions.
+  - [x] Responsive design dengan proper z-index.
 
 ### **2. Database Schema Restructuring** ✅ **COMPLETED**
 - [x] **Create migration for proper foreign key relations**
