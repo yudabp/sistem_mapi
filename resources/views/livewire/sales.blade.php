@@ -140,59 +140,103 @@
 
 
             <form wire:submit.prevent="saveSalesModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- SP Number -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="production_id">
+                <!-- SP Number with Autocomplete -->
+                <div class="relative">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_search">
                         SP Number
                     </label>
-                    <select 
-                        id="production_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model.live="production_id"
-                    >
-                        <option value="">Select SP Number</option>
-                        @foreach($productionData as $production)
-                            <option value="{{ $production->id }}" 
-                                    data-tbs="{{ $production->tbs_quantity }}" 
-                                    data-kg="{{ $production->kg_quantity }}">
-                                {{ $production->sp_number }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('production_id') 
+                    <div class="relative">
+                        <input 
+                            id="sp_search"
+                            type="text" 
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                            wire:model.live="sp_search"
+                            placeholder="Ketik SP Number..."
+                            autocomplete="off"
+                        />
+                        @if($sp_search)
+                            <button 
+                                type="button"
+                                wire:click="clearSpSelection"
+                                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                            >
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        @endif
+                    </div>
+                    
+                    <!-- Autocomplete Suggestions -->
+                    @if($showSpSuggestions && count($spSuggestions) > 0)
+                        <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                            @foreach($spSuggestions as $suggestion)
+                                <button 
+                                    type="button"
+                                    wire:click="selectSpSuggestion({{ json_encode($suggestion) }})"
+                                    class="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 transition-colors duration-150"
+                                >
+                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $suggestion['sp_number'] }}</div>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                                        TBS: {{ number_format($suggestion['tbs_quantity'], 2) }} KG | 
+                                        KG: {{ number_format($suggestion['kg_quantity'], 2) }}
+                                    </div>
+                                </button>
+                            @endforeach
+                        </div>
+                    @endif
+                    
+                    @error('sp_number') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
+
+                <!-- Script for autocomplete -->
+                <script>
+                    document.addEventListener('click', function(event) {
+                        const spContainer = event.target.closest('.relative');
+                        if (!spContainer || !spContainer.querySelector('[wire\\:model\\.live="sp_search"]')) {
+                            @this.set('showSpSuggestions', false);
+                        }
+                    });
+                </script>
 
                 <!-- TBS Quantity -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
                         TBS Quantity (KG)
+                        @if($production_id)
+                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                        @endif
                     </label>
                     <input 
                         id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $sp_number ? 'bg-gray-100 dark:bg-gray-600' : '' }}" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="number" 
                         step="0.01"
                         wire:model="tbs_quantity"
                         placeholder="Enter TBS quantity"
-                        {{ $sp_number ? 'readonly' : '' }}
                     />
+                    @error('tbs_quantity') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
                 </div>
 
                 <!-- KG Quantity -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
                         KG Quantity
+                        @if($production_id)
+                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                        @endif
                     </label>
                     <input 
                         id="kg_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $sp_number ? 'bg-gray-100 dark:bg-gray-600' : '' }}" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="number" 
                         step="0.01"
                         wire:model.live="kg_quantity"
                         placeholder="Enter KG quantity"
-                        {{ $sp_number ? 'readonly' : '' }}
                     />
                     @error('kg_quantity') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 

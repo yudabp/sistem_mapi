@@ -29,6 +29,11 @@ class Sales extends Component
     public $tax_percentage = 11.00;
     public $tax_amount = 0;
     
+    // Autocomplete properties
+    public $sp_search = '';
+    public $spSuggestions = [];
+    public $showSpSuggestions = false;
+    
     public $search = '';
     public $dateFilter = '';
 
@@ -61,7 +66,8 @@ class Sales extends Component
     protected $queryString = ['search', 'dateFilter', 'metricFilter'];
 
     protected $rules = [
-        'production_id' => 'required|exists:production,id',
+        'sp_number' => 'required|string|max:255',
+        'production_id' => 'nullable|exists:production,id',
         'kg_quantity' => 'required|numeric',
         'price_per_kg' => 'required|numeric',
         'sale_date' => 'required|date',
@@ -93,15 +99,11 @@ class Sales extends Component
     public function render()
     {
         $filteredSales = $this->filterSales();
-        $productionData = ProductionModel::select('id', 'sp_number', 'tbs_quantity', 'kg_quantity')
-                                        ->orderBy('sp_number')
-                                        ->get();
 
         return view('livewire.sales', [
             'sales' => $filteredSales,
             'total_kg' => $this->getTotalKg(),
             'total_sales' => $this->getTotalSales(),
-            'productionData' => $productionData,
         ]);
     }
 
@@ -145,32 +147,7 @@ class Sales extends Component
         $this->calculateTax();
     }
 
-    public function updatedProductionId()
-    {
-        if ($this->production_id) {
-            $production = ProductionModel::find($this->production_id);
-            if ($production) {
-                $this->sp_number = $production->sp_number;
-                $this->tbs_quantity = $production->tbs_quantity;
-                $this->kg_quantity = $production->kg_quantity;
-                
-                // Auto-calculate total amount if price per kg is already set
-                $this->calculateTotal();
-            } else {
-                // Reset if production not found
-                $this->sp_number = '';
-                $this->tbs_quantity = '';
-                $this->kg_quantity = '';
-                $this->total_amount = 0;
-            }
-        } else {
-            $this->sp_number = '';
-            $this->tbs_quantity = '';
-            $this->kg_quantity = '';
-            $this->total_amount = 0;
-        }
-        $this->calculateTax();
-    }
+
 
     public function updatedIsTaxable()
     {
@@ -184,6 +161,50 @@ class Sales extends Component
 
     public function updatedTotalAmount()
     {
+        $this->calculateTax();
+    }
+
+    public function updatedSpSearch()
+    {
+        if (strlen($this->sp_search) >= 2) {
+            $this->spSuggestions = ProductionModel::where('sp_number', 'like', '%' . $this->sp_search . '%')
+                ->select('id', 'sp_number', 'tbs_quantity', 'kg_quantity')
+                ->orderBy('sp_number')
+                ->limit(10)
+                ->get()
+                ->toArray();
+            $this->showSpSuggestions = true;
+        } else {
+            $this->spSuggestions = [];
+            $this->showSpSuggestions = false;
+        }
+    }
+
+    public function selectSpSuggestion($spData)
+    {
+        $production = ProductionModel::find($spData['id']);
+        if ($production) {
+            $this->sp_number = $production->sp_number;
+            $this->production_id = $production->id;
+            $this->tbs_quantity = $production->tbs_quantity;
+            $this->kg_quantity = $production->kg_quantity;
+            $this->calculateTotal();
+        }
+        $this->sp_search = $production->sp_number;
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
+        $this->calculateTax();
+    }
+
+    public function clearSpSelection()
+    {
+        $this->sp_number = $this->sp_search;
+        $this->production_id = null;
+        $this->tbs_quantity = '';
+        $this->kg_quantity = '';
+        $this->total_amount = 0;
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
         $this->calculateTax();
     }
 
@@ -252,6 +273,11 @@ class Sales extends Component
         $this->is_taxable = false;
         $this->tax_percentage = 11.00;
         $this->tax_amount = 0;
+        
+        // Reset autocomplete properties
+        $this->sp_search = '';
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
     }
 
     public function filterSales()
@@ -365,6 +391,7 @@ class Sales extends Component
         if ($sale) {
             $this->editingId = $sale->id;
             $this->sp_number = $sale->sp_number;
+            $this->production_id = $sale->production_id;
             $this->tbs_quantity = $sale->tbs_quantity;
             $this->kg_quantity = $sale->kg_quantity;
             $this->price_per_kg = $sale->price_per_kg;
@@ -376,6 +403,12 @@ class Sales extends Component
             $this->tax_percentage = $sale->tax_percentage ?? 11.00;
             $this->tax_amount = $sale->tax_amount ?? 0;
             $this->sales_proof = null; // We don't load the file, just the path
+            
+            // Set autocomplete search value
+            $this->sp_search = $sale->sp_number;
+            $this->spSuggestions = [];
+            $this->showSpSuggestions = false;
+            
             $this->isEditing = true;
             $this->showModal = true;
         }
