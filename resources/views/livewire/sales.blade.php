@@ -279,13 +279,51 @@
                 <!-- Sale Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sale_date">
-                        Sale Date
+                        Sale Date (DD-MM-YYYY)
                     </label>
                     <input 
                         id="sale_date"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="date" 
+                        type="text" 
+                        placeholder="DD-MM-YYYY"
                         wire:model="sale_date"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let input = e.target.value.replace(/\D/g, '');
+                                let formatted = '';
+                                
+                                if (input.length > 0) {
+                                    formatted = input.substring(0, 2); // Day
+                                    if (input.length >= 3) {
+                                        formatted += '-' + input.substring(2, 4); // Month
+                                        if (input.length >= 5) {
+                                            formatted += '-' + input.substring(4, 8); // Year
+                                        }
+                                    }
+                                }
+                                
+                                $el.value = formatted;
+                            });
+                            
+                            $el.addEventListener('blur', function(e) {
+                                // Validate date format on blur
+                                let dateValue = e.target.value;
+                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                let match = dateValue.match(datePattern);
+                                
+                                if (match) {
+                                    let day = parseInt(match[1]);
+                                    let month = parseInt(match[2]);
+                                    let year = parseInt(match[3]);
+                                    
+                                    // Basic validation
+                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                        // You can add custom validation here
+                                    }
+                                }
+                            });
+                        "
                     />
                     @error('sale_date') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -478,30 +516,176 @@
     <!-- Form Section - Button to open modal -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <div class="flex justify-between items-center">
+            <div class="flex flex-wrap justify-between items-center gap-4">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Sales Data Input</h2>
-                <div class="flex space-x-3">
-                    <!-- Export Section -->
-                    <div class="flex items-center space-x-2">
-                        <select 
-                            wire:model.live="exportFilter"
-                            class="px-7 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 text-sm"
+                <div class="flex flex-wrap gap-2">
+                    <!-- Import button with dropdown -->
+                    <div class="relative group">
+                        <button 
+                            type="button"
+                            class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-2"
                         >
-                            <option value="all">Semua Data</option>
-                            <option value="taxable">Kena Pajak</option>
-                            <option value="non_taxable">Tidak Kena Pajak</option>
-                        </select>
-                        <a 
-                            href="{{ route('sales.export', ['filter' => $exportFilter]) }}"
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors text-sm"
-                        >
-                            Export Excel
-                        </a>
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                            </svg>
+                            Import
+                        </button>
+                        <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                            <button 
+                                wire:click="openImportModal"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Upload Excel
+                            </button>
+                            <a 
+                                href="{{ route('sales.sample.download') }}"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Download Sample
+                            </a>
+                        </div>
                     </div>
+                    
+                    <div class="relative group">
+                        <button 
+                            type="button"
+                            class="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-2"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                            </svg>
+                            Export
+                        </button>
+                        <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
+                            <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                Export Options
+                            </div>
+                            <div class="px-4 py-2">
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <input 
+                                    type="text" 
+                                    wire:model="exportStartDate"
+                                    placeholder="DD-MM-YYYY"
+                                    class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-gray-300"
+                                    x-data
+                                    x-init="
+                                        $el.addEventListener('input', function(e) {
+                                            let input = e.target.value.replace(/\D/g, '');
+                                            let formatted = '';
+                                            
+                                            if (input.length > 0) {
+                                                formatted = input.substring(0, 2); // Day
+                                                if (input.length >= 3) {
+                                                    formatted += '-' + input.substring(2, 4); // Month
+                                                    if (input.length >= 5) {
+                                                        formatted += '-' + input.substring(4, 8); // Year
+                                                    }
+                                                }
+                                            }
+                                            
+                                            $el.value = formatted;
+                                        });
+                                        
+                                        $el.addEventListener('blur', function(e) {
+                                            // Validate date format on blur
+                                            let dateValue = e.target.value;
+                                            let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                            let match = dateValue.match(datePattern);
+                                            
+                                            if (match) {
+                                                let day = parseInt(match[1]);
+                                                let month = parseInt(match[2]);
+                                                let year = parseInt(match[3]);
+                                                
+                                                // Basic validation
+                                                if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                    // You can add custom validation here
+                                                }
+                                            }
+                                        });
+                                    "
+                                />
+                            </div>
+                            <div class="px-4 py-2">
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <input 
+                                    type="text" 
+                                    wire:model="exportEndDate"
+                                    placeholder="DD-MM-YYYY"
+                                    class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 dark:bg-gray-700 dark:text-gray-300"
+                                    x-data
+                                    x-init="
+                                        $el.addEventListener('input', function(e) {
+                                            let input = e.target.value.replace(/\D/g, '');
+                                            let formatted = '';
+                                            
+                                            if (input.length > 0) {
+                                                formatted = input.substring(0, 2); // Day
+                                                if (input.length >= 3) {
+                                                    formatted += '-' + input.substring(2, 4); // Month
+                                                    if (input.length >= 5) {
+                                                        formatted += '-' + input.substring(4, 8); // Year
+                                                    }
+                                                }
+                                            }
+                                            
+                                            $el.value = formatted;
+                                        });
+                                        
+                                        $el.addEventListener('blur', function(e) {
+                                            // Validate date format on blur
+                                            let dateValue = e.target.value;
+                                            let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                            let match = dateValue.match(datePattern);
+                                            
+                                            if (match) {
+                                                let day = parseInt(match[1]);
+                                                let month = parseInt(match[2]);
+                                                let year = parseInt(match[3]);
+                                                
+                                                // Basic validation
+                                                if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                    // You can add custom validation here
+                                                }
+                                            }
+                                        });
+                                    "
+                                />
+                            </div>
+                            <button 
+                                wire:click="exportToExcel"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Export to Excel
+                            </button>
+                            <button 
+                                wire:click="exportToPdf"
+                                class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Export to PDF
+                            </button>
+                        </div>
+                    </div>
+                    
                     <button 
                         wire:click="openCreateModal"
-                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-2"
                     >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
                         Add Sales Record
                     </button>
                 </div>
@@ -634,6 +818,63 @@
             </div>
         </div>
     </div>
+
+    <!-- Import Modal -->
+    <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
+        <x-slot name="title">
+            Import Sales Data from Excel
+        </x-slot>
+
+        <x-slot name="content">
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Upload an Excel file to import sales data. The file should contain the following columns:
+                </p>
+                <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
+                    <li><strong>sp_number</strong> - SP number</li>
+                    <li><strong>tbs_quantity</strong> - TBS quantity</li>
+                    <li><strong>kg_quantity</strong> - KG quantity</li>
+                    <li><strong>price_per_kg</strong> - Price per KG</li>
+                    <li><strong>total_amount</strong> - Total amount</li>
+                    <li><strong>sale_date</strong> - Sale date</li>
+                    <li><strong>customer_name</strong> - Customer name</li>
+                    <li><strong>customer_address</strong> - Customer address</li>
+                </ul>
+            </div>
+            
+            <form wire:submit.prevent="importSales" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
+                        Excel File
+                    </label>
+                    <input 
+                        id="importFile"
+                        type="file" 
+                        wire:model="importFile"
+                        accept=".xlsx,.xls,.csv"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                    />
+                    @error('importFile') 
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @enderror
+                </div>
+                
+                <div class="text-xs text-gray-500 dark:text-gray-400">
+                    Supported formats: .xlsx, .xls, .csv
+                </div>
+            </form>
+        </x-slot>
+
+        <x-slot name="footer">
+            <x-secondary-button wire:click="closeImportModal" wire:loading.attr="disabled">
+                {{ __('Cancel') }}
+            </x-secondary-button>
+
+            <x-button class="ms-3" wire:click="importSales" wire:loading.attr="disabled">
+                Import Data
+            </x-button>
+        </x-slot>
+    </x-dialog-modal>
 </div>
 
 <script>

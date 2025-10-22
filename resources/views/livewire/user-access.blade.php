@@ -21,10 +21,10 @@
                     Manage user accounts, roles, and permissions for the palm oil plantation management system.
                 </p>
                 <div class="flex justify-center gap-3">
-                    <a href="{{ route('profile') }}" class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
+                    <a href="{{ route('profile.show') }}" class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
                         View Profile
                     </a>
-                    <a href="{{ route('profile') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors">
+                    <a href="{{ route('profile.show') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition-colors">
                         Edit Profile
                     </a>
                 </div>

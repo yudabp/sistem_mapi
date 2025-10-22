@@ -10,6 +10,12 @@ use App\Models\FamilyComposition;
 use App\Models\EmploymentStatus;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Imports\EmployeesImport;
+use App\Exports\EmployeesExportWithHeaders;
+use App\Exports\EmployeesPdfExporter;
+use Maatwebsite\Excel\Facades\Excel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class Employees extends Component
 {
@@ -53,19 +59,32 @@ class Employees extends Component
 
     protected $queryString = ['search', 'departmentFilter'];
 
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+
     protected $rules = [
         'ndp' => 'required|unique:employees,ndp',
         'name' => 'required',
         'department_id' => 'required|exists:departments,id',
         'position_id' => 'required|exists:positions,id',
         'monthly_salary' => 'required|numeric',
-        'hire_date' => 'required|date',
+        'hire_date' => 'required|date_format:d-m-Y',
         'status' => 'required',
+        'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
     {
         $this->loadOptions();
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
     }
 
     public function render()
@@ -91,6 +110,9 @@ class Employees extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
+        
         EmployeeModel::create([
             'ndp' => $this->ndp,
             'name' => $this->name,
@@ -103,7 +125,7 @@ class Employees extends Component
             'family_composition_id' => $this->family_composition_id,
             'monthly_salary' => $this->monthly_salary,
             'status' => $this->status,
-            'hire_date' => $this->hire_date,
+            'hire_date' => $hireDateForDb,
             'address' => $this->address,
             'phone' => $this->phone,
             'email' => $this->email,
@@ -183,7 +205,7 @@ class Employees extends Component
             $this->family_composition = $employee->family_composition;
             $this->monthly_salary = $employee->monthly_salary;
             $this->status = $employee->status;
-            $this->hire_date = $employee->hire_date->format('Y-m-d');
+            $this->hire_date = $employee->hire_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->address = $employee->address;
             $this->phone = $employee->phone;
             $this->email = $employee->email;
@@ -240,6 +262,9 @@ class Employees extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
+        
         $employee = EmployeeModel::find($this->editingId);
         if ($employee) {
             $employee->update([
@@ -251,7 +276,7 @@ class Employees extends Component
                 'family_composition' => $this->family_composition,
                 'monthly_salary' => $this->monthly_salary,
                 'status' => $this->status,
-                'hire_date' => $this->hire_date,
+                'hire_date' => $hireDateForDb,
                 'address' => $this->address,
                 'phone' => $this->phone,
                 'email' => $this->email,
@@ -270,5 +295,70 @@ class Employees extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+    
+    // Import methods
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importEmployee()
+    {
+        $this->validate();
+        
+        try {
+            Excel::import(new EmployeesImport, $this->importFile);
+            $this->setPersistentMessage('Employee data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+        }
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new EmployeesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $exporter = new EmployeesPdfExporter($this->exportStartDate, $this->exportEndDate);
+        
+        $html = $exporter->generate();
+        
+        // Ensure proper UTF-8 encoding with fallback
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        } else {
+            $html = utf8_encode($html);
+        }
+        
+        $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        // Create DomPDF instance
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

@@ -6,6 +6,12 @@ use Livewire\Component;
 use App\Models\Debt as DebtModel;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Imports\DebtsImport;
+use App\Exports\DebtsExportWithHeaders;
+use App\Exports\DebtsPdfExporter;
+use Maatwebsite\Excel\Facades\Excel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class Debts extends Component
 {
@@ -42,15 +48,28 @@ class Debts extends Component
     
     protected $queryString = ['search', 'statusFilter'];
 
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+
     protected $rules = [
         'amount' => 'required|numeric',
         'creditor' => 'required',
-        'due_date' => 'required|date',
+        'due_date' => 'required|date_format:d-m-Y',
         'description' => 'required',
+        'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
     {
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
     }
 
     public function render()
@@ -69,6 +88,9 @@ class Debts extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
+        
         // Handle file upload
         $proofPath = null;
         if ($this->proof_document) {
@@ -78,7 +100,7 @@ class Debts extends Component
         DebtModel::create([
             'amount' => $this->amount,
             'creditor' => $this->creditor,
-            'due_date' => $this->due_date,
+            'due_date' => $dueDateForDb,
             'description' => $this->description,
             'proof_document_path' => $proofPath,
             'status' => 'unpaid', // Default to unpaid
@@ -157,11 +179,11 @@ class Debts extends Component
             $this->editingId = $debt->id;
             $this->amount = $debt->amount;
             $this->creditor = $debt->creditor;
-            $this->due_date = $debt->due_date->format('Y-m-d');
+            $this->due_date = $debt->due_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->description = $debt->description;
             $this->proof_document = null; // We don't load the file, just the path
             $this->status = $debt->status;
-            $this->paid_date = $debt->paid_date ? $debt->paid_date->format('Y-m-d') : null;
+            $this->paid_date = $debt->paid_date ? $debt->paid_date->format('d-m-Y') : null; // Format for DD-MM-YYYY display
             $this->isEditing = true;
             $this->showModal = true;
         }
@@ -219,6 +241,10 @@ class Debts extends Component
     {
         $validated = $this->validate();
         
+        // Convert dates from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
+        $paidDateForDb = $this->paid_date ? \DateTime::createFromFormat('d-m-Y', $this->paid_date)->format('Y-m-d') : null;
+        
         $debt = DebtModel::find($this->editingId);
         if ($debt) {
             // Handle file upload
@@ -234,11 +260,11 @@ class Debts extends Component
             $debt->update([
                 'amount' => $this->amount,
                 'creditor' => $this->creditor,
-                'due_date' => $this->due_date,
+                'due_date' => $dueDateForDb,
                 'description' => $this->description,
                 'proof_document_path' => $proofPath,
                 'status' => $this->status,
-                'paid_date' => $this->paid_date,
+                'paid_date' => $paidDateForDb,
             ]);
 
             $this->setPersistentMessage('Debt record updated successfully.', 'success');
@@ -266,5 +292,70 @@ class Debts extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+    
+    // Import methods
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importDebt()
+    {
+        $this->validate();
+        
+        try {
+            Excel::import(new DebtsImport, $this->importFile);
+            $this->setPersistentMessage('Debt data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+        }
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new DebtsExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'debt_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $exporter = new DebtsPdfExporter($this->exportStartDate, $this->exportEndDate);
+        
+        $html = $exporter->generate();
+        
+        // Ensure proper UTF-8 encoding with fallback
+        if (function_exists('mb_convert_encoding')) {
+            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        } else {
+            $html = utf8_encode($html);
+        }
+        
+        $filename = 'debt_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        // Create DomPDF instance
+        $options = new Options();
+        $options->set('defaultFont', 'Arial');
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }
