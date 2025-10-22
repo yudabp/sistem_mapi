@@ -484,8 +484,8 @@
                     <!-- Export Section -->
                     <div class="flex items-center space-x-2">
                         <select 
-                            wire:model="exportFilter"
-                            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 text-sm"
+                            wire:model.live="exportFilter"
+                            class="px-7 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 text-sm"
                         >
                             <option value="all">Semua Data</option>
                             <option value="taxable">Kena Pajak</option>
