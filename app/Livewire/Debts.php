@@ -332,30 +332,10 @@ class Debts extends Component
     
     public function exportToPdf()
     {
-        $exporter = new DebtsPdfExporter($this->exportStartDate, $this->exportEndDate);
-        
-        $html = $exporter->generate();
-        
-        // Ensure proper UTF-8 encoding with fallback
-        if (function_exists('mb_convert_encoding')) {
-            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
-        } else {
-            $html = utf8_encode($html);
-        }
-        
-        $filename = 'debt_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        // Create DomPDF instance
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        
-        return response()->make($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route("debts.export.pdf", [
+            "start_date" => $this->exportStartDate,
+            "end_date" => $this->exportEndDate,
         ]);
     }
 }

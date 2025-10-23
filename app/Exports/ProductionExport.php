@@ -61,7 +61,7 @@ class ProductionExport implements FromCollection, WithHeadings, WithMapping, Wit
             $production->vehicle_number,
             $production->tbs_quantity,
             $production->kg_quantity,
-            $production->division,
+            $production->divisionRel ? $production->divisionRel->name : $production->division,
             $production->pks,
             $production->created_at->format('Y-m-d H:i:s'),
             $production->updated_at->format('Y-m-d H:i:s'),

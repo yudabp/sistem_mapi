@@ -68,7 +68,9 @@ class Production extends Model
      */
     public function getVehicleNumberAttribute(): string
     {
-        return $this->vehicle?->number ?? $this->attributes['vehicle_number'] ?? '';
+        $value = $this->vehicle?->number ?? $this->attributes['vehicle_number'] ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 
     /**
@@ -76,7 +78,9 @@ class Production extends Model
      */
     public function getDivisionNameAttribute(): string
     {
-        return $this->divisionRel?->name ?? $this->attributes['division'] ?? '';
+        $value = $this->divisionRel?->name ?? $this->attributes['division'] ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 
     /**
@@ -84,6 +88,8 @@ class Production extends Model
      */
     public function getPksNameAttribute(): string
     {
-        return $this->pksRel?->name ?? $this->attributes['pks'] ?? '';
+        $value = $this->pksRel?->name ?? $this->attributes['pks'] ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 }

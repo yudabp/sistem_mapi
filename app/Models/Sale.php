@@ -47,11 +47,14 @@ class Sale extends Model
      */
     public function getSpNumberAttribute(): string
     {
+        $value = '';
         if (isset($this->attributes['sp_number']) && !empty($this->attributes['sp_number'])) {
-            return $this->attributes['sp_number'];
+            $value = $this->attributes['sp_number'];
+        } else {
+            $value = $this->production?->sp_number ?? '';
         }
-        
-        return $this->production?->sp_number ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 
     /**

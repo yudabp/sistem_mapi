@@ -1,0 +1,153 @@
+"""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Production Data Export</title>
+    <style>
+        @font-face {
+            font-family: DejaVu Sans;
+            src: url(/home/taufiqshamad/project/htdocs/sistem_mapi/public/fonts/DejaVuSans.ttf) format('truetype');
+        }
+        body {
+            font-family: 'DejaVu Sans', sans-serif;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .export-info {
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .export-info p {
+            margin: 5px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Production Data Export</h1>
+    </div>
+
+    <div class="export-info">
+        <p><strong>Exported by:</strong> Admin Perusahaan</p>
+        <p><strong>Exported on:</strong> 2025-10-22 20:32:56</p>
+                    <p><strong>Date Range:</strong> 2025-09-22 to 2025-10-22</p>
+            </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Transaction Number</th>
+                <th>Date</th>
+                <th>SP Number</th>
+                <th>Vehicle Number</th>
+                <th>TBS Quantity (KG)</th>
+                <th>KG Quantity</th>
+                <th>Division</th>
+                <th>PKS</th>
+                <th>Created At</th>
+                <th>Updated At</th>
+            </tr>
+        </thead>
+        <tbody>
+                            <tr>
+                    <td>1</td>
+                    <td>PROD-001</td>
+                    <td>2025-10-01</td>
+                    <td>SP-2025-001</td>
+                    <td>BK 1234 AB</td>
+                    <td>1,250.50</td>
+                    <td>1,100.75</td>
+                    <td>Afdeling A</td>
+                    <td>PKS Central</td>
+                    <td>2025-10-15 21:16:45</td>
+                    <td>2025-10-22 16:47:48</td>
+                </tr>
+                            <tr>
+                    <td>2</td>
+                    <td>PROD-002</td>
+                    <td>2025-10-02</td>
+                    <td>SP-2025-002</td>
+                    <td>BK 5678 CD</td>
+                    <td>1,320.25</td>
+                    <td>1,165.50</td>
+                    <td>Afdeling B</td>
+                    <td>PKS Central</td>
+                    <td>2025-10-15 21:16:45</td>
+                    <td>2025-10-22 16:47:48</td>
+                </tr>
+                            <tr>
+                    <td>3</td>
+                    <td>PROD-003</td>
+                    <td>2025-10-03</td>
+                    <td>SP-2025-003</td>
+                    <td>BK 9012 EF</td>
+                    <td>1,180.75</td>
+                    <td>1,040.25</td>
+                    <td>Afdeling C</td>
+                    <td>PKS East</td>
+                    <td>2025-10-15 21:16:45</td>
+                    <td>2025-10-22 16:47:48</td>
+                </tr>
+                            <tr>
+                    <td>4</td>
+                    <td>PROD-004</td>
+                    <td>2025-10-04</td>
+                    <td>SP-2025-004</td>
+                    <td>BK 3456 GH</td>
+                    <td>1,420.00</td>
+                    <td>1,250.00</td>
+                    <td>Afdeling A</td>
+                    <td>PKS Central</td>
+                    <td>2025-10-15 21:16:45</td>
+                    <td>2025-10-22 16:47:48</td>
+                </tr>
+                            <tr>
+                    <td>5</td>
+                    <td>PROD-005</td>
+                    <td>2025-10-05</td>
+                    <td>SP-2025-005</td>
+                    <td>BK 7890 IJ</td>
+                    <td>1,350.25</td>
+                    <td>1,190.75</td>
+                    <td>Afdeling B</td>
+                    <td>PKS West</td>
+                    <td>2025-10-15 21:16:45</td>
+                    <td>2025-10-22 16:47:48</td>
+                </tr>
+                    </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Generated on 2025-10-22 20:32:56</p>
+    </div>
+</body>
+</html>
+""" // app/Livewire/Production.php:494

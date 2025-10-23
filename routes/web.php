@@ -55,12 +55,18 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // Palm Oil Management System routes - Indonesian versions (matching sidebar menu)
     Route::get('/data-produksi', [App\Http\Controllers\PalmOilController::class, 'production'])->name('data-produksi');
+    Route::get('/data-produksi/export-pdf', [App\Http\Controllers\ProductionController::class, 'exportPdf'])->name('production.export.pdf');
     Route::get('/data-penjualan', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('data-penjualan');
     Route::get('/data-penjualan/export', [App\Http\Controllers\SalesController::class, 'export'])->name('sales.export');
+    Route::get('/data-penjualan/export-pdf', [App\Http\Controllers\SalesController::class, 'exportPdf'])->name('sales.export.pdf');
     Route::get('/data-karyawan', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('data-karyawan');
+    Route::get('/data-karyawan/export-pdf', [App\Http\Controllers\EmployeesController::class, 'exportPdf'])->name('employees.export.pdf');
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'financial'])->name('keuangan-perusahaan');
+    Route::get('/keuangan-perusahaan/export-pdf', [App\Http\Controllers\FinancialController::class, 'exportPdf'])->name('financial.export.pdf');
     Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
+    Route::get('/keuangan-perusahaan/buku-kas/export-pdf', [App\Http\Controllers\CashBookController::class, 'exportPdf'])->name('cashbook.export.pdf');
     Route::get('/keuangan-perusahaan/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
+    Route::get('/keuangan-perusahaan/data-hutang/export-pdf', [App\Http\Controllers\DebtsController::class, 'exportPdf'])->name('debts.export.pdf');
     Route::get('/akses-user', [App\Http\Controllers\PalmOilController::class, 'userAccess'])->name('akses-user');
     Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'settings'])->name('settings');
 

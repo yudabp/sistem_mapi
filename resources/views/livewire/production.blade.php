@@ -392,7 +392,7 @@
                 <div class="flex justify-center">
                     <img src="{{ asset('storage/' . $photoToView) }}" alt="SP Photo" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
-            @endif>
+            @endif
         </x-slot>
 
         <x-slot name="footer">

@@ -61,7 +61,9 @@ class Employee extends Model
      */
     public function getDepartmentNameAttribute(): string
     {
-        return $this->department?->name ?? $this->attributes['department'] ?? '';
+        $value = $this->department?->name ?? $this->attributes['department'] ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 
     /**
@@ -69,7 +71,9 @@ class Employee extends Model
      */
     public function getPositionNameAttribute(): string
     {
-        return $this->position?->name ?? $this->attributes['position'] ?? '';
+        $value = $this->position?->name ?? $this->attributes['position'] ?? '';
+        // Ensure proper UTF-8 encoding
+        return mb_convert_encoding($value, 'UTF-8', 'UTF-8');
     }
 
     /**

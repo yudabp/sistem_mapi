@@ -83,7 +83,7 @@ class ProductionExportWithHeaders implements FromCollection, WithHeadings, WithM
             $production->vehicle_number,
             $production->tbs_quantity,
             $production->kg_quantity,
-            $production->division,
+            $production->divisionRel ? $production->divisionRel->name : $production->division,
             $production->pks,
             $production->created_at->format('d-m-Y H:i:s'),
             $production->updated_at->format('d-m-Y H:i:s'),
