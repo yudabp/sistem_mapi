@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\CashBookEntry as CashBookEntryModel;
+use App\Models\FinancialTransaction as FinancialTransactionModel;
 use Illuminate\Support\Facades\Auth;
 use DateTime;
 
@@ -38,10 +38,10 @@ class CashBookPdfExporter
 
     public function generate()
     {
-        $query = CashBookEntryModel::query();
+        $query = FinancialTransactionModel::query();
 
         if ($this->startDate && $this->endDate) {
-            $query->whereBetween('date', [$this->startDate, $this->endDate]);
+            $query->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
         }
 
         $entries = $query->get();
@@ -108,10 +108,11 @@ class CashBookPdfExporter
         $html .= '<tr>';
         $html .= '<th>ID</th>';
         $html .= '<th>Transaction Number</th>';
-        $html .= '<th>Date</th>';
+        $html .= '<th>Transaction Date</th>';
         $html .= '<th>Transaction Type</th>';
         $html .= '<th>Amount</th>';
         $html .= '<th>Source/Destination</th>';
+        $html .= '<th>Received By</th>';
         $html .= '<th>Notes</th>';
         $html .= '<th>Category</th>';
         $html .= '<th>Created At</th>';
@@ -127,10 +128,11 @@ class CashBookPdfExporter
             $html .= '<tr>';
             $html .= '<td>' . htmlspecialchars($entry->id) . '</td>';
             $html .= '<td>' . htmlspecialchars($entry->transaction_number) . '</td>';
-            $html .= '<td>' . htmlspecialchars($entry->date->format('Y-m-d')) . '</td>';
+            $html .= '<td>' . htmlspecialchars($entry->transaction_date->format('Y-m-d')) . '</td>';
             $html .= '<td>' . htmlspecialchars(ucfirst($entry->transaction_type)) . '</td>';
             $html .= '<td class="text-right">' . number_format($entry->amount, 2) . '</td>';
             $html .= '<td>' . htmlspecialchars($entry->source_destination) . '</td>';
+            $html .= '<td>' . htmlspecialchars($entry->received_by) . '</td>';
             $html .= '<td>' . htmlspecialchars($entry->notes) . '</td>';
             $html .= '<td>' . htmlspecialchars($entry->category) . '</td>';
             $html .= '<td>' . htmlspecialchars($entry->created_at->format('Y-m-d H:i:s')) . '</td>';
@@ -145,7 +147,7 @@ class CashBookPdfExporter
         $html .= '<tr class="total-row">';
         $html .= '<td colspan="4"><strong>TOTAL</strong></td>';
         $html .= '<td class="text-right"><strong>' . number_format($totalAmount, 2) . '</strong></td>';
-        $html .= '<td colspan="5"></td>'; // Empty cells for the remaining columns
+        $html .= '<td colspan="6"></td>'; // Empty cells for the remaining columns
         $html .= '</tr>';
 
         $html .= '</tbody>';
