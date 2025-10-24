@@ -14,11 +14,11 @@ class VehicleNumbersTableSeeder extends Seeder
     public function run(): void
     {
         $vehicleNumbers = [
-            ['number' => 'BE 1234 AB', 'description' => 'Truk Angkut TBS', 'is_active' => true],
-            ['number' => 'BE 5678 CD', 'description' => 'Truk Angkut TBS', 'is_active' => true],
-            ['number' => 'BE 9012 EF', 'description' => 'Truk Angkut TBS', 'is_active' => true],
-            ['number' => 'BE 3456 GH', 'description' => 'Truk Angkut TBS', 'is_active' => true],
-            ['number' => 'BE 7890 IJ', 'description' => 'Truk Angkut TBS', 'is_active' => true],
+            ['number' => 'BK 1234 AB', 'description' => 'Truk Angkut TBS', 'is_active' => true],
+            ['number' => 'BK 5678 CD', 'description' => 'Truk Angkut TBS', 'is_active' => true],
+            ['number' => 'BK 9012 EF', 'description' => 'Truk Angkut TBS', 'is_active' => true],
+            ['number' => 'BK 3456 GH', 'description' => 'Truk Angkut TBS', 'is_active' => true],
+            ['number' => 'BK 7890 IJ', 'description' => 'Truk Angkut TBS', 'is_active' => true],
         ];
 
         foreach ($vehicleNumbers as $vehicleNumber) {

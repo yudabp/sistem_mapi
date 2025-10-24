@@ -27,7 +27,9 @@ class DatabaseSeeder extends Seeder
             EmployeesTableSeeder::class,
             ProductionTableSeeder::class,
             SalesTableSeeder::class,
-            FinancialTransactionsTableSeeder::class,
+            MasterDebtTypesSeeder::class,
+            MasterBkkExpenseCategoriesSeeder::class,
+            // FinancialTransactionsTableSeeder::class,
             DebtsTableSeeder::class,
         ]);
     }
