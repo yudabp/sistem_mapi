@@ -4,6 +4,9 @@ namespace App\Livewire;
 
 use Livewire\Component;
 use App\Models\Debt as DebtModel;
+use App\Models\HutangPembayaran;
+use App\Models\MasterDebtType;
+use App\Services\DebtPaymentService;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\DebtsImport;
@@ -18,12 +21,21 @@ class Debts extends Component
     use WithFileUploads;
 
     public $amount;
+    public $sisa_hutang;
+    public $cicilan_per_bulan;
     public $creditor;
     public $due_date;
     public $description;
+    public $debt_type_id;
     public $proof_document;
     public $status;
     public $paid_date;
+
+    // Additional fields for payment history
+    public $debtTypes = [];
+    public $showPaymentHistory = false;
+    public $selectedDebtId = null;
+    public $selectedDebtPayments = [];
     
     public $search = '';
     public $statusFilter = '';
@@ -54,15 +66,25 @@ class Debts extends Component
     public $showImportModal = false;
 
     protected $rules = [
-        'amount' => 'required|numeric',
-        'creditor' => 'required',
+        'amount' => 'required|numeric|min:0',
+        'creditor' => 'required|string|max:255',
         'due_date' => 'required|date_format:d-m-Y',
-        'description' => 'required',
+        'description' => 'required|string',
+        'debt_type_id' => 'nullable|exists:master_debt_types,id',
+        'cicilan_per_bulan' => 'nullable|numeric|min:0',
+        'proof_document' => 'nullable|file|max:10240', // Max 10MB
+    ];
+
+    // Validation rules for import
+    protected $importRules = [
         'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
     {
+        // Clear any existing persistent messages
+        $this->clearPersistentMessage();
+
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
             $this->exportStartDate = now()->subMonth()->format('d-m-Y');
@@ -70,55 +92,93 @@ class Debts extends Component
         if (!$this->exportEndDate) {
             $this->exportEndDate = now()->format('d-m-Y');
         }
+
+        $this->loadDebtTypes();
     }
 
     public function render()
     {
-        $filteredDebts = $this->filterDebts();
+        $filteredDebts = $this->filterDebts()->load(['debtType', 'payments']);
 
         return view('livewire.debts', [
             'debts' => $filteredDebts,
-            'total_debt' => $filteredDebts->where('status', 'unpaid')->sum('amount'),
-            'paid_amount' => $filteredDebts->where('status', 'paid')->sum('amount'),
-            'remaining_debt' => $filteredDebts->where('status', 'unpaid')->sum('amount'),
+            'total_debt' => $filteredDebts->sum('amount'),
+            'total_paid_amount' => $filteredDebts->sum(function($debt) { return $debt->total_paid; }),
+            'total_remaining_amount' => $filteredDebts->sum(function($debt) { return $debt->remaining_debt; }),
+            'unpaid_debts' => $filteredDebts->where('status', 'unpaid')->count(),
+            'paid_debts' => $filteredDebts->where('status', 'paid')->count(),
         ]);
+    }
+
+    /**
+     * Load debt types for dropdown
+     */
+    public function loadDebtTypes()
+    {
+        $this->debtTypes = MasterDebtType::active()->get();
+    }
+
+    /**
+     * Get debt payment service
+     */
+    private function getDebtPaymentService()
+    {
+        return app(DebtPaymentService::class);
     }
 
     public function saveDebt()
     {
-        $validated = $this->validate();
-        
-        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
-        $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
-        
-        // Handle file upload
-        $proofPath = null;
-        if ($this->proof_document) {
-            $proofPath = $this->proof_document->store('debt_proofs', 'public');
+        try {
+            $this->setPersistentMessage('Starting save process...', 'info');
+
+            // Prepare data for validation - convert empty strings to null for numeric fields
+            $this->cicilan_per_bulan = !empty($this->cicilan_per_bulan) ? $this->cicilan_per_bulan : null;
+
+            $validated = $this->validate();
+            $this->setPersistentMessage('Validation passed', 'info');
+
+            // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+            $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
+
+            // Handle file upload
+            $proofPath = null;
+            if ($this->proof_document) {
+                $proofPath = $this->proof_document->store('debt_proofs', 'public');
+            }
+
+            DebtModel::create([
+                'amount' => $this->amount,
+                'sisa_hutang' => $this->amount, // Initially, remaining debt equals total amount
+                'cicilan_per_bulan' => !empty($this->cicilan_per_bulan) ? $this->cicilan_per_bulan : null,
+                'creditor' => $this->creditor,
+                'due_date' => $dueDateForDb,
+                'description' => $this->description,
+                'debt_type_id' => $this->debt_type_id ?? null,
+                'proof_document_path' => $proofPath,
+                'status' => 'unpaid', // Default to unpaid
+                'paid_date' => null,
+            ]);
+
+            // Reset form
+            $this->resetForm();
+
+            $this->setPersistentMessage('Debt record created successfully.', 'success');
+            return true;
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            return false;
         }
-
-        DebtModel::create([
-            'amount' => $this->amount,
-            'creditor' => $this->creditor,
-            'due_date' => $dueDateForDb,
-            'description' => $this->description,
-            'proof_document_path' => $proofPath,
-            'status' => 'unpaid', // Default to unpaid
-            'paid_date' => null,
-        ]);
-
-        // Reset form
-        $this->resetForm();
-        
-        $this->setPersistentMessage('Debt record created successfully.', 'success');
     }
 
     public function resetForm()
     {
         $this->amount = '';
+        $this->sisa_hutang = '';
+        $this->cicilan_per_bulan = null;
         $this->creditor = '';
         $this->due_date = '';
         $this->description = '';
+        $this->debt_type_id = null;
         $this->proof_document = null;
         $this->status = 'unpaid';
         $this->paid_date = '';
@@ -146,10 +206,80 @@ class Debts extends Component
     {
         $debt = DebtModel::find($id);
         if ($debt) {
-            $debt->status = 'paid';
-            $debt->paid_date = now();
-            $debt->save();
+            $debt->update([
+                'status' => 'paid',
+                'sisa_hutang' => 0,
+                'paid_date' => now(),
+            ]);
+            $this->setPersistentMessage('Debt marked as paid successfully.', 'success');
         }
+    }
+
+    /**
+     * Show payment history for a specific debt
+     */
+    public function showPaymentHistory($debtId)
+    {
+        $this->selectedDebtId = $debtId;
+        $this->selectedDebtPayments = $this->getDebtPaymentService()->getPaymentHistory($debtId);
+        $this->showPaymentHistory = true;
+    }
+
+    /**
+     * Hide payment history modal
+     */
+    public function hidePaymentHistory()
+    {
+        $this->showPaymentHistory = false;
+        $this->selectedDebtId = null;
+        $this->selectedDebtPayments = [];
+    }
+
+    /**
+     * Get total paid amount for a debt
+     */
+    public function getTotalPaidAmount($debtId)
+    {
+        $debt = DebtModel::find($debtId);
+        return $debt ? $debt->total_paid : 0;
+    }
+
+    /**
+     * Get remaining amount for a debt
+     */
+    public function getRemainingAmount($debtId)
+    {
+        $debt = DebtModel::find($debtId);
+        return $debt ? $debt->remaining_debt : 0;
+    }
+
+    /**
+     * Calculate payment percentage for a debt
+     */
+    public function getPaymentPercentage($debtId)
+    {
+        $debt = DebtModel::find($debtId);
+        if (!$debt || $debt->amount == 0) return 0;
+
+        return round(($debt->total_paid / $debt->amount) * 100, 2);
+    }
+
+    /**
+     * Check if debt is overdue
+     */
+    public function isOverdue($debt)
+    {
+        return $debt->status === 'unpaid' && $debt->due_date < now();
+    }
+
+    /**
+     * Get overdue days for a debt
+     */
+    public function getOverdueDays($debt)
+    {
+        if (!$this->isOverdue($debt)) return 0;
+
+        return now()->diffInDays($debt->due_date);
     }
 
     public function deleteDebt($id)
@@ -170,6 +300,12 @@ class Debts extends Component
         $this->resetForm();
         $this->isEditing = false;
         $this->showModal = true;
+        // Ensure delete confirmation is closed when opening create modal
+        $this->showDeleteConfirmation = false;
+        $this->deletingDebtId = null;
+        $this->deletingDebtName = '';
+        // Clear any persistent messages
+        $this->clearPersistentMessage();
     }
 
     public function openEditModal($id)
@@ -178,14 +314,23 @@ class Debts extends Component
         if ($debt) {
             $this->editingId = $debt->id;
             $this->amount = $debt->amount;
+            $this->sisa_hutang = $debt->sisa_hutang;
+            $this->cicilan_per_bulan = $debt->cicilan_per_bulan;
             $this->creditor = $debt->creditor;
             $this->due_date = $debt->due_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->description = $debt->description;
+            $this->debt_type_id = $debt->debt_type_id;
             $this->proof_document = null; // We don't load the file, just the path
             $this->status = $debt->status;
             $this->paid_date = $debt->paid_date ? $debt->paid_date->format('d-m-Y') : null; // Format for DD-MM-YYYY display
             $this->isEditing = true;
             $this->showModal = true;
+            // Ensure delete confirmation is closed when opening edit modal
+            $this->showDeleteConfirmation = false;
+            $this->deletingDebtId = null;
+            $this->deletingDebtName = '';
+            // Clear any persistent messages
+            $this->clearPersistentMessage();
         }
     }
 
@@ -228,25 +373,39 @@ class Debts extends Component
 
     public function saveDebtModal()
     {
+        // Check which branch we're taking
         if ($this->isEditing) {
-            $this->updateDebt();
+            $this->setPersistentMessage('Updating existing debt...', 'info');
+            $result = $this->updateDebt();
         } else {
-            $this->saveDebt();
+            $this->setPersistentMessage('Creating new debt...', 'info');
+            $result = $this->saveDebt();
         }
-        
-        $this->closeCreateModal();
+
+        // Only close modal if operation was successful
+        if ($result) {
+            $this->closeCreateModal();
+        }
     }
 
     public function updateDebt()
     {
-        $validated = $this->validate();
-        
-        // Convert dates from DD-MM-YYYY to YYYY-MM-DD format for database storage
-        $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
-        $paidDateForDb = $this->paid_date ? \DateTime::createFromFormat('d-m-Y', $this->paid_date)->format('Y-m-d') : null;
-        
-        $debt = DebtModel::find($this->editingId);
-        if ($debt) {
+        try {
+            // Prepare data for validation - convert empty strings to null for numeric fields
+            $this->cicilan_per_bulan = !empty($this->cicilan_per_bulan) ? $this->cicilan_per_bulan : null;
+
+            $validated = $this->validate();
+
+            // Convert dates from DD-MM-YYYY to YYYY-MM-DD format for database storage
+            $dueDateForDb = \DateTime::createFromFormat('d-m-Y', $this->due_date)->format('Y-m-d');
+            $paidDateForDb = $this->paid_date ? \DateTime::createFromFormat('d-m-Y', $this->paid_date)->format('Y-m-d') : null;
+
+            $debt = DebtModel::find($this->editingId);
+            if (!$debt) {
+                $this->setPersistentMessage('Debt record not found.', 'error');
+                return false;
+            }
+
             // Handle file upload
             $proofPath = $debt->proof_document_path; // Keep existing path if no new file
             if ($this->proof_document) {
@@ -259,15 +418,22 @@ class Debts extends Component
 
             $debt->update([
                 'amount' => $this->amount,
+                'sisa_hutang' => $this->sisa_hutang,
+                'cicilan_per_bulan' => !empty($this->cicilan_per_bulan) ? $this->cicilan_per_bulan : null,
                 'creditor' => $this->creditor,
                 'due_date' => $dueDateForDb,
                 'description' => $this->description,
+                'debt_type_id' => $this->debt_type_id,
                 'proof_document_path' => $proofPath,
                 'status' => $this->status,
                 'paid_date' => $paidDateForDb,
             ]);
 
             $this->setPersistentMessage('Debt record updated successfully.', 'success');
+            return true;
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            return false;
         }
     }
 
@@ -309,8 +475,8 @@ class Debts extends Component
     
     public function importDebt()
     {
-        $this->validate();
-        
+        $this->validate($this->importRules);
+
         try {
             Excel::import(new DebtsImport, $this->importFile);
             $this->setPersistentMessage('Debt data imported successfully.', 'success');

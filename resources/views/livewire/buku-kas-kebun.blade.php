@@ -391,10 +391,168 @@
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
                     </select>
-                    @error('transaction_type') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('transaction_type')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
+
+                <!-- Debt Payment Section - Show only for expense transactions -->
+                @if($transaction_type === 'expense')
+                <div class="md:col-span-2">
+                    <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-4">
+                            <label class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Bayar Hutang (Opsional)
+                            </label>
+                            <button
+                                type="button"
+                                wire:click="toggleDebtPayment"
+                                class="px-3 py-1 text-xs {{ $is_debt_payment ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-600 hover:bg-gray-700' }} text-white rounded transition-colors"
+                            >
+                                {{ $is_debt_payment ? 'Aktif' : 'Nonaktif' }}
+                            </button>
+                        </div>
+
+                        @if($is_debt_payment)
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Debt Autocomplete -->
+                            <div class="relative">
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Cari Hutang
+                                </label>
+                                <div class="relative">
+                                    <input
+                                        type="text"
+                                        wire:model.live="debt_search"
+                                        wire:keydown.enter.prevent="closeDebtSuggestions"
+                                        placeholder="Ketik nama kreditur atau deskripsi hutang..."
+                                        class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                    />
+                                    @if($debt_search)
+                                    <button
+                                        type="button"
+                                        wire:click="clearDebtSelection"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                    @endif
+                                </div>
+
+                                <!-- Suggestions Dropdown -->
+                                @if($show_debt_suggestions && $debt_suggestions->count() > 0)
+                                <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+                                    @foreach($debt_suggestions as $debt)
+                                    <button
+                                        type="button"
+                                        wire:click="selectDebt({{ $debt->id }})"
+                                        class="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                                    >
+                                        <div class="flex justify-between items-start">
+                                            <div>
+                                                <div class="font-medium text-gray-800 dark:text-gray-200">{{ $debt->creditor }}</div>
+                                                <div class="text-xs text-gray-600 dark:text-gray-400 truncate max-w-xs">{{ $debt->description }}</div>
+                                            </div>
+                                            <div class="text-right ml-4">
+                                                <div class="text-sm font-semibold text-rose-600 dark:text-rose-400">
+                                                    Rp {{ number_format($debt->sisa_hutang, 2, ',', '.') }}
+                                                </div>
+                                                <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                    {{ \Carbon\Carbon::parse($debt->due_date)->format('d M Y') }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    @endforeach
+                                </div>
+                                @endif
+
+                                <!-- Selected Debt Info -->
+                                @if($selected_debt)
+                                <div class="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+                                    <div class="text-sm">
+                                        <div class="font-medium text-emerald-800 dark:text-emerald-300 mb-2">Hutang Terpilih:</div>
+                                        <div class="grid grid-cols-2 gap-2 text-xs">
+                                            <div>
+                                                <span class="text-gray-600 dark:text-gray-400">Kreditur:</span>
+                                                <span class="font-medium">{{ $selected_debt->creditor }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600 dark:text-gray-400">Total Hutang:</span>
+                                                <span class="font-medium">Rp {{ number_format($selected_debt->amount, 2, ',', '.') }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600 dark:text-gray-400">Sisa Hutang:</span>
+                                                <span class="font-medium text-emerald-600 dark:text-emerald-400">Rp {{ number_format($selected_debt->sisa_hutang, 2, ',', '.') }}</span>
+                                            </div>
+                                            <div>
+                                                <span class="text-gray-600 dark:text-gray-400">Jatuh Tempo:</span>
+                                                <span class="font-medium">{{ \Carbon\Carbon::parse($selected_debt->due_date)->format('d M Y') }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                @endif
+                            </div>
+
+                            <!-- Payment Method -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    Metode Pembayaran
+                                </label>
+                                <select
+                                    wire:model="payment_method"
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                >
+                                    <option value="">Pilih metode</option>
+                                    <option value="Cash">Tunai</option>
+                                    <option value="Transfer">Transfer Bank</option>
+                                    <option value="Cheque">Cek</option>
+                                    <option value="Other">Lainnya</option>
+                                </select>
+                            </div>
+
+                            <!-- Reference Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                    No. Referensi (Optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    wire:model="reference_number"
+                                    placeholder="No. bukti transfer, cek, dll."
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+
+                            <!-- Recommended Amount Info -->
+                            @if($selected_debt)
+                            <div class="md:col-span-2">
+                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                                    <div class="text-sm">
+                                        <div class="font-medium text-blue-800 dark:text-blue-300 mb-1">Informasi Pembayaran:</div>
+                                        @if($selected_debt->cicilan_per_bulan > 0)
+                                            <div class="text-xs text-blue-700 dark:text-blue-400">
+                                                Cicilan bulanan yang direkomendasikan: <strong>Rp {{ number_format($selected_debt->cicilan_per_bulan, 2, ',', '.') }}</strong>
+                                            </div>
+                                        @endif
+                                        <div class="text-xs text-blue-700 dark:text-blue-400 mt-1">
+                                            Maksimal yang dapat dibayar: <strong>Rp {{ number_format($selected_debt->sisa_hutang, 2, ',', '.') }}</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                        @endif
+                    </div>
+                </div>
+                @endif
 
                 <!-- Amount -->
                 <div>
@@ -731,3 +889,17 @@
         </x-slot>
     </x-dialog-modal>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Close debt suggestions when clicking outside
+    document.addEventListener('click', function(event) {
+        const debtInput = event.target.closest('[wire\\:model\\.live="debt_search"]');
+        const suggestionsContainer = event.target.closest('.absolute.z-50');
+
+        if (!debtInput && !suggestionsContainer) {
+            @this.closeDebtSuggestions();
+        }
+    });
+});
+</script>

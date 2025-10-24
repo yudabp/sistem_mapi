@@ -1,7 +1,7 @@
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
     <!-- Page header -->
     <div class="mb-8">
-        <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Hutang</h1>
+        <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Data Hutangan</h1>
     </div>
 
     <!-- Persistent Message -->
@@ -49,13 +49,13 @@
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Jumlah Dibayar</div>
                         <div class="flex items-baseline">
-                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($paid_amount, 2, ',', '.') }}</div>
+                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($total_paid_amount, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm p-5">
             <div class="flex justify-between items-start">
                 <div class="flex items-center">
@@ -67,7 +67,7 @@
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Sisa Hutang</div>
                         <div class="flex items-baseline">
-                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($remaining_debt, 2, ',', '.') }}</div>
+                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($total_remaining_amount, 2, ',', '.') }}</div>
                         </div>
                     </div>
                 </div>
@@ -291,6 +291,7 @@
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
                             <th class="p-2 whitespace-nowrap">Pemberi Hutang</th>
                             <th class="p-2 whitespace-nowrap">Jumlah</th>
+                            <th class="p-2 whitespace-nowrap">Sisa Hutang</th>
                             <th class="p-2 whitespace-nowrap">Tanggal Jatuh Tempo</th>
                             <th class="p-2 whitespace-nowrap">Status</th>
                             <th class="p-2 whitespace-nowrap">Bukti</th>
@@ -306,6 +307,11 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">Rp {{ number_format($debt->amount, 2, ',', '.') }}</div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left font-medium {{ $debt->remaining_debt > 0 ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }}">
+                                        Rp {{ number_format($debt->remaining_debt, 2, ',', '.') }}
+                                    </div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">{{ $debt->due_date->format('d M Y') }}</div>
@@ -334,12 +340,12 @@
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     @if($debt->status === 'unpaid')
-                                        <button 
+                                        <!-- <button 
                                             wire:click="markAsPaid({{ $debt->id }})"
                                             class="px-3 py-1 bg-emerald-600 text-white rounded hover:bg-emerald-700 text-sm mr-2"
                                         >
                                             Tandai Lunas
-                                        </button>
+                                        </button> -->
                                     @endif
                                     <div class="flex space-x-2">
                                         <button 
@@ -359,7 +365,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="p-2 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="7" class="p-2 text-center text-gray-500 dark:text-gray-400">
                                     Tidak ada data hutang ditemukan
                                 </td>
                             </tr>
@@ -383,7 +389,9 @@
                 </div>
             @endif
 
-            <form wire:submit.prevent="saveDebtModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <form>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
@@ -473,6 +481,44 @@
                     @enderror
                 </div>
 
+                <!-- Debt Type -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="debt_type_id">
+                        Jenis Hutang
+                    </label>
+                    <select
+                        id="debt_type_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="debt_type_id"
+                    >
+                        <option value="">Pilih Jenis Hutang</option>
+                        @foreach($debtTypes as $debtType)
+                            <option value="{{ $debtType->id }}">{{ $debtType->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('debt_type_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Cicilan per Bulan -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="cicilan_per_bulan">
+                        Cicilan per Bulan (Opsional)
+                    </label>
+                    <input
+                        id="cicilan_per_bulan"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="number"
+                        step="0.01"
+                        wire:model="cicilan_per_bulan"
+                        placeholder="Masukkan cicilan per bulan"
+                    />
+                    @error('cicilan_per_bulan')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+
                 <!-- Description -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
@@ -518,14 +564,18 @@
                 {{ __('Cancel') }}
             </x-secondary-button>
 
-            <x-button class="ms-3" wire:click="saveDebtModal" wire:loading.attr="disabled">
+            <button
+                wire:click="saveDebtModal"
+                wire:loading.attr="disabled"
+                class="ms-3 px-4 py-2 bg-violet-600 text-white hover:bg-violet-700 rounded-lg font-medium transition-colors"
+            >
                 {{ $isEditing ? 'Update' : 'Save' }} Debt Record
-            </x-button>
+            </button>
         </x-slot>
     </x-dialog-modal>
 
     <!-- Delete Confirmation Modal -->
-    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
+    <x-confirmation-modal wire:model="showDeleteConfirmation">
         <x-slot name="title">
             {{ __('Delete Debt Record') }}
         </x-slot>

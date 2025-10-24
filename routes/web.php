@@ -61,7 +61,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'keuanganPerusahaan'])->name('keuangan-perusahaan');
     Route::get('/buku-kas-kebun', [App\Http\Controllers\PalmOilController::class, 'bukuKasKebun'])->name('buku-kas-kebun');
     Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
-    Route::get('/keuangan-perusahaan/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
+    Route::get('/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
     Route::get('/akses-user', [App\Http\Controllers\PalmOilController::class, 'userAccess'])->name('akses-user');
     Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'settings'])->name('settings');
 
