@@ -8,6 +8,7 @@ use App\Models\Production;
 use App\Models\Pks;
 use App\Models\Division;
 use App\Models\VehicleNumber;
+use Illuminate\Support\Facades\DB;
 
 class ProductionTableSeeder extends Seeder
 {
