@@ -44,28 +44,38 @@ PT API APPS is a comprehensive palm oil plantation management system designed to
 - **Responsive Design**: Grid-based form layout
 
 ### 5. Financial Management
-#### 5.1 Company Financials (page-datakeuangan-subperusahaan.html)
+#### 5.1 Keuangan Perusahaan (KP) - Company Financial Management
 - **Transaction Input Form**:
-  - Date, automatic transaction number
+  - Date, automatic transaction number (KP prefix)
   - Transaction type (Income/Expense)
   - Amount, source/destination, received by
   - Proof document upload
-  - Notes field
+  - Notes field, category selection
 - **Financial Summary**: Income, expense, and balance calculations
 - **Advanced Filtering**: Date range, transaction type, search functionality
 - **Export Functions**: CSV and PDF export
 - **Document Preview**: Image preview and file download for proof documents
 - **Responsive Design**: Grid layout with Tailwind CSS
+- **Categories**: Sales Revenue, Personnel Cost, Administrative Cost, Financial Cost, Tax, Investment, Loan, Other Income, Other Expense
 
-#### 5.2 Cash Book (page-datakeuangan-subbukukas.html)
+#### 5.2 Buku Kas Kebun (BKK) - Garden Cash Book Management
 - **Cash Transaction Form**:
-  - Date, automatic transaction number
+  - Date, automatic transaction number (BKK prefix)
   - Transaction type (Income/Expense)
   - Amount, purpose, description
   - Proof document upload, notes
+  - Category selection, KP transaction linking
 - **Financial Summary**: Income, expense, and balance tracking
 - **Export Functions**: CSV and PDF export
-- **Bootstrap Styling**: Clean UI with responsive design
+- **KP Integration**: Links to Keuangan Perusahaan transactions for audit trail
+- **Categories**: Operational Cost, Maintenance Cost, Logistics Cost, Harvesting Cost, Fertilizer Cost, Pest Control Cost, Transportation Cost, Fuel Cost
+
+#### 5.3 KP → BKK Auto-create Business Logic
+- **Automatic Transaction Creation**: When KP expense is created, corresponding BKK income entry is auto-generated
+- **Audit Trail**: Maintains relationship between KP and BKK transactions via foreign key
+- **Data Integrity**: Ensures financial consistency between company and garden-level transactions
+- **Error Handling**: Rollback mechanisms for failed auto-creations
+- **Logging**: Comprehensive audit trail for all auto-created transactions
 
 #### 5.3 Debt Management (page-datakeuangan-subdatahutang.html)
 - **Debt Registration Form**:
@@ -127,9 +137,10 @@ Dashboard → Select Module → Input Data → View/Manage Data → Export Repor
 ### Data Models Identified
 1. **Employee Model**: NDP, name, department, position, grade, family status, salary, status
 2. **Production Model**: Transaction ID, date, SP number, vehicle number, TBS, KG, division, PKS
-3. **Sales Model**: SP number, TBS, KG, price, total, sales proof
-4. **Financial Model**: Transaction date, number, type, amount, source/destination, received by, proof, notes
-5. **Debt Model**: Amount, creditor, due date, description, proof, status
+3. **Sales Model**: SP number, TBS, KG, price, total, sales proof, tax information
+4. **Keuangan Perusahaan (KP) Model**: Transaction date, number (KP prefix), type, amount, source/destination, received by, proof, notes, category
+5. **Buku Kas Kebun (BKK) Model**: Transaction date, number (BKK prefix), type, amount, source/destination, received by, proof, notes, category, KP foreign key
+6. **Debt Model**: Amount, creditor, due date, description, proof, status, payment history
 
 ## Proposed Laravel Livewire Implementation
 
@@ -147,13 +158,19 @@ Dashboard → Select Module → Input Data → View/Manage Data → Export Repor
 4. **Data Export**: Laravel Excel package for export functionality
 5. **Search & Filter**: Server-side filtering with Livewire actions
 6. **Authentication**: Laravel's built-in auth system for user management
+7. **Financial Separation**: KP and BKK tables with proper categorization and auto-creation logic
+8. **Tax Management**: Automated tax calculation for sales transactions
+9. **SP Number Autocomplete**: Real-time search functionality for production data integration
+10. **Foreign Key Relations**: Proper database relationships with integrity constraints
 
 ### Database Structure
 - **employees** table: Employee information
 - **production** table: Production records
-- **sales** table: Sales transactions
-- **financial_transactions** table: Financial entries
-- **debts** table: Debt records
+- **sales** table: Sales transactions with tax information
+- **keuangan_perusahaan** table: Company-level financial transactions (KP)
+- **buku_kas_kebun** table: Garden-level financial transactions (BKK) with KP foreign key
+- **debts** table: Debt records with payment tracking
+- **Master tables**: divisions, departments, positions, vehicle_numbers, pks, family_compositions, employment_statuses
 
 ### Security Considerations
 - User authentication and authorization
