@@ -12,10 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('master_bkk_expense_categories', function (Blueprint $table) {
-            $table->boolean('is_debt_payment')->default(false)->after('description'); // Mark if this category is for debt payments
+            // Only add the column if it doesn't exist
+            if (!Schema::hasColumn('master_bkk_expense_categories', 'is_debt_payment')) {
+                $table->boolean('is_debt_payment')->default(false)->after('description'); // Mark if this category is for debt payments
 
-            // Add index
-            $table->index('is_debt_payment');
+                // Add index
+                $table->index('is_debt_payment');
+            }
         });
     }
 

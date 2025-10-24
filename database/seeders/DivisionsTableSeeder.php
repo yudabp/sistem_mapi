@@ -14,11 +14,11 @@ class DivisionsTableSeeder extends Seeder
     public function run(): void
     {
         $divisions = [
-            ['name' => 'Afdeling I', 'description' => 'Afdeling Pemeliharaan Tanaman', 'is_active' => true],
-            ['name' => 'Afdeling II', 'description' => 'Afdeling Pemeliharaan Tanaman', 'is_active' => true],
-            ['name' => 'Afdeling III', 'description' => 'Afdeling Pemeliharaan Tanaman', 'is_active' => true],
-            ['name' => 'Afdeling IV', 'description' => 'Afdeling Pemeliharaan Tanaman', 'is_active' => true],
-            ['name' => 'Afdeling V', 'description' => 'Afdeling Pemeliharaan Tanaman', 'is_active' => true],
+            ['name' => 'Afdeling A', 'description' => 'Afdeling Pemeliharaan Tanaman A', 'is_active' => true],
+            ['name' => 'Afdeling B', 'description' => 'Afdeling Pemeliharaan Tanaman B', 'is_active' => true],
+            ['name' => 'Afdeling C', 'description' => 'Afdeling Pemeliharaan Tanaman C', 'is_active' => true],
+            ['name' => 'Afdeling D', 'description' => 'Afdeling Pemeliharaan Tanaman D', 'is_active' => true],
+            ['name' => 'Afdeling E', 'description' => 'Afdeling Pemeliharaan Tanaman E', 'is_active' => true],
         ];
 
         foreach ($divisions as $division) {

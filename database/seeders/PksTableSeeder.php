@@ -14,10 +14,11 @@ class PksTableSeeder extends Seeder
     public function run(): void
     {
         $pks = [
-            ['name' => 'PKS I', 'description' => 'Pabrik Kelapa Sawit I', 'is_active' => true],
-            ['name' => 'PKS II', 'description' => 'Pabrik Kelapa Sawit II', 'is_active' => true],
-            ['name' => 'PKS III', 'description' => 'Pabrik Kelapa Sawit III', 'is_active' => true],
-            ['name' => 'PKS IV', 'description' => 'Pabrik Kelapa Sawit IV', 'is_active' => true],
+            ['name' => 'PKS Central', 'description' => 'Pabrik Kelapa Sawit Pusat', 'is_active' => true],
+            ['name' => 'PKS East', 'description' => 'Pabrik Kelapa Sawit Timur', 'is_active' => true],
+            ['name' => 'PKS West', 'description' => 'Pabrik Kelapa Sawit Barat', 'is_active' => true],
+            ['name' => 'PKS North', 'description' => 'Pabrik Kelapa Sawit Utara', 'is_active' => true],
+            ['name' => 'PKS South', 'description' => 'Pabrik Kelapa Sawit Selatan', 'is_active' => true],
         ];
 
         foreach ($pks as $pksItem) {

@@ -12,8 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('hutang_pembayaran', function (Blueprint $table) {
-            $table->string('reference_number')->nullable()->after('payment_method'); // Bank transfer reference, etc.
-            $table->string('received_by')->nullable()->after('reference_number'); // Person who received the payment
+            // Only add reference_number column if it doesn't exist
+            if (!Schema::hasColumn('hutang_pembayaran', 'reference_number')) {
+                $table->string('reference_number')->nullable()->after('payment_method'); // Bank transfer reference, etc.
+            }
+            
+            // Only add received_by column if it doesn't exist
+            if (!Schema::hasColumn('hutang_pembayaran', 'received_by')) {
+                $table->string('received_by')->nullable()->after('reference_number'); // Person who received the payment
+            }
         });
     }
 
