@@ -383,30 +383,22 @@
         </x-slot>
 
         <x-slot name="content">
-            @if(session()->has('message'))
-                <div class="mb-4 bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500">
-                    {{ session('message') }}
-                </div>
-            @endif
-
-            
-            <form>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form wire:submit.prevent="saveDebtModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
                         Jumlah Hutang (Rp)
                     </label>
-                    <input 
+                    <input
                         id="amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="number"
                         step="0.01"
                         wire:model="amount"
                         placeholder="Masukkan jumlah hutang"
                     />
-                    @error('amount') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('amount')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -415,15 +407,15 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
                         Pemberi Hutang
                     </label>
-                    <input 
+                    <input
                         id="creditor"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="text"
                         wire:model="creditor"
                         placeholder="Masukkan nama pemberi hutang"
                     />
-                    @error('creditor') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('creditor')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -432,10 +424,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="due_date">
                         Tanggal Jatuh Tempo (DD-MM-YYYY)
                     </label>
-                    <input 
+                    <input
                         id="due_date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="text"
                         placeholder="DD-MM-YYYY"
                         wire:model="due_date"
                         x-data
@@ -443,7 +435,7 @@
                             $el.addEventListener('input', function(e) {
                                 let input = e.target.value.replace(/\D/g, '');
                                 let formatted = '';
-                                
+
                                 if (input.length > 0) {
                                     formatted = input.substring(0, 2); // Day
                                     if (input.length >= 3) {
@@ -453,21 +445,21 @@
                                         }
                                     }
                                 }
-                                
+
                                 $el.value = formatted;
                             });
-                            
+
                             $el.addEventListener('blur', function(e) {
                                 // Validate date format on blur
                                 let dateValue = e.target.value;
                                 let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
                                 let match = dateValue.match(datePattern);
-                                
+
                                 if (match) {
                                     let day = parseInt(match[1]);
                                     let month = parseInt(match[2]);
                                     let year = parseInt(match[3]);
-                                    
+
                                     // Basic validation
                                     if (day < 1 || day > 31 || month < 1 || month > 12) {
                                         // You can add custom validation here
@@ -476,8 +468,8 @@
                             });
                         "
                     />
-                    @error('due_date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('due_date')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -524,15 +516,15 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
                         Keterangan
                     </label>
-                    <textarea 
+                    <textarea
                         id="description"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="description"
                         placeholder="Masukkan keterangan detail hutang"
                         rows="2"
                     ></textarea>
-                    @error('description') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('description')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -541,9 +533,9 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
                         Bukti Dokumen
                     </label>
-                    <input 
+                    <input
                         id="proof_document"
-                        type="file" 
+                        type="file"
                         wire:model="proof_document"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
@@ -552,8 +544,8 @@
                             <small class="text-gray-500">Biarkan kosong untuk menyimpan dokumen yang ada</small>
                         </div>
                     @endif
-                    @error('proof_document') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('proof_document')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
             </form>
@@ -575,7 +567,7 @@
     </x-dialog-modal>
 
     <!-- Delete Confirmation Modal -->
-    <x-confirmation-modal wire:model="showDeleteConfirmation">
+    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
             {{ __('Delete Debt Record') }}
         </x-slot>
@@ -611,7 +603,7 @@
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="$set('showPhotoModal', false)" wire:loading.attr="disabled">
+            <x-secondary-button wire:click="closePhotoModal" wire:loading.attr="disabled">
                 {{ __('Close') }}
             </x-secondary-button>
         </x-slot>
@@ -637,24 +629,24 @@
                     <li><strong>paid_date</strong> - Paid date</li>
                 </ul>
             </div>
-            
+
             <form wire:submit.prevent="importDebt" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
                         Excel File
                     </label>
-                    <input 
+                    <input
                         id="importFile"
-                        type="file" 
+                        type="file"
                         wire:model="importFile"
                         accept=".xlsx,.xls,.csv"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
-                    @error('importFile') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('importFile')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
-                
+
                 <div class="text-xs text-gray-500 dark:text-gray-400">
                     Supported formats: .xlsx, .xls, .csv
                 </div>
