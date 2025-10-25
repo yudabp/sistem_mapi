@@ -2,7 +2,7 @@
 
 namespace App\Exports;
 
-use App\Models\Sale as SaleModel;
+use App\Models\BukuKasKebun;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use Illuminate\Support\Facades\Auth;
 use DateTime;
 
-class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMapping, WithEvents
+class BukuKasKebunExportWithHeaders implements FromCollection, WithHeadings, WithMapping, WithEvents
 {
     protected $startDate;
     protected $endDate;
@@ -44,10 +44,10 @@ class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMappin
 
     public function collection()
     {
-        $query = SaleModel::query();
+        $query = BukuKasKebun::query();
 
         if ($this->startDate && $this->endDate) {
-            $query->whereBetween('sale_date', [$this->startDate, $this->endDate]);
+            $query->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
         }
 
         return $query->get();
@@ -57,37 +57,39 @@ class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMappin
     {
         return [
             'ID',
-            'SP Number',
-            'TBS Quantity',
-            'KG Quantity',
-            'Price per KG',
-            'Total Amount',
-            'Tax Amount',
-            'Total with Tax',
-            'Sale Date',
-            'Customer Name',
-            'Customer Address',
+            'Transaction Number',
+            'Transaction Date',
+            'Transaction Type',
+            'Amount',
+            'Source/Destination',
+            'Received By',
+            'Notes',
+            'Category',
+            'Expense Category',
+            'Debt ID',
+            'KP ID',
             'Created At',
             'Updated At',
         ];
     }
 
-    public function map($sale): array
+    public function map($transaction): array
     {
         return [
-            $sale->id,
-            $sale->sp_number,
-            $sale->tbs_quantity,
-            $sale->kg_quantity,
-            $sale->price_per_kg,
-            $sale->total_amount,
-            $sale->tax_amount,
-            $sale->total_with_tax,
-            $sale->sale_date->format('d-m-Y'),
-            $sale->customer_name,
-            $sale->customer_address,
-            $sale->created_at->format('d-m-Y H:i:s'),
-            $sale->updated_at->format('d-m-Y H:i:s'),
+            $transaction->id,
+            $transaction->transaction_number,
+            $transaction->transaction_date->format('d-m-Y'),
+            $transaction->transaction_type,
+            $transaction->amount,
+            $transaction->source_destination,
+            $transaction->received_by,
+            $transaction->notes,
+            $transaction->category,
+            $transaction->expenseCategory ? $transaction->expenseCategory->name : null, // Get expense category name if available
+            $transaction->debt_id,
+            $transaction->kp_id,
+            $transaction->created_at->format('d-m-Y H:i:s'),
+            $transaction->updated_at->format('d-m-Y H:i:s'),
         ];
     }
 
@@ -96,7 +98,7 @@ class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMappin
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Add header information
-                $event->sheet->setCellValue('A1', 'Sales Data Export');
+                $event->sheet->setCellValue('A1', 'Buku Kas Kebun Data Export');
                 $event->sheet->setCellValue('A2', 'Exported by: ' . ($this->user ? $this->user->name : 'System'));
                 $event->sheet->setCellValue('A3', 'Exported on: ' . now()->format('Y-m-d H:i:s'));
                 

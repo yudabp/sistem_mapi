@@ -80,10 +80,10 @@ class EmployeesExportWithHeaders implements FromCollection, WithHeadings, WithMa
             $employee->id,
             $employee->ndp,
             $employee->name,
-            $employee->department,
-            $employee->position,
+            $employee->department_name, // Uses accessor method for backward compatibility
+            $employee->position_name, // Uses accessor method for backward compatibility
             $employee->grade,
-            $employee->family_composition,
+            $employee->family_composition_number, // Uses accessor method for backward compatibility
             $employee->monthly_salary,
             $employee->status,
             $employee->hire_date->format('d-m-Y'),

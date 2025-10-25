@@ -450,6 +450,7 @@ class Production extends Component
     public function downloadSampleExcel()
     {
         // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
         $sampleData = [
             ['transaction_number', 'date', 'sp_number', 'vehicle_number', 'tbs_quantity', 'kg_quantity', 'division', 'pks'],
             ['TRX001', now()->format('Y-m-d'), 'SP001', 'B1234XYZ', '1000.50', '950.20', 'Afdeling A', 'PKS 1'],
