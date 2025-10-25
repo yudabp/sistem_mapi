@@ -8,12 +8,12 @@ class DebtsSampleController extends Controller
 {
     public function downloadSample()
     {
-        // Sample data for debts
+        // Sample data for debts - Updated to match current table structure
         $sampleData = [
-            ['amount', 'creditor', 'due_date', 'description', 'status', 'paid_date'],
-            ['5000000', 'PT Supplier Sawit', date('d-m-Y', strtotime('+30 days')), 'Pembelian pupuk untuk kebun', 'unpaid', ''],
-            ['2500000', 'CV Transport Berkah', date('d-m-Y', strtotime('+15 days')), 'Biaya transport TBS bulan ini', 'unpaid', ''],
-            ['1500000', 'Bpk. Ali Karyawan', date('d-m-Y', strtotime('+7 days')), 'Pinjaman karyawan', 'unpaid', ''],
+            ['amount', 'sisa_hutang', 'cicilan_per_bulan', 'creditor', 'debt_type', 'due_date', 'description', 'status', 'paid_date'],
+            ['50000000', '50000000', '10000000', 'Bank Mandiri', 'Hutang Bank', date('Y-m-d', strtotime('+30 days')), 'Pembelian alat produksi', 'unpaid', ''],
+            ['25000000', '15000000', '5000000', 'PT Supplier', 'Hutang Supplier', date('Y-m-d', strtotime('+15 days')), 'Pembelian bahan baku', 'unpaid', ''],
+            ['15000000', '0', '0', 'Koperasi Karyawan', 'Hutang Karyawan', date('Y-m-d', strtotime('+7 days')), 'Pinjaman karyawan', 'paid', date('Y-m-d')],
         ];
         
         $csv = '';

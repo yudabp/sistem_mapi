@@ -417,6 +417,36 @@ class CashBook extends Component
         }
     }
     
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure (BukuKasKebun model)
+        $sampleData = [
+            ['transaction_date', 'transaction_type', 'amount', 'purpose', 'notes', 'category'],
+            [now()->format('Y-m-d'), 'expense', '2500000', 'Fuel Purchase', 'Bensin kendaraan operasional', 'Transportation Cost'],
+            [now()->format('Y-m-d'), 'expense', '1800000', 'Fertilizer Purchase', 'Pembelian pupuk organik', 'Fertilizer Cost'],
+            [now()->format('Y-m-d'), 'income', '5000000', 'Petty Cash Return', 'Pengembalian dana petty cash', 'Other Income'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_cashbook_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
     // Export methods
     public function exportToExcel()
     {

@@ -499,6 +499,36 @@ class Debts extends Component
         }
     }
     
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
+        $sampleData = [
+            ['amount', 'sisa_hutang', 'cicilan_per_bulan', 'creditor', 'debt_type', 'due_date', 'description', 'status', 'paid_date'],
+            ['50000000', '50000000', '10000000', 'Bank Mandiri', 'Hutang Bank', now()->addMonth()->format('Y-m-d'), 'Pembelian alat produksi', 'unpaid', ''],
+            ['25000000', '15000000', '5000000', 'Supplier A', 'Hutang Supplier', now()->addDays(15)->format('Y-m-d'), 'Pembelian bahan baku', 'unpaid', ''],
+            ['15000000', '0', '0', 'PT. Karyawan Sejahtera', 'Hutang Karyawan', now()->addDays(7)->format('Y-m-d'), 'Bonus tahunan', 'paid', now()->format('Y-m-d')],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_debts_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
     // Export methods
     public function exportToExcel()
     {

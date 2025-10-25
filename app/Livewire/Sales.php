@@ -574,6 +574,36 @@ class Sales extends Component
         }
     }
     
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
+        $sampleData = [
+            ['sp_number', 'tbs_quantity', 'kg_quantity', 'price_per_kg', 'total_amount', 'sale_date', 'customer_name', 'customer_address'],
+            ['SP001', '1000.50', '950.20', '2500.00', '2375475.00', now()->format('Y-m-d'), 'PT. ABC Perkasa', 'Jl. Raya No. 123, Jakarta'],
+            ['SP002', '1200.75', '1140.80', '2600.00', '2966080.00', now()->format('Y-m-d'), 'CV. XYZ Makmur', 'Jl. Merdeka No. 45, Bandung'],
+            ['SP003', '950.25', '902.75', '2450.00', '2211737.50', now()->format('Y-m-d'), 'PT. Kertas Kita', 'Jl. Diponegoro No. 78, Semarang'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_sales_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
     // Export methods
     public function exportToExcel()
     {

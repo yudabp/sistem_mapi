@@ -336,6 +336,36 @@ class Employees extends Component
         }
     }
     
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
+        $sampleData = [
+            ['ndp', 'name', 'department', 'position', 'grade', 'family_composition', 'monthly_salary', 'status', 'hire_date', 'address', 'phone', 'email'],
+            ['NDP001', 'Budi Santoso', 'Finance', 'Manager', 'A', '3', '8000000', 'active', now()->format('Y-m-d'), 'Jl. Merdeka No. 123', '081234567890', 'budi@example.com'],
+            ['NDP002', 'Siti Aminah', 'Production', 'Supervisor', 'B', '2', '6000000', 'active', now()->format('Y-m-d'), 'Jl. Sudirman No. 45', '082345678901', 'siti@example.com'],
+            ['NDP003', 'Ahmad Fauzi', 'Sales', 'Staff', 'C', '1', '4500000', 'active', now()->format('Y-m-d'), 'Jl. Gatot Subroto No. 78', '083456789012', 'ahmad@example.com'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_employees_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
     // Export methods
     public function exportToExcel()
     {
