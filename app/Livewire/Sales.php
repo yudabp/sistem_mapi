@@ -13,7 +13,6 @@ use App\Exports\SalesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\View;
 
 class Sales extends Component
 {
