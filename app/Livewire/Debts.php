@@ -13,6 +13,7 @@ use App\Imports\DebtsImport;
 use App\Exports\DebtsExportWithHeaders;
 use App\Exports\DebtsPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
 
@@ -478,9 +479,21 @@ class Debts extends Component
         $this->validate($this->importRules);
 
         try {
-            Excel::import(new DebtsImport, $this->importFile);
+            $import = new DebtsImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Debt data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }

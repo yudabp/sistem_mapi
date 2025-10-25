@@ -13,6 +13,7 @@ use App\Imports\ProductionImport;
 use App\Exports\ProductionExportWithHeaders;
 use App\Exports\ProductionPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
 
@@ -439,9 +440,21 @@ class Production extends Component
         $this->validate();
         
         try {
-            Excel::import(new ProductionImport, $this->importFile);
+            $import = new ProductionImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Production data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }

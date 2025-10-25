@@ -9,8 +9,9 @@ use App\Models\FamilyComposition;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithFailures;
 
-class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
+class EmployeesImport implements ToModel, WithHeadingRow, WithValidation, WithFailures
 {
     public function model(array $row)
     {

@@ -7,9 +7,10 @@ use App\Models\Production;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\WithFailures;
 use Illuminate\Validation\Rule;
 
-class SalesImport implements ToModel, WithHeadingRow, WithValidation
+class SalesImport implements ToModel, WithHeadingRow, WithValidation, WithFailures
 {
     public function model(array $row)
     {

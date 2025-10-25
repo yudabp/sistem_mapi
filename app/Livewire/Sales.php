@@ -11,6 +11,7 @@ use App\Imports\SalesImport;
 use App\Exports\SalesExportWithHeaders;
 use App\Exports\SalesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
 
@@ -553,9 +554,21 @@ class Sales extends Component
         $this->validate();
         
         try {
-            Excel::import(new SalesImport, $this->importFile);
+            $import = new SalesImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Sales data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }

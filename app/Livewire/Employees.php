@@ -14,6 +14,7 @@ use App\Imports\EmployeesImport;
 use App\Exports\EmployeesExportWithHeaders;
 use App\Exports\EmployeesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
 
@@ -315,9 +316,21 @@ class Employees extends Component
         $this->validate();
         
         try {
-            Excel::import(new EmployeesImport, $this->importFile);
+            $import = new EmployeesImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Employee data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }
