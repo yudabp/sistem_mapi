@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Exports\SalesPdfExporter;
+use App\Exports\EmployeesPdfExporter;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class SalesController extends Controller
+class EmployeesController extends Controller
 {
     public function exportPdf(Request $request)
     {
@@ -14,13 +14,13 @@ class SalesController extends Controller
         $endDate = $request->query('end_date');
         
         // Create the PDF exporter
-        $exporter = new SalesPdfExporter($startDate, $endDate);
+        $exporter = new EmployeesPdfExporter($startDate, $endDate);
         $html = $exporter->generate();
 
         // Ensure proper UTF-8 encoding
         $html = mb_convert_encoding($html, 'UTF-8', 'auto');
         
-        $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
 
         // Create DomPDF instance with proper UTF-8 configuration
         $options = new \Dompdf\Options();
