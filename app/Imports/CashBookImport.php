@@ -6,9 +6,9 @@ use App\Models\BukuKasKebun;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-use Maatwebsite\Excel\Concerns\WithFailures;
 
-class CashBookImport implements ToModel, WithHeadingRow, WithValidation, WithFailures
+
+class CashBookImport implements ToModel, WithHeadingRow, WithValidation
 {
     public function model(array $row)
     {
