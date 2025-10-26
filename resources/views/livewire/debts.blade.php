@@ -82,7 +82,7 @@
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Registrasi Hutang</h2>
                 <div class="flex flex-wrap gap-2">
                     <!-- Import button with dropdown -->
-                    @if(Auth::user()->can('import debts'))
+                    @canedit
                     <div class="relative group">
                         <button 
                             type="button"
@@ -114,7 +114,7 @@
                             </a>
                         </div>
                     </div>
-                    @endif
+                    @endcanedit
                     
                     <div class="relative group">
                         <button 
