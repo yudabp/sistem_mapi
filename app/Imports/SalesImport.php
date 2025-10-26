@@ -62,6 +62,7 @@ class SalesImport implements ToModel, WithHeadingRow, WithValidation
         }
 
         return new SaleModel([
+            'sp_number' => $row['sp_number'] ?? null, // Backward compatibility
             'production_id' => $production ? $production->id : null,
             'tbs_quantity' => $row['tbs_quantity'] ?? null,
             'kg_quantity' => $row['kg_quantity'] ?? null,

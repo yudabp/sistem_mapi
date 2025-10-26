@@ -99,9 +99,12 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
         return new EmployeeModel([
             'ndp' => $row['ndp'] ?? null,
             'name' => $row['name'] ?? null,
+            'department' => $row['department'] ?? null, // Backward compatibility
             'department_id' => $department ? $department->id : null,
+            'position' => $row['position'] ?? null, // Backward compatibility
             'position_id' => $position ? $position->id : null,
             'grade' => $row['grade'] ?? null,
+            'family_composition' => $row['family_composition'] ?? null, // Backward compatibility
             'family_composition_id' => $familyComposition ? $familyComposition->id : null,
             'monthly_salary' => $row['monthly_salary'] ?? null,
             'status' => $row['status'] ?? 'active',
