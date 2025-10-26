@@ -12,6 +12,47 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 
 class FinancialImport implements ToModel, WithHeadingRow, WithValidation
 {
+    private function parseFlexibleDate($dateValue)
+    {
+        if (empty($dateValue)) {
+            return null;
+        }
+        
+        try {
+            // Try Carbon's default parsing first
+            return Carbon::parse($dateValue)->format('Y-m-d');
+        } catch (\Exception $e) {
+            // If that fails, try common ambiguous formats
+            // Handle MM/DD/YYYY or DD/MM/YYYY formats
+            if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $dateValue, $matches)) {
+                $part1 = (int)$matches[1];
+                $part2 = (int)$matches[2];
+                $year = (int)$matches[3];
+                
+                // Try assuming first part is month
+                if ($part1 >= 1 && $part1 <= 12) {
+                    try {
+                        return Carbon::createFromDate($year, $part1, $part2)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        // Continue to next attempt
+                    }
+                }
+                
+                // Try assuming second part is month
+                if ($part2 >= 1 && $part2 <= 12) {
+                    try {
+                        return Carbon::createFromDate($year, $part2, $part1)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        // Continue to next attempt
+                    }
+                }
+            }
+        }
+        
+        // If all parsing attempts fail, return null
+        return null;
+    }
+
     public function model(array $row)
     {
         // Determine if transaction belongs to KP (Keuangan Perusahaan) or BKK (Buku Kas Kebun)
@@ -20,7 +61,7 @@ class FinancialImport implements ToModel, WithHeadingRow, WithValidation
         
         if ($isKP) {
             return new KeuanganPerusahaan([
-                'transaction_date' => $row['transaction_date'] ? Carbon::parse($row['transaction_date'])->format('Y-m-d') : null,
+                'transaction_date' => $row['transaction_date'] ? $this->parseFlexibleDate($row['transaction_date']) : null,
                 'transaction_type' => $row['transaction_type'] ?? null,
                 'amount' => $row['amount'] ?? null,
                 'source_destination' => $row['source_destination'] ?? null,
@@ -31,7 +72,7 @@ class FinancialImport implements ToModel, WithHeadingRow, WithValidation
             ]);
         } else {
             return new BukuKasKebun([
-                'transaction_date' => $row['transaction_date'] ? Carbon::parse($row['transaction_date'])->format('Y-m-d') : null,
+                'transaction_date' => $row['transaction_date'] ? $this->parseFlexibleDate($row['transaction_date']) : null,
                 'transaction_type' => $row['transaction_type'] ?? null,
                 'amount' => $row['amount'] ?? null,
                 'source_destination' => $row['source_destination'] ?? null,

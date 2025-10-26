@@ -12,6 +12,47 @@ use Illuminate\Validation\Rule;
 
 class SalesImport implements ToModel, WithHeadingRow, WithValidation
 {
+    private function parseFlexibleDate($dateValue)
+    {
+        if (empty($dateValue)) {
+            return null;
+        }
+        
+        try {
+            // Try Carbon's default parsing first
+            return Carbon::parse($dateValue)->format('Y-m-d');
+        } catch (\Exception $e) {
+            // If that fails, try common ambiguous formats
+            // Handle MM/DD/YYYY or DD/MM/YYYY formats
+            if (preg_match('/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/', $dateValue, $matches)) {
+                $part1 = (int)$matches[1];
+                $part2 = (int)$matches[2];
+                $year = (int)$matches[3];
+                
+                // Try assuming first part is month
+                if ($part1 >= 1 && $part1 <= 12) {
+                    try {
+                        return Carbon::createFromDate($year, $part1, $part2)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        // Continue to next attempt
+                    }
+                }
+                
+                // Try assuming second part is month
+                if ($part2 >= 1 && $part2 <= 12) {
+                    try {
+                        return Carbon::createFromDate($year, $part2, $part1)->format('Y-m-d');
+                    } catch (\Exception $e) {
+                        // Continue to next attempt
+                    }
+                }
+            }
+        }
+        
+        // If all parsing attempts fail, return null
+        return null;
+    }
+
     public function model(array $row)
     {
         // Find production_id by SP number
@@ -26,7 +67,7 @@ class SalesImport implements ToModel, WithHeadingRow, WithValidation
             'kg_quantity' => $row['kg_quantity'] ?? null,
             'price_per_kg' => $row['price_per_kg'] ?? null,
             'total_amount' => $row['total_amount'] ?? null,
-            'sale_date' => $row['sale_date'] ? Carbon::parse($row['sale_date'])->format('Y-m-d') : null,
+            'sale_date' => $row['sale_date'] ? $this->parseFlexibleDate($row['sale_date']) : null,
             'customer_name' => $row['customer_name'] ?? null,
             'customer_address' => $row['customer_address'] ?? null,
         ]);
