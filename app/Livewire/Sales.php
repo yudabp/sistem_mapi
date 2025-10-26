@@ -552,7 +552,9 @@ class Sales extends Component
     
     public function importSales()
     {
-        $this->validate();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
         
         try {
             $import = new SalesImport();

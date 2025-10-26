@@ -438,7 +438,9 @@ class Production extends Component
     
     public function importProduction()
     {
-        $this->validate();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
         
         try {
             $import = new ProductionImport();

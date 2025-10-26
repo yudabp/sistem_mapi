@@ -424,7 +424,9 @@ class Financial extends Component
     
     public function importTransaction()
     {
-        $this->validate();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
         
         try {
             $import = new FinancialImport();
@@ -437,13 +439,23 @@ class Financial extends Component
             $failures = $e->failures();
 
             foreach ($failures as $failure) {
-                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+                // Ensure all error messages are UTF-8 clean
+                $row = $failure->row();
+                $errors = $failure->errors();
+                $cleanErrors = array_map(function($error) {
+                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                }, $errors);
+                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
             }
 
             $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
-            $this->setPersistentMessage($errorMessage, 'error');
+            // Ensure the error message is UTF-8 clean
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage($cleanErrorMessage, 'error');
         } catch (\Exception $e) {
-            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+            // Ensure exception message is UTF-8 clean
+            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
         }
     }
     
