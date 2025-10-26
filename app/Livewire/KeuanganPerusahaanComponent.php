@@ -8,10 +8,12 @@ use App\Models\BukuKasKebun;
 use App\Services\FinancialTransactionService;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class KeuanganPerusahaanComponent extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $transaction_date;
     public $transaction_type;
@@ -68,6 +70,7 @@ class KeuanganPerusahaanComponent extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadTransactions();
         $this->relatedBkkTransactions = collect();
     }
@@ -94,6 +97,7 @@ class KeuanganPerusahaanComponent extends Component
 
     public function saveTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Handle file upload
@@ -337,6 +341,7 @@ class KeuanganPerusahaanComponent extends Component
 
     public function deleteTransactionConfirmed()
     {
+        $this->authorizeDelete();
         $transaction = KeuanganPerusahaan::find($this->deletingTransactionId);
         if ($transaction) {
             // Delete the proof if it exists
@@ -364,6 +369,7 @@ class KeuanganPerusahaanComponent extends Component
 
     public function updateTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         $transaction = KeuanganPerusahaan::find($this->editingId);

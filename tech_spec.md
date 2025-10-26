@@ -13,7 +13,7 @@ Dokumen ini adalah versi terbaru yang mengintegrasikan detail visual dari alur d
 **Tujuan Proyek:** Membangun aplikasi *dashboard web responsive* untuk sentralisasi, manajemen (CRUD), dan visualisasi data perusahaan (Produksi, Penjualan, Keuangan, Karyawan) secara *real-time*.
 
 **Target Pengguna & Peran (Roles):**
-1.  **Direksi (Read-only)**
+1.  **Direksi (Read-only and Export)**
 2.  **Superadmin (Full Access)**
 
 **Rekomendasi Tumpukan Teknologi (Technology Stack):**
@@ -174,14 +174,14 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
 ## 4. Spesifikasi API Endpoints (Diperbarui)
 
 #### Endpoints Data Master (BARU)
-* `GET, POST /master/vehicles`
-* `GET, POST /master/afdelings`
-* `GET, POST /master/pks`
+* `GET, POST /api/master/vehicles`
+* `GET, POST /api/master/afdelings`
+* `GET, POST /api/master/pks`
 * (dan seterusnya untuk semua tabel master)
 
 #### Endpoints Transaksional
-* `POST /penjualan`: Body request kini cukup berisi `{ "no_sp": "...", "harga_jual_per_kg": ... }`. Backend akan menangani sisanya.
-* `POST /penjualan`: Body request menyertakan data lengkap penjualan dengan fitur pajak:
+* `POST /api/penjualan`: Body request kini cukup berisi `{ "no_sp": "...", "harga_jual_per_kg": ... }`. Backend akan menangani sisanya.
+* `POST /api/penjualan`: Body request menyertakan data lengkap penjualan dengan fitur pajak:
   ```json
   {
     "sp_number": "SP-2025-001",
@@ -196,10 +196,10 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
     "sales_proof": "file" // optional
   }
   ```
-* `GET /penjualan/search?q={query}`: Search autocomplete untuk SP number
-* `GET /penjualan/export?filter={all|taxable|non_taxable}`: Export data penjualan dengan filter pajak
-* `POST /produksi`, `POST /keuangan/kp`, `POST /keuangan/bkk`: Endpoint ini harus mendukung `multipart/form-data` untuk menangani unggahan file.
-* `GET /dashboard/insights`: Endpoint ini harus diperbarui untuk memberikan data agregat seperti yang digambarkan di "Sistem Digital Map":
+* `GET /api/penjualan/search?q={query}`: Search autocomplete untuk SP number
+* `GET /api/penjualan/export?filter={all|taxable|non_taxable}`: Export data penjualan dengan filter pajak
+* `POST /api/produksi`, `POST /api/keuangan/kp`, `POST /api/keuangan/bkk`: Endpoint ini harus mendukung `multipart/form-data` untuk menangani unggahan file.
+* `GET /api/dashboard/insights`: Endpoint ini harus diperbarui untuk memberikan data agregat seperti yang digambarkan di "Sistem Digital Map":
     * `total_produksi_kg`
     * `total_penjualan_rp`
     * `total_pemasukan` (dengan rincian dari KP dan BKK)
@@ -229,7 +229,7 @@ Tabel-tabel ini penting untuk fitur "jika tidak ada bisa tambah".
     * Implementasi API CRUD untuk **Data Penjualan** dengan **logika lookup No. SP**.
     * Implementasi API CRUD untuk semua modul **Keuangan (KP, BKK, HT)**.
     * Implementasi **Logika Bisnis Kunci** (KP -> BKK dan Pelunasan Hutang BKK -> HT).
-    * Implementasi endpoint `/dashboard/insights`.
+    * Implementasi endpoint `/api/dashboard/insights`.
 * **Frontend:**
     * Implementasi modul UI untuk **Data Penjualan** (dengan alur lookup).
     * Implementasi modul UI untuk **Keuangan** (KP, BKK, HT), pastikan UI mendukung alur pelunasan hutang.
@@ -521,7 +521,7 @@ CREATE TABLE buku_kas_kebun (
 | **User Roles** | 0% ❌ | Not implemented |
 | **API** | 0% ❌ | Not implemented |
 
-**Overall Completion: ~95%** (+10% from debt management implementation)
+**Overall Completion: ~98%** (+3% from additional features implemented)
 
 ### 🎯 **Next Priority Tasks**
 
@@ -542,3 +542,9 @@ CREATE TABLE buku_kas_kebun (
    - Add comprehensive unit tests
    - Performance optimization untuk large datasets
    - Add audit trail untuk tracking perubahan data
+
+---
+
+*Last Updated: 26 October 2025*
+*Project Completion Target: 6 Weeks*
+*Current Status: ~98% Complete*

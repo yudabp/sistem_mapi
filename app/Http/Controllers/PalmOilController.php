@@ -60,4 +60,9 @@ class PalmOilController extends Controller
     {
         return view('palm-oil.settings');
     }
+
+    public function userManagement()
+    {
+        return view('palm-oil.user-management');
+    }
 }

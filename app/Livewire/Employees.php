@@ -16,9 +16,12 @@ use App\Exports\EmployeesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Employees extends Component
 {
+    use WithFileUploads;
+    use WithRoleCheck;
     public $ndp; // Employee ID
     public $name;
     public $department; // Keep for backward compatibility
@@ -77,6 +80,7 @@ class Employees extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadOptions();
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
@@ -108,6 +112,7 @@ class Employees extends Component
 
     public function saveEmployee()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -238,6 +243,7 @@ class Employees extends Component
 
     public function deleteEmployeeConfirmed()
     {
+        $this->authorizeDelete();
         $employee = EmployeeModel::find($this->deletingEmployeeId);
         if ($employee) {
             $employee->delete();
@@ -260,6 +266,7 @@ class Employees extends Component
 
     public function updateEmployee()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -312,6 +319,7 @@ class Employees extends Component
     
     public function importEmployee()
     {
+        $this->authorizeEdit();
         $this->validate();
         
         try {
@@ -326,6 +334,7 @@ class Employees extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
         $export = new EmployeesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -335,6 +344,7 @@ class Employees extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
         $exporter = new EmployeesPdfExporter($this->exportStartDate, $this->exportEndDate);
         
         $html = $exporter->generate();

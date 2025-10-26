@@ -15,10 +15,12 @@ use App\Exports\DebtsPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Debts extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $amount;
     public $sisa_hutang;
@@ -82,6 +84,7 @@ class Debts extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         // Clear any existing persistent messages
         $this->clearPersistentMessage();
 
@@ -128,6 +131,7 @@ class Debts extends Component
 
     public function saveDebt()
     {
+        $this->authorizeEdit();
         try {
             $this->setPersistentMessage('Starting save process...', 'info');
 
@@ -358,6 +362,7 @@ class Debts extends Component
 
     public function deleteDebtConfirmed()
     {
+        $this->authorizeDelete();
         $debt = DebtModel::find($this->deletingDebtId);
         if ($debt) {
             // Delete the proof if it exists
@@ -390,6 +395,7 @@ class Debts extends Component
 
     public function updateDebt()
     {
+        $this->authorizeEdit();
         try {
             // Prepare data for validation - convert empty strings to null for numeric fields
             $this->cicilan_per_bulan = !empty($this->cicilan_per_bulan) ? $this->cicilan_per_bulan : null;
@@ -475,6 +481,7 @@ class Debts extends Component
     
     public function importDebt()
     {
+        $this->authorizeEdit();
         $this->validate($this->importRules);
 
         try {
@@ -489,6 +496,7 @@ class Debts extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
         $export = new DebtsExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'debt_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -498,6 +506,7 @@ class Debts extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
         $exporter = new DebtsPdfExporter($this->exportStartDate, $this->exportEndDate);
         
         $html = $exporter->generate();
