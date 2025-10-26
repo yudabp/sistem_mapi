@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\Debt as DebtModel;
 use App\Models\MasterDebtType;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -32,10 +33,10 @@ class DebtsImport implements ToModel, WithHeadingRow, WithValidation
             'cicilan_per_bulan' => $row['cicilan_per_bulan'] ?? null,
             'debt_type_id' => $debtType ? $debtType->id : null,
             'creditor' => $row['creditor'] ?? null,
-            'due_date' => $row['due_date'] ?? null,
+            'due_date' => $row['due_date'] ? Carbon::parse($row['due_date'])->format('Y-m-d') : null,
             'description' => $row['description'] ?? null,
             'status' => $row['status'] ?? 'unpaid', // Default to unpaid
-            'paid_date' => $row['paid_date'] ?? null,
+            'paid_date' => $row['paid_date'] ? Carbon::parse($row['paid_date'])->format('Y-m-d') : null,
         ]);
     }
 

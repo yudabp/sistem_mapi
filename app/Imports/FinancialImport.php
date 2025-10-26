@@ -4,6 +4,7 @@ namespace App\Imports;
 
 use App\Models\KeuanganPerusahaan;
 use App\Models\BukuKasKebun;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -19,7 +20,7 @@ class FinancialImport implements ToModel, WithHeadingRow, WithValidation
         
         if ($isKP) {
             return new KeuanganPerusahaan([
-                'transaction_date' => $row['transaction_date'] ?? null,
+                'transaction_date' => $row['transaction_date'] ? Carbon::parse($row['transaction_date'])->format('Y-m-d') : null,
                 'transaction_type' => $row['transaction_type'] ?? null,
                 'amount' => $row['amount'] ?? null,
                 'source_destination' => $row['source_destination'] ?? null,
@@ -30,7 +31,7 @@ class FinancialImport implements ToModel, WithHeadingRow, WithValidation
             ]);
         } else {
             return new BukuKasKebun([
-                'transaction_date' => $row['transaction_date'] ?? null,
+                'transaction_date' => $row['transaction_date'] ? Carbon::parse($row['transaction_date'])->format('Y-m-d') : null,
                 'transaction_type' => $row['transaction_type'] ?? null,
                 'amount' => $row['amount'] ?? null,
                 'source_destination' => $row['source_destination'] ?? null,

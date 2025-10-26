@@ -6,6 +6,7 @@ use App\Models\Employee as EmployeeModel;
 use App\Models\Department;
 use App\Models\Position;
 use App\Models\FamilyComposition;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -63,7 +64,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
             'family_composition_id' => $familyComposition ? $familyComposition->id : null,
             'monthly_salary' => $row['monthly_salary'] ?? null,
             'status' => $row['status'] ?? 'active',
-            'hire_date' => $row['hire_date'] ?? null,
+            'hire_date' => $row['hire_date'] ? Carbon::parse($row['hire_date'])->format('Y-m-d') : null,
             'address' => $row['address'] ?? null,
             'phone' => $row['phone'] ?? null,
             'email' => $row['email'] ?? null,

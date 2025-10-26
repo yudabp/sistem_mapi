@@ -4,10 +4,10 @@ namespace App\Imports;
 
 use App\Models\Sale as SaleModel;
 use App\Models\Production;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
-
 use Illuminate\Validation\Rule;
 
 class SalesImport implements ToModel, WithHeadingRow, WithValidation
@@ -26,7 +26,7 @@ class SalesImport implements ToModel, WithHeadingRow, WithValidation
             'kg_quantity' => $row['kg_quantity'] ?? null,
             'price_per_kg' => $row['price_per_kg'] ?? null,
             'total_amount' => $row['total_amount'] ?? null,
-            'sale_date' => $row['sale_date'] ?? null,
+            'sale_date' => $row['sale_date'] ? Carbon::parse($row['sale_date'])->format('Y-m-d') : null,
             'customer_name' => $row['customer_name'] ?? null,
             'customer_address' => $row['customer_address'] ?? null,
         ]);

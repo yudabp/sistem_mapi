@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\BukuKasKebun;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -13,7 +14,7 @@ class CashBookImport implements ToModel, WithHeadingRow, WithValidation
     public function model(array $row)
     {
         return new BukuKasKebun([
-            'transaction_date' => $row['transaction_date'] ?? null,
+            'transaction_date' => $row['transaction_date'] ? Carbon::parse($row['transaction_date'])->format('Y-m-d') : null,
             'transaction_type' => $row['transaction_type'] ?? null,
             'amount' => $row['amount'] ?? null,
             'source_destination' => $row['purpose'] ?? null,

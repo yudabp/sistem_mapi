@@ -6,6 +6,7 @@ use App\Models\Production as ProductionModel;
 use App\Models\VehicleNumber;
 use App\Models\Division;
 use App\Models\Pks;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
@@ -56,7 +57,7 @@ class ProductionImport implements ToModel, WithHeadingRow, WithValidation
 
         return new ProductionModel([
             'transaction_number' => $row['transaction_number'] ?? null,
-            'date' => $row['date'] ?? null,
+            'date' => $row['date'] ? Carbon::parse($row['date'])->format('Y-m-d') : null,
             'sp_number' => $row['sp_number'] ?? null,
             'vehicle_id' => $vehicle ? $vehicle->id : null,
             'tbs_quantity' => $row['tbs_quantity'] ?? null,
