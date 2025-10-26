@@ -15,10 +15,12 @@ use App\Exports\ProductionPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Production extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $transaction_number;
     public $date; // This will hold the DD-MM-YYYY format from the view
@@ -98,6 +100,7 @@ class Production extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadOptions();
         // Set default export dates: start date 1 month ago, end date today
         if (!$this->exportStartDate) {
@@ -128,6 +131,8 @@ class Production extends Component
 
     public function saveProduction()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -279,6 +284,8 @@ class Production extends Component
 
     public function deleteProduction($id)
     {
+        $this->authorizeDelete();
+
         $production = ProductionModel::find($id);
         if ($production) {
             // Delete the photo if it exists
@@ -342,6 +349,7 @@ class Production extends Component
 
     public function deleteProductionConfirmed()
     {
+        $this->authorizeDelete();
         $production = ProductionModel::find($this->deletingProductionId);
         if ($production) {
             // Delete the photo if it exists
@@ -368,8 +376,10 @@ class Production extends Component
 
     public function updateProduction()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
-        
+
         $production = ProductionModel::find($this->editingId);
         if ($production) {
             // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -436,6 +446,8 @@ class Production extends Component
     
     public function importProduction()
     {
+        $this->authorizeEdit();
+
         $this->validate();
         
         try {
@@ -479,6 +491,8 @@ class Production extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
+
         $export = new ProductionExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'production_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -488,6 +502,8 @@ class Production extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
+
         $exporter = new ProductionPdfExporter($this->exportStartDate, $this->exportEndDate);
         
         $html = $exporter->generate();

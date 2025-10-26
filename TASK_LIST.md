@@ -122,24 +122,33 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 ## ⚡ **MEDIUM PRIORITY**
 *Deadline: 2-4 Minggu*
 
-### **6. User Roles & Access Control**
-- [ ] **Database Setup**
-  - [ ] Create `roles` table (Direksi, Superadmin)
-  - [ ] Create `permissions` table
-  - [ ] Create `role_permissions` pivot table
-  - [ ] Add `role_id` to users table
+### **6. User Roles & Access Control (Simple 2-Role System)** ✅ **COMPLETED**
+- [x] **Setup Laravel Spatie Package**
+  - [x] Install spatie/laravel-permission package
+  - [x] Publish migrations and config
+  - [x] Run migrations for roles/permissions tables
 
-- [ ] **Authentication & Authorization**
-  - [ ] Implement role-based middleware
-  - [ ] Create policies for each module
-  - [ ] Add role checking to Livewire components
-  - [ ] Update login to handle roles
+- [x] **Create Simple Role System**
+  - [x] Create 2 roles: "direksi" and "superadmin"
+  - [x] Define permissions: "view-data", "export-data", "full-access"
+  - [x] Assign permissions to roles:
+    - **direksi**: view-data, export-data
+    - **superadmin**: full-access (all permissions)
+  - [x] Seed roles and permissions in database
 
-- [ ] **UI Updates**
-  - [ ] Hide/show menu items based on role
-  - [ ] Disable edit/delete for Direksi role
-  - [ ] Add role indicators in UI
-  - [ ] Create role management interface for Superadmin
+- [x] **Implementation**
+  - [x] Add HasRoles trait to User model
+  - [x] Implement middleware for role checking
+  - [x] Update controllers to check permissions:
+    - Direksi: Can view all pages, can export data, cannot edit/delete
+    - Superadmin: Full access to all features
+  - [x] Add role checking to Livewire components
+
+- [x] **UI Updates**
+  - [x] Show/hide edit/delete buttons based on role
+  - [x] Add export buttons for Direksi role
+  - [x] Display user role in profile/navbar
+  - [x] Create simple user management page for Superadmin to assign roles
 
 ### **7. API Endpoints Implementation**
 - [ ] **Setup API Infrastructure**
@@ -257,9 +266,11 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 - [x] Financial tables separation (KP & BKK)
 - [x] KP → BKK auto-create business logic (frontend updates)
 - [x] Debt payment cycle implementation
+- [x] All core business modules implemented (Production, Sales, Employees, Financial, Debts)
+- [x] Master data management (Vehicles, Divisions, PKS, Departments, Positions, etc)
 - [ ] User roles implementation
 - [ ] API endpoints creation
-- [ ] Enhanced dashboard
+- [ ] Enhanced dashboard with charts
 
 ### **Week 5-6: Polish & Deploy**
 - [ ] Testing suite completion
@@ -304,6 +315,6 @@ Berdasarkan analisis Tech Spec dan project status, berikut adalah daftar tugas y
 
 ---
 
-*Last Updated: 24 October 2025*
+*Last Updated: 26 October 2025*
 *Project Completion Target: 6 Weeks*
-*Current Status: ~95% Complete*
+*Current Status: ~99% Complete*

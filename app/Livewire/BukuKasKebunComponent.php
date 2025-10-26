@@ -11,10 +11,12 @@ use App\Services\FinancialTransactionService;
 use App\Services\DebtPaymentService;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class BukuKasKebunComponent extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $transaction_date;
     public $transaction_type;
@@ -137,6 +139,7 @@ class BukuKasKebunComponent extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadTransactions();
         $this->loadUnpaidDebts();
         $this->loadDebtCategories();
@@ -404,6 +407,7 @@ class BukuKasKebunComponent extends Component
 
     public function saveTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Handle file upload
@@ -636,6 +640,7 @@ class BukuKasKebunComponent extends Component
 
     public function deleteTransactionConfirmed()
     {
+        $this->authorizeDelete();
         $transaction = BukuKasKebun::find($this->deletingTransactionId);
         if ($transaction) {
             // Delete the proof if it exists
@@ -665,6 +670,7 @@ class BukuKasKebunComponent extends Component
 
     public function updateTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         $transaction = BukuKasKebun::find($this->editingId);

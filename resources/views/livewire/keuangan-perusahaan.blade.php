@@ -190,13 +190,31 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Keuangan Perusahaan Transaction Input</h2>
-                <button 
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Keuangan Perusahaan</h2>
+                <!-- <button 
                     wire:click="openCreateModal"
                     class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
                 >
                     Add Transaction
-                </button>
+                </button> -->
+                @canedit
+                    <button
+                        wire:click="openCreateModal"
+                        class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-2"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Record
+                    </button>
+                @else
+                    <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Record
+                    </div> -->
+                @endcanedit
             </div>
         </header>
     </div>
@@ -250,7 +268,11 @@
                             <th class="p-2 whitespace-nowrap">Amount</th>
                             <th class="p-2 whitespace-nowrap">Category</th>
                             <th class="p-2 whitespace-nowrap">Proof</th>
+                            @canedit
                             <th class="p-2 whitespace-nowrap">Actions</th>
+                            @else
+                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            @endcanedit
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -313,6 +335,7 @@
                                                 BKK ({{ $transaction->bukuKasKebun->count() }})
                                             </button>
                                         @endif
+                                        @canedit
                                         <button 
                                             wire:click="openEditModal({{ $transaction->id }})"
                                             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -325,6 +348,22 @@
                                         >
                                             Delete
                                         </button>
+                                        @else
+                                        <!-- <button 
+                                            disabled
+                                            wire:click="openEditModal({{ $transaction->id }})"
+                                            class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-400 text-sm"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            disabled
+                                            wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
+                                            class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-400 text-sm"
+                                        >
+                                            Delete
+                                        </button> -->
+                                        @endcanedit
                                     </div>
                                 </td>
                             </tr>

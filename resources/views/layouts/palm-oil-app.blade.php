@@ -165,7 +165,7 @@
                                 </li>
                                 
                                 <!-- Akses User -->
-                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('akses-user') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
+                                <!-- <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('akses-user') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('akses-user') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('akses-user') }}">
                                         <div class="flex items-center">
                                             <svg class="shrink-0 fill-current {{ Request::is('akses-user') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
@@ -174,7 +174,22 @@
                                             <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Akses User</span>
                                         </div>
                                     </a>
+                                </li> -->
+
+                                <!-- Manajemen User - Only for Superadmin -->
+                                @if(auth()->check() && auth()->user()->hasRole('superadmin'))
+                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('user-management') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('user-management') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('user-management') }}">
+                                        <div class="flex items-center">
+                                            <svg class="shrink-0 fill-current {{ Request::is('manajemen-user') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </svg>
+                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Manajemen User</span>
+                                        </div>
+                                    </a>
                                 </li>
+                                @endif
                             </ul>
                         </div>
                         
@@ -186,6 +201,7 @@
                             </h3>
                             <ul class="mt-3">
                                 <!-- Settings -->
+                                @if(auth()->check() && auth()->user()->hasRole('superadmin'))
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('settings') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('settings') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('settings') }}">
                                         <div class="flex items-center">
@@ -197,12 +213,13 @@
                                         </div>
                                     </a>
                                 </li>
+                                @endif
                                 
                                 <!-- Profile -->
-                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('profile') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
-                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('profile') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('profile.show') }}">
+                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('user/profile') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('user/profile') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('profile.show') }}">
                                         <div class="flex items-center">
-                                            <svg class="shrink-0 fill-current {{ Request::is('profile') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                            <svg class="shrink-0 fill-current {{ Request::is('user/profile') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                             </svg>
                                             <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Profil</span>
