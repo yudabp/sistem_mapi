@@ -14,15 +14,15 @@ class DepartmentsTableSeeder extends Seeder
     public function run(): void
     {
         $departments = [
-            ['name' => 'Bagian Produksi', 'description' => 'Bagian yang menangani proses produksi', 'is_active' => true],
-            ['name' => 'Bagian Administrasi', 'description' => 'Bagian yang menangani administrasi kantor', 'is_active' => true],
-            ['name' => 'Bagian Keuangan', 'description' => 'Bagian yang menangani keuangan perusahaan', 'is_active' => true],
-            ['name' => 'Bagian SDM', 'description' => 'Bagian yang menangani Sumber Daya Manusia', 'is_active' => true],
-            ['name' => 'Bagian Umum', 'description' => 'Bagian yang menangani urusan umum', 'is_active' => true],
+            ['name' => 'Production', 'description' => 'Department handling production processes', 'is_active' => true],
+            ['name' => 'Sales', 'description' => 'Department handling sales and marketing', 'is_active' => true],
+            ['name' => 'Finance', 'description' => 'Department handling financial matters', 'is_active' => true],
+            ['name' => 'HR', 'description' => 'Human Resources Department', 'is_active' => true],
+            ['name' => 'IT', 'description' => 'Information Technology Department', 'is_active' => true],
         ];
 
         foreach ($departments as $department) {
-            Department::create($department);
+            Department::firstOrCreate(['name' => $department['name']], $department);
         }
     }
 }

@@ -18,7 +18,8 @@ class Employee extends Model
         'family_composition', // Keep for backward compatibility
         'family_composition_id',
         'monthly_salary',
-        'status',
+        'status', // Keep for backward compatibility
+        'employment_status_id',
         'hire_date',
         'address',
         'phone',
@@ -54,6 +55,14 @@ class Employee extends Model
     public function familyComposition(): BelongsTo
     {
         return $this->belongsTo(FamilyComposition::class, 'family_composition_id');
+    }
+
+    /**
+     * Get the employment status that owns the employee.
+     */
+    public function employmentStatus(): BelongsTo
+    {
+        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id');
     }
 
     /**

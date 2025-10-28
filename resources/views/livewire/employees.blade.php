@@ -103,41 +103,41 @@
 
                 <!-- Department -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="department">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="department_id">
                         Department (Bagian)
                     </label>
-                    <select 
-                        id="department"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="department"
+                    <select
+                        id="department_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="department_id"
                     >
                         <option value="">Pilih Bagian</option>
                         @foreach($departments as $dept)
-                            <option value="{{ $dept->name }}">{{ $dept->name }}</option>
+                            <option value="{{ $dept->id }}" {{ $department_id == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
                         @endforeach
                     </select>
-                    @error('department') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('department_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <!-- Position -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="position">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="position_id">
                         Position (Jabatan)
                     </label>
-                    <select 
-                        id="position"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="position"
+                    <select
+                        id="position_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="position_id"
                     >
                         <option value="">Pilih Jabatan</option>
                         @foreach($positions as $pos)
-                            <option value="{{ $pos->name }}">{{ $pos->name }}</option>
+                            <option value="{{ $pos->id }}" {{ $position_id == $pos->id ? 'selected' : '' }}>{{ $pos->name }}</option>
                         @endforeach
                     </select>
-                    @error('position') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('position_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -157,17 +157,17 @@
 
                 <!-- Family Composition -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="family_composition">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="family_composition_id">
                         Family Composition (Susunan Keluarga)
                     </label>
-                    <select 
-                        id="family_composition"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="family_composition"
+                    <select
+                        id="family_composition_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="family_composition_id"
                     >
                         <option value="">Pilih Susunan Keluarga</option>
                         @foreach($family_compositions as $fam_comp)
-                            <option value="{{ $fam_comp->number }}">{{ $fam_comp->number }}</option>
+                            <option value="{{ $fam_comp->id }}" {{ $family_composition_id == $fam_comp->id ? 'selected' : '' }}>{{ $fam_comp->number }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -192,21 +192,21 @@
 
                 <!-- Status -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="status">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employment_status_id">
                         Employment Status (Status Karyawan)
                     </label>
-                    <select 
-                        id="status"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="status"
+                    <select
+                        id="employment_status_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="employment_status_id"
                     >
                         <option value="">Pilih Status Karyawan</option>
                         @foreach($employment_statuses as $emp_status)
-                            <option value="{{ $emp_status->value }}">{{ $emp_status->name }}</option>
+                            <option value="{{ $emp_status->id }}" {{ $employment_status_id == $emp_status->id ? 'selected' : '' }}>{{ $emp_status->name }}</option>
                         @endforeach
                     </select>
-                    @error('status') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('employment_status_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -554,12 +554,15 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Department</label>
-            <input 
-                type="text" 
+            <select
                 wire:model.live="departmentFilter"
-                placeholder="Enter department"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-            />
+            >
+                <option value="">All Departments</option>
+                @foreach($departments as $department)
+                    <option value="{{ $department->id }}">{{ $department->name }}</option>
+                @endforeach
+            </select>
         </div>
     </div>
 
@@ -578,6 +581,7 @@
                             <th class="p-2 whitespace-nowrap">Department</th>
                             <th class="p-2 whitespace-nowrap">Position</th>
                             <th class="p-2 whitespace-nowrap">Grade</th>
+                            <th class="p-2 whitespace-nowrap">Family Comp.</th>
                             <th class="p-2 whitespace-nowrap">Salary</th>
                             <th class="p-2 whitespace-nowrap">Status</th>
                             @canedit
@@ -597,21 +601,24 @@
                                     <div class="text-left">{{ $employee->name }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $employee->department }}</div>
+                                    <div class="text-left">{{ $employee->department_name }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">{{ $employee->position }}</div>
+                                    <div class="text-left">{{ $employee->position_name }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">{{ $employee->grade }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
+                                    <div class="text-left">{{ $employee->familyComposition?->number ?? $employee->family_composition }}</div>
+                                </td>
+                                <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">Rp {{ number_format($employee->monthly_salary, 2, ',', '.') }}</div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
-                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        {{ $employee->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500' : 
-                                           ($employee->status === 'inactive' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-500' : 
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                        {{ $employee->status === 'active' ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-500' :
+                                           ($employee->status === 'inactive' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-500' :
                                            'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-500') }}">
                                         {{ ucfirst($employee->status) }}
                                     </span>

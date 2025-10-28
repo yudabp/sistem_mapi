@@ -200,18 +200,65 @@
                                 <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">System</span>
                             </h3>
                             <ul class="mt-3">
-                                <!-- Settings -->
+                                <!-- Master Data -->
                                 @if(auth()->check() && auth()->user()->hasRole('superadmin'))
-                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('settings') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
-                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('settings') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('settings') }}">
-                                        <div class="flex items-center">
-                                            <svg class="shrink-0 fill-current {{ Request::is('settings') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
-                                                <path d="M12 15l7-7H5z"/>
-                                                <path d="M19.07 4.93l-1.41 1.41A7.97 7.97 0 0 0 20 12a8 8 0 1 1-8-8c1.98 0 3.76.78 5.07 2.07zM5.22 5.22A7.97 7.97 0 0 1 4 12a8 8 0 1 0 8 8c-1.98 0-3.76-.78-5.07-2.07l-1.41 1.41A9.95 9.95 0 0 1 2 12a10 10 0 0 1 3.22-7.22z"/>
-                                            </svg>
-                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Pengaturan</span>
+                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0" x-data="{ open: {{ Request::is('master-data*') ? 1 : 0 }} }" x-init="if ('{{ Request::is('master-data*') }}' == '1') open = true">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('master-data*') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="#" @click.prevent="open = !open; sidebarExpanded = true">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex items-center">
+                                                <svg class="shrink-0 fill-current {{ Request::is('master-data*') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                                    <path d="M12 15l7-7H5z"/>
+                                                    <path d="M19.07 4.93l-1.41 1.41A7.97 7.97 0 0 0 20 12a8 8 0 1 1-8-8c1.98 0 3.76.78 5.07 2.07zM5.22 5.22A7.97 7.97 0 0 1 4 12a8 8 0 1 0 8 8c-1.98 0-3.76-.78-5.07-2.07l-1.41 1.41A9.95 9.95 0 0 1 2 12a10 10 0 0 1 3.22-7.22z"/>
+                                                </svg>
+                                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Master Data</span>
+                                            </div>
+                                            <!-- Icon -->
+                                            <div class="flex shrink-0 ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                                <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 {{ Request::is('master-data*') ? 'rotate-180' : 'rotate-0' }}" :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 12 12">
+                                                    <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                                                </svg>
+                                            </div>
                                         </div>
                                     </a>
+                                    <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
+                                        <ul class="pl-8 mt-1 {{ Request::is('master-data*') ? 'hidden' : 'block' }}" :class="open ? 'block!' : 'hidden'">
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/vehicle-numbers') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.vehicle-numbers') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">No Polisi</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/divisions') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.divisions') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Afdeling</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/pks') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.pks') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">PKS</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/departments') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.departments') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Bagian</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/positions') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.positions') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Jabatan</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/family-compositions') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.family-compositions') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Susunan Keluarga</span>
+                                                </a>
+                                            </li>
+                                            <li class="mb-1 last:mb-0">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('master-data/employment-statuses') ? 'text-violet-500!' : '' }}" href="{{ route('master-data.employment-statuses') }}">
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Status Karyawan</span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </li>
                                 @endif
                                 
