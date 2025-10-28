@@ -14,16 +14,18 @@ class PositionsTableSeeder extends Seeder
     public function run(): void
     {
         $positions = [
-            ['name' => 'Manager', 'description' => 'Jabatan Manager', 'is_active' => true],
-            ['name' => 'Supervisor', 'description' => 'Jabatan Supervisor', 'is_active' => true],
-            ['name' => 'Kepala Bagian', 'description' => 'Jabatan Kepala Bagian', 'is_active' => true],
-            ['name' => 'Staff', 'description' => 'Jabatan Staff', 'is_active' => true],
-            ['name' => 'Karyawan', 'description' => 'Jabatan Karyawan', 'is_active' => true],
-            ['name' => 'Mandor', 'description' => 'Jabatan Mandor', 'is_active' => true],
+            ['name' => 'Foreman', 'description' => 'Foreman position overseeing production workers', 'is_active' => true],
+            ['name' => 'Sales Manager', 'description' => 'Manager position for sales department', 'is_active' => true],
+            ['name' => 'Finance Officer', 'description' => 'Officer position for finance department', 'is_active' => true],
+            ['name' => 'Operator', 'description' => 'Operator position for production line', 'is_active' => true],
+            ['name' => 'HR Manager', 'description' => 'Manager position for HR department', 'is_active' => true],
+            ['name' => 'IT Support', 'description' => 'Support position for IT department', 'is_active' => true],
+            ['name' => 'Director', 'description' => 'Director level position', 'is_active' => true],
+            ['name' => 'Supervisor', 'description' => 'Supervisor position overseeing team members', 'is_active' => true],
         ];
 
         foreach ($positions as $position) {
-            Position::create($position);
+            Position::firstOrCreate(['name' => $position['name']], $position);
         }
     }
 }
