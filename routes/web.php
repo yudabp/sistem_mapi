@@ -65,7 +65,17 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/akses-user', [App\Http\Controllers\PalmOilController::class, 'userAccess'])->name('akses-user');
     // Manajemen User with CRUD operations (NEW - using palm-oil layout)
     Route::get('/user-management', [App\Http\Controllers\PalmOilController::class, 'userManagement'])->name('user-management')->middleware('role:superadmin');
-    Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'settings'])->name('settings');
+    // Master Data Routes
+    Route::get('/master-data/vehicle-numbers', [App\Http\Controllers\PalmOilController::class, 'vehicleNumbers'])->name('master-data.vehicle-numbers');
+    Route::get('/master-data/divisions', [App\Http\Controllers\PalmOilController::class, 'divisions'])->name('master-data.divisions');
+    Route::get('/master-data/pks', [App\Http\Controllers\PalmOilController::class, 'pks'])->name('master-data.pks');
+    Route::get('/master-data/departments', [App\Http\Controllers\PalmOilController::class, 'departments'])->name('master-data.departments');
+    Route::get('/master-data/positions', [App\Http\Controllers\PalmOilController::class, 'positions'])->name('master-data.positions');
+    Route::get('/master-data/family-compositions', [App\Http\Controllers\PalmOilController::class, 'familyCompositions'])->name('master-data.family-compositions');
+    Route::get('/master-data/employment-statuses', [App\Http\Controllers\PalmOilController::class, 'employmentStatuses'])->name('master-data.employment-statuses');
+
+    // Legacy settings route (redirect to first master data item)
+    Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'vehicleNumbers'])->name('settings');
 
     // Route::get('/messages', function () {
     //     return view('pages/messages');
