@@ -1,21 +1,21 @@
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto"
-     x-data="{ chartInitialized: false }"
-     x-init="$watch('$wire.dateRange', () => {
-         if (typeof window.destroyAllCharts === 'function') {
-             window.destroyAllCharts();
-         }
-         $nextTick(() => {
-             if (typeof window.initializeCharts === 'function') {
-                 setTimeout(() => window.initializeCharts(), 100);
-             }
-         });
-     });
-     $nextTick(() => {
-         if (!chartInitialized && typeof window.initializeCharts === 'function') {
-             window.initializeCharts();
-             chartInitialized = true;
-         }
-     })">
+    x-data="{ chartInitialized: false }"
+    x-init="$watch('$wire.dateRange', () => {
+        if (typeof window.destroyAllCharts === 'function') {
+            window.destroyAllCharts();
+        }
+        $nextTick(() => {
+            if (typeof window.initializeCharts === 'function') {
+                setTimeout(() => window.initializeCharts(), 700);
+            }
+        });
+    });
+    $nextTick(() => {
+        if (!chartInitialized && typeof window.initializeCharts === 'function') {
+            window.initializeCharts();
+            chartInitialized = true;
+        }
+    })">
     <!-- Dashboard header -->
     <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">📊 Ringkasan Utama</h1>
