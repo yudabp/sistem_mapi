@@ -66,12 +66,16 @@
                 </div>
                 <div class="text-5xl">🌾</div>
             </div>
-            <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-4 text-sm {{ $productionChange >= 0 ? 'text-green-600' : 'text-red-600' }} dark:text-gray-400">
                 <span class="inline-flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @if($productionChange >= 0)
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @else
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        @endif
                     </svg>
-                    +12% dari bulan lalu
+                    {{ $productionChange >= 0 ? '+' : '' }}{{ $productionChange }}% dari periode sebelumnya
                 </span>
             </div>
         </div>
@@ -85,12 +89,16 @@
                 </div>
                 <div class="text-5xl">💰</div>
             </div>
-            <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-4 text-sm {{ $salesChange >= 0 ? 'text-green-600' : 'text-red-600' }} dark:text-gray-400">
                 <span class="inline-flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @if($salesChange >= 0)
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @else
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        @endif
                     </svg>
-                    +8% dari bulan lalu
+                    {{ $salesChange >= 0 ? '+' : '' }}{{ $salesChange }}% dari periode sebelumnya
                 </span>
             </div>
         </div>
@@ -104,12 +112,16 @@
                 </div>
                 <div class="text-5xl">📥</div>
             </div>
-            <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-4 text-sm {{ $incomeChange >= 0 ? 'text-green-600' : 'text-red-600' }} dark:text-gray-400">
                 <span class="inline-flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @if($incomeChange >= 0)
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @else
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        @endif
                     </svg>
-                    +15% dari bulan lalu
+                    {{ $incomeChange >= 0 ? '+' : '' }}{{ $incomeChange }}% dari periode sebelumnya
                 </span>
             </div>
         </div>
@@ -123,12 +135,16 @@
                 </div>
                 <div class="text-5xl">📤</div>
             </div>
-            <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-4 text-sm {{ $expensesChange <= 0 ? 'text-green-600' : 'text-red-600' }} dark:text-gray-400">
                 <span class="inline-flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        @if($expensesChange <= 0)
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                        @else
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        @endif
                     </svg>
-                    -5% dari bulan lalu
+                    {{ $expensesChange >= 0 ? '+' : '' }}{{ $expensesChange }}% dari periode sebelumnya
                 </span>
             </div>
         </div>

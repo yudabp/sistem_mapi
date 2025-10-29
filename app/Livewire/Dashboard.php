@@ -31,6 +31,12 @@ class Dashboard extends Component
     public $startDate;
     public $endDate;
 
+    // Percentage changes
+    public $productionChange = 0;
+    public $salesChange = 0;
+    public $incomeChange = 0;
+    public $expensesChange = 0;
+
     // Chart data
     public $productionData = [];
     public $salesData = [];
@@ -81,6 +87,10 @@ class Dashboard extends Component
             'employeeDistributionData' => $this->employeeDistributionData ?: [],
             'topDivisions' => $this->topDivisions ?: [],
             'profitMarginData' => $this->profitMarginData ?: [],
+            'productionChange' => $this->productionChange,
+            'salesChange' => $this->salesChange,
+            'incomeChange' => $this->incomeChange,
+            'expensesChange' => $this->expensesChange,
         ]);
     }
 
@@ -90,13 +100,28 @@ class Dashboard extends Component
         $startDate = Carbon::parse($this->startDate)->startOfDay();
         $endDate = Carbon::parse($this->endDate)->endOfDay();
 
+        // Calculate previous period dates for comparison
+        $duration = (int)$startDate->diffInDays($endDate) + 1;
+        $previousEndDate = $startDate->copy()->subDay();
+        $previousStartDate = $previousEndDate->copy()->subDays($duration - 1);
+
         // Calculate total production within date range
         $this->totalProduction = Production::whereBetween('date', [$startDate, $endDate])
             ->sum('kg_quantity');
 
+        // Calculate previous period production
+        $previousProduction = Production::whereBetween('date', [$previousStartDate, $previousEndDate])
+            ->sum('kg_quantity');
+        $this->productionChange = $this->calculatePercentageChange($this->totalProduction, $previousProduction);
+
         // Calculate total sales amount within date range
         $this->totalSales = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->sum('total_amount');
+
+        // Calculate previous period sales
+        $previousSales = Sale::whereBetween('sale_date', [$previousStartDate, $previousEndDate])
+            ->sum('total_amount');
+        $this->salesChange = $this->calculatePercentageChange($this->totalSales, $previousSales);
 
         // Calculate total income from both tables within date range
         $kpIncome = KeuanganPerusahaan::where('transaction_type', 'income')
@@ -107,6 +132,16 @@ class Dashboard extends Component
             ->sum('amount');
         $this->totalIncome = $kpIncome + $bkkIncome;
 
+        // Calculate previous period income
+        $previousKpIncome = KeuanganPerusahaan::where('transaction_type', 'income')
+            ->whereBetween('transaction_date', [$previousStartDate, $previousEndDate])
+            ->sum('amount');
+        $previousBkkIncome = BukuKasKebun::where('transaction_type', 'income')
+            ->whereBetween('transaction_date', [$previousStartDate, $previousEndDate])
+            ->sum('amount');
+        $previousIncome = $previousKpIncome + $previousBkkIncome;
+        $this->incomeChange = $this->calculatePercentageChange($this->totalIncome, $previousIncome);
+
         // Calculate total expenses from both tables within date range
         $kpExpenses = KeuanganPerusahaan::where('transaction_type', 'expense')
             ->whereBetween('transaction_date', [$startDate, $endDate])
@@ -115,6 +150,16 @@ class Dashboard extends Component
             ->whereBetween('transaction_date', [$startDate, $endDate])
             ->sum('amount');
         $this->totalExpenses = $kpExpenses + $bkkExpenses;
+
+        // Calculate previous period expenses
+        $previousKpExpenses = KeuanganPerusahaan::where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [$previousStartDate, $previousEndDate])
+            ->sum('amount');
+        $previousBkkExpenses = BukuKasKebun::where('transaction_type', 'expense')
+            ->whereBetween('transaction_date', [$previousStartDate, $previousEndDate])
+            ->sum('amount');
+        $previousExpenses = $previousKpExpenses + $previousBkkExpenses;
+        $this->expensesChange = $this->calculatePercentageChange($this->totalExpenses, $previousExpenses);
 
         // Calculate total debt (active debts regardless of date)
         $this->totalDebt = Debt::where('status', 'unpaid')->sum('amount');
@@ -132,6 +177,16 @@ class Dashboard extends Component
 
         // Calculate profit (sales - cost of goods sold approximation)
         $this->profitThisMonth = $this->salesThisMonth * 0.25; // Assuming 25% profit margin
+    }
+
+    private function calculatePercentageChange($current, $previous)
+    {
+        if ($previous == 0) {
+            return $current > 0 ? 100 : 0;
+        }
+
+        $change = (($current - $previous) / $previous) * 100;
+        return round($change, 1);
     }
 
     public function prepareChartData()
