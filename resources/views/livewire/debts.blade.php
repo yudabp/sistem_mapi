@@ -383,6 +383,20 @@
         </x-slot>
 
         <x-slot name="content">
+            <!-- Persistent Message inside modal -->
+            @if($persistentMessage)
+                <div class="mb-4">
+                    <div class="bg-{{ $messageType === 'error' ? 'red' : 'emerald' }}-50 text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-700 p-3 rounded-lg dark:bg-{{ $messageType === 'error' ? 'red' : 'emerald' }}-500/10 dark:text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-700 dark:text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-500 hover:text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-900 dark:hover:text-{{ $messageType === 'error' ? 'red' : 'emerald' }}-300">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            @endif
+            
             <form wire:submit.prevent="saveDebtModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Amount -->
                 <div>
@@ -391,7 +405,7 @@
                     </label>
                     <input
                         id="amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('amount') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         type="number"
                         step="0.01"
                         wire:model="amount"
@@ -409,7 +423,7 @@
                     </label>
                     <input
                         id="creditor"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         type="text"
                         wire:model="creditor"
                         placeholder="Masukkan nama pemberi hutang"
@@ -426,7 +440,7 @@
                     </label>
                     <input
                         id="due_date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('due_date') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         type="text"
                         placeholder="DD-MM-YYYY"
                         wire:model="due_date"
@@ -480,7 +494,7 @@
                     </label>
                     <select
                         id="debt_type_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('debt_type_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="debt_type_id"
                     >
                         <option value="">Pilih Jenis Hutang</option>
@@ -500,7 +514,7 @@
                     </label>
                     <input
                         id="cicilan_per_bulan"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('cicilan_per_bulan') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         type="number"
                         step="0.01"
                         wire:model="cicilan_per_bulan"
@@ -518,7 +532,7 @@
                     </label>
                     <textarea
                         id="description"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('description') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="description"
                         placeholder="Masukkan keterangan detail hutang"
                         rows="2"
@@ -537,7 +551,7 @@
                         id="proof_document"
                         type="file"
                         wire:model="proof_document"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)
                         <div class="mt-2">

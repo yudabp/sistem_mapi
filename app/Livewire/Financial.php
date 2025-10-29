@@ -342,13 +342,22 @@ class Financial extends Component
 
     public function saveTransactionModal()
     {
-        if ($this->isEditing) {
-            $this->updateTransaction();
-        } else {
-            $this->saveTransaction();
+        try {
+            if ($this->isEditing) {
+                $this->updateTransaction();
+            } else {
+                $this->saveTransaction();
+            }
+            
+            $this->closeCreateModal();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
         }
-        
-        $this->closeCreateModal();
     }
 
     public function updateTransaction()

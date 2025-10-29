@@ -82,7 +82,7 @@
                     <input 
                         id="transaction_date"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="date" 
+                        type="text" 
                         wire:model="transaction_date"
                         value="{{ date('Y-m-d') }}"
                     />

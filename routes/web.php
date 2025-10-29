@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Controllers\CashBookSampleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataFeedController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DebtsSampleController;
+use App\Http\Controllers\EmployeesSampleController;
+use App\Http\Controllers\FinancialSampleController;
 use App\Http\Controllers\PalmOilController;
 use App\Http\Controllers\ProductionSampleController;
+use App\Http\Controllers\SalesSampleController;
 
 /*
 |--------------------------------------------------------------------------

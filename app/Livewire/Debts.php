@@ -74,6 +74,7 @@ class Debts extends Component
         'debt_type_id' => 'nullable|exists:master_debt_types,id',
         'cicilan_per_bulan' => 'nullable|numeric|min:0',
         'proof_document' => 'nullable|file|max:10240', // Max 10MB
+        'importFile' => 'nullable|file|mimes:xlsx,xls,csv', // Make importFile nullable for regular form operations
     ];
 
     // Validation rules for import
@@ -374,18 +375,27 @@ class Debts extends Component
 
     public function saveDebtModal()
     {
-        // Check which branch we're taking
-        if ($this->isEditing) {
-            $this->setPersistentMessage('Updating existing debt...', 'info');
-            $result = $this->updateDebt();
-        } else {
-            $this->setPersistentMessage('Creating new debt...', 'info');
-            $result = $this->saveDebt();
-        }
+        try {
+            // Check which branch we're taking
+            if ($this->isEditing) {
+                $this->setPersistentMessage('Updating existing debt...', 'info');
+                $result = $this->updateDebt();
+            } else {
+                $this->setPersistentMessage('Creating new debt...', 'info');
+                $result = $this->saveDebt();
+            }
 
-        // Only close modal if operation was successful
-        if ($result) {
-            $this->closeCreateModal();
+            // Only close modal if operation was successful
+            if ($result) {
+                $this->closeCreateModal();
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
         }
     }
 

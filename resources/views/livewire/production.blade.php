@@ -58,17 +58,93 @@
                 <div>
                     <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal awal</label>
                     <input 
-                        type="date" 
+                        type="text" 
                         wire:model.live="startDate"
+                        placeholder="DD-MM-YYYY"
                         class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let input = e.target.value.replace(/\D/g, '');
+                                let formatted = '';
+                                
+                                if (input.length > 0) {
+                                    formatted = input.substring(0, 2); // Day
+                                    if (input.length >= 3) {
+                                        formatted += '-' + input.substring(2, 4); // Month
+                                        if (input.length >= 5) {
+                                            formatted += '-' + input.substring(4, 8); // Year
+                                        }
+                                    }
+                                }
+                                
+                                $el.value = formatted;
+                            });
+                            
+                            $el.addEventListener('blur', function(e) {
+                                // Validate date format on blur
+                                let dateValue = e.target.value;
+                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                let match = dateValue.match(datePattern);
+                                
+                                if (match) {
+                                    let day = parseInt(match[1]);
+                                    let month = parseInt(match[2]);
+                                    let year = parseInt(match[3]);
+                                    
+                                    // Basic validation
+                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                        // You can add custom validation here
+                                    }
+                                }
+                            });
+                        "
                     />
                 </div>
                 <div>
                     <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal akhir</label>
                     <input 
-                        type="date" 
+                        type="text" 
                         wire:model.live="endDate"
+                        placeholder="DD-MM-YYYY"
                         class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let input = e.target.value.replace(/\D/g, '');
+                                let formatted = '';
+                                
+                                if (input.length > 0) {
+                                    formatted = input.substring(0, 2); // Day
+                                    if (input.length >= 3) {
+                                        formatted += '-' + input.substring(2, 4); // Month
+                                        if (input.length >= 5) {
+                                            formatted += '-' + input.substring(4, 8); // Year
+                                        }
+                                    }
+                                }
+                                
+                                $el.value = formatted;
+                            });
+                            
+                            $el.addEventListener('blur', function(e) {
+                                // Validate date format on blur
+                                let dateValue = e.target.value;
+                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                let match = dateValue.match(datePattern);
+                                
+                                if (match) {
+                                    let day = parseInt(match[1]);
+                                    let month = parseInt(match[2]);
+                                    let year = parseInt(match[3]);
+                                    
+                                    // Basic validation
+                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                        // You can add custom validation here
+                                    }
+                                }
+                            });
+                        "
                     />
                 </div>
             </div>
@@ -113,17 +189,93 @@
                 <div>
                     <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal awal</label>
                     <input 
-                        type="date" 
+                        type="text" 
                         wire:model.live="startDate"
+                        placeholder="DD-MM-YYYY"
                         class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let input = e.target.value.replace(/\D/g, '');
+                                let formatted = '';
+                                
+                                if (input.length > 0) {
+                                    formatted = input.substring(0, 2); // Day
+                                    if (input.length >= 3) {
+                                        formatted += '-' + input.substring(2, 4); // Month
+                                        if (input.length >= 5) {
+                                            formatted += '-' + input.substring(4, 8); // Year
+                                        }
+                                    }
+                                }
+                                
+                                $el.value = formatted;
+                            });
+                            
+                            $el.addEventListener('blur', function(e) {
+                                // Validate date format on blur
+                                let dateValue = e.target.value;
+                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                let match = dateValue.match(datePattern);
+                                
+                                if (match) {
+                                    let day = parseInt(match[1]);
+                                    let month = parseInt(match[2]);
+                                    let year = parseInt(match[3]);
+                                    
+                                    // Basic validation
+                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                        // You can add custom validation here
+                                    }
+                                }
+                            });
+                        "
                     />
                 </div>
                 <div>
                     <label class="text-xs font-medium text-gray-700 dark:text-gray-300">Tanggal akhir</label>
                     <input 
-                        type="date" 
+                        type="text" 
                         wire:model.live="endDate"
+                        placeholder="DD-MM-YYYY"
                         class="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let input = e.target.value.replace(/\D/g, '');
+                                let formatted = '';
+                                
+                                if (input.length > 0) {
+                                    formatted = input.substring(0, 2); // Day
+                                    if (input.length >= 3) {
+                                        formatted += '-' + input.substring(2, 4); // Month
+                                        if (input.length >= 5) {
+                                            formatted += '-' + input.substring(4, 8); // Year
+                                        }
+                                    }
+                                }
+                                
+                                $el.value = formatted;
+                            });
+                            
+                            $el.addEventListener('blur', function(e) {
+                                // Validate date format on blur
+                                let dateValue = e.target.value;
+                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                let match = dateValue.match(datePattern);
+                                
+                                if (match) {
+                                    let day = parseInt(match[1]);
+                                    let month = parseInt(match[2]);
+                                    let year = parseInt(match[3]);
+                                    
+                                    // Basic validation
+                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                        // You can add custom validation here
+                                    }
+                                }
+                            });
+                        "
                     />
                 </div>
             </div>

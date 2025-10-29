@@ -11,12 +11,19 @@ use App\Services\FinancialTransactionService;
 use App\Services\DebtPaymentService;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Imports\BukuKasKebunImport;
+use App\Exports\BukuKasKebunExportWithHeaders;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
 
 class BukuKasKebunComponent extends Component
 {
     use WithFileUploads;
 
-    public $transaction_date;
+    public $transaction_date; // This will hold the DD-MM-YYYY format from the view
+    public $transaction_date_formatted; // This will hold the YYYY-MM-DD format for processing
     public $transaction_type;
     public $amount;
     public $source_destination;
@@ -73,13 +80,19 @@ class BukuKasKebunComponent extends Component
     public $relatedKpTransaction = null;
     public $selectedBkkId = null;
     
+    // Import/Export properties
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+    
     /**
      * Get the validation rules that apply to the request.
      */
     protected function rules()
     {
         $rules = [
-            'transaction_date' => 'required|date',
+            'transaction_date' => 'required|date_format:d-m-Y',
             'transaction_type' => 'required|in:income,expense',
             'amount' => 'required|numeric|min:0.01',
             'source_destination' => 'required',
@@ -140,6 +153,14 @@ class BukuKasKebunComponent extends Component
         $this->loadTransactions();
         $this->loadUnpaidDebts();
         $this->loadDebtCategories();
+        
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
     }
     
     /**
@@ -280,10 +301,13 @@ class BukuKasKebunComponent extends Component
         $this->validateDebtPayment();
 
         try {
+            // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+            $dateForDb = $this->transaction_date ? \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d') : date('Y-m-d');
+            
             $paymentData = [
                 'debt_id' => $this->debt_id,
                 'payment_amount' => $this->amount,
-                'payment_date' => $this->transaction_date,
+                'payment_date' => $dateForDb,
                 'payment_method' => $this->payment_method,
                 'reference_number' => $this->reference_number,
                 'notes' => $this->notes,
@@ -406,6 +430,9 @@ class BukuKasKebunComponent extends Component
     {
         $validated = $this->validate();
         
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = $this->transaction_date ? \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d') : date('Y-m-d');
+        
         // Handle file upload
         $proofPath = null;
         if ($this->proof_document) {
@@ -413,7 +440,7 @@ class BukuKasKebunComponent extends Component
         }
 
         BukuKasKebun::create([
-            'transaction_date' => $this->transaction_date,
+            'transaction_date' => $dateForDb,
             'transaction_number' => 'BKK' . date('Ymd') . rand(1000, 9999), // Generate transaction number
             'transaction_type' => $this->transaction_type,
             'amount' => $this->amount,
@@ -434,7 +461,7 @@ class BukuKasKebunComponent extends Component
 
     public function resetForm()
     {
-        $this->transaction_date = date('Y-m-d');
+        $this->transaction_date = date('d-m-Y');
         $this->transaction_type = 'income';
         $this->amount = '';
         $this->source_destination = '';
@@ -598,7 +625,7 @@ class BukuKasKebunComponent extends Component
         $transaction = BukuKasKebun::find($id);
         if ($transaction) {
             $this->editingId = $transaction->id;
-            $this->transaction_date = $transaction->transaction_date->format('Y-m-d');
+            $this->transaction_date = $transaction->transaction_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->transaction_type = $transaction->transaction_type;
             $this->amount = $transaction->amount;
             $this->source_destination = $transaction->source_destination;
@@ -652,15 +679,24 @@ class BukuKasKebunComponent extends Component
 
     public function saveTransactionModal()
     {
-        if ($this->isEditing) {
-            $this->updateTransaction();
-        } elseif ($this->is_debt_payment) {
-            $this->processDebtPayment();
-        } else {
-            $this->saveTransaction();
-        }
+        try {
+            if ($this->isEditing) {
+                $this->updateTransaction();
+            } elseif ($this->is_debt_payment) {
+                $this->processDebtPayment();
+            } else {
+                $this->saveTransaction();
+            }
 
-        $this->closeCreateModal();
+            $this->closeCreateModal();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Re-throw the ValidationException so Livewire can automatically display errors
+            // This will keep the modal open and show validation errors
+            throw $e;
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
+        }
     }
 
     public function updateTransaction()
@@ -669,6 +705,9 @@ class BukuKasKebunComponent extends Component
         
         $transaction = BukuKasKebun::find($this->editingId);
         if ($transaction) {
+            // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+            $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d');
+            
             // Handle file upload
             $proofPath = $transaction->proof_document_path; // Keep existing path if no new file
             if ($this->proof_document) {
@@ -680,7 +719,7 @@ class BukuKasKebunComponent extends Component
             }
 
             $transaction->update([
-                'transaction_date' => $this->transaction_date,
+                'transaction_date' => $dateForDb,
                 'transaction_type' => $this->transaction_type,
                 'amount' => $this->amount,
                 'source_destination' => $this->source_destination,
@@ -778,5 +817,114 @@ class BukuKasKebunComponent extends Component
                 'payments' => $transaction->debt->payments ?? []
             ]);
         }
+    }
+    
+    // Import methods
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importTransaction()
+    {
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+        
+        try {
+            $import = new BukuKasKebunImport();
+            Excel::import($import, $this->importFile);
+            
+            $this->setPersistentMessage('Buku Kas Kebun transaction data imported successfully.', 'success');
+            $this->closeImportModal();
+            $this->loadTransactions(); // Refresh the transaction list after import
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                // Ensure all error messages are UTF-8 clean
+                $row = $failure->row();
+                $errors = $failure->errors();
+                $cleanErrors = array_map(function($error) {
+                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                }, $errors);
+                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            // Ensure the error message is UTF-8 clean
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage($cleanErrorMessage, 'error');
+        } catch (\Exception $e) {
+            // Ensure exception message is UTF-8 clean
+            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
+        }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        $sampleData = [
+            ['transaction_date', 'transaction_type', 'amount', 'source_destination', 'received_by', 'notes', 'category', 'kp_id'],
+            [now()->format('d-m-Y'), 'income', '15000000', 'Customer Payment', 'Budi Santoso', 'Pembayaran penjualan bulan ini', 'Sales Revenue', ''],
+            [now()->format('d-m-Y'), 'expense', '5000000', 'Supplier', 'Siti Aminah', 'Pembelian bahan baku', 'Operational Cost', ''],
+            [now()->format('d-m-Y'), 'income', '8000000', 'Sales', 'Ahmad Fauzi', 'Penjualan produk', 'Sales Income', ''],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_buku_kas_kebun_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $export = new BukuKasKebunExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'buku_kas_kebun_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        // Create a simple PDF export
+        $export = new BukuKasKebunExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        $data = $export->collection();
+        
+        $pdf = Pdf::loadView('exports.buku-kas-kebun-pdf', [
+            'data' => $data,
+            'startDate' => $this->exportStartDate,
+            'endDate' => $this->exportEndDate,
+        ]);
+        
+        $filename = 'buku_kas_kebun_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+        
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, $filename);
     }
 }
