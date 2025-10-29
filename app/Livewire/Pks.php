@@ -35,6 +35,11 @@ class Pks extends Component
         'name.unique' => 'Nama PKS sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadPks();
+    }
+
     public function mount()
     {
         $this->loadPks();

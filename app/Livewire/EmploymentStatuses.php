@@ -39,6 +39,11 @@ class EmploymentStatuses extends Component
         'value.unique' => 'Nilai status karyawan sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadEmploymentStatuses();
+    }
+
     public function mount()
     {
         $this->loadEmploymentStatuses();

@@ -35,6 +35,11 @@ class Divisions extends Component
         'name.unique' => 'Nama afdeling sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadDivisions();
+    }
+
     public function mount()
     {
         $this->loadDivisions();

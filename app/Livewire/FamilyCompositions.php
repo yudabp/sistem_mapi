@@ -36,6 +36,11 @@ class FamilyCompositions extends Component
         'number.unique' => 'Nomor susunan keluarga sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadFamilyCompositions();
+    }
+
     public function mount()
     {
         $this->loadFamilyCompositions();

@@ -35,6 +35,11 @@ class Positions extends Component
         'name.unique' => 'Nama jabatan sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadPositions();
+    }
+
     public function mount()
     {
         $this->loadPositions();

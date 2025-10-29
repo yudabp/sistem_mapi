@@ -35,6 +35,11 @@ class VehicleNumbers extends Component
         'number.unique' => 'Nomor polisi sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadVehicleNumbers();
+    }
+
     public function mount()
     {
         $this->loadVehicleNumbers();
