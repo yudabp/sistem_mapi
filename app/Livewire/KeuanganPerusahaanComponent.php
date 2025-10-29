@@ -580,20 +580,11 @@ class KeuanganPerusahaanComponent extends Component
     
     public function exportToPdf()
     {
-        // Create a controller route for this - for now, we'll create a simple PDF
-        $export = new KeuanganPerusahaanExportWithHeaders($this->exportStartDate, $this->exportEndDate);
-        $data = $export->collection();
-        
-        $pdf = Pdf::loadView('exports.keuangan-perusahaan-pdf', [
-            'data' => $data,
-            'startDate' => $this->exportStartDate,
-            'endDate' => $this->exportEndDate,
+        $this->authorizeView();
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('financial.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
-        
-        $filename = 'keuangan_perusahaan_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename);
     }
 }

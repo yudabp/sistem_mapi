@@ -917,20 +917,11 @@ class BukuKasKebunComponent extends Component
     
     public function exportToPdf()
     {
-        // Create a simple PDF export
-        $export = new BukuKasKebunExportWithHeaders($this->exportStartDate, $this->exportEndDate);
-        $data = $export->collection();
-        
-        $pdf = Pdf::loadView('exports.buku-kas-kebun-pdf', [
-            'data' => $data,
-            'startDate' => $this->exportStartDate,
-            'endDate' => $this->exportEndDate,
+        $this->authorizeView();
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('cashbook.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
-        
-        $filename = 'buku_kas_kebun_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, $filename);
     }
 }
