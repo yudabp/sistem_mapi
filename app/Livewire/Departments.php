@@ -35,6 +35,11 @@ class Departments extends Component
         'name.unique' => 'Nama bagian sudah terdaftar.',
     ];
 
+    public function updatedSearch()
+    {
+        $this->loadDepartments();
+    }
+
     public function mount()
     {
         $this->loadDepartments();

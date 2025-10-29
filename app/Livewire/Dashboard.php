@@ -166,7 +166,7 @@ class Dashboard extends Component
 
         // Count total employees (current employees regardless of date)
         $this->totalEmployees = Employee::count();
-        $this->activeEmployees = Employee::where('status', 'aktif')->count();
+        $this->activeEmployees = Employee::where('status', 'active')->count();
 
         // Count unpaid debts
         $this->unpaidDebtsCount = Debt::where('status', 'unpaid')->count();
