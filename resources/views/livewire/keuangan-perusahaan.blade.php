@@ -420,6 +420,7 @@
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Keuangan Perusahaan Transaction Input</h2>
                 <div class="flex flex-wrap gap-2">
+                    @canedit
                     <!-- Import button with dropdown -->
                     <div class="relative group">
                         <button 
@@ -452,7 +453,8 @@
                             </button>
                         </div>
                     </div>
-                    
+                    @endcanedit
+
                     <!-- Export button with dropdown -->
                     <div class="relative group">
                         <button 
