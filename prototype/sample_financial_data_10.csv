@@ -1,0 +1,11 @@
+transaction_date,transaction_type,amount,source_destination,received_by,notes,category
+10/25/2025,income,15000000,Penjualan TBS,Budi Santoso,Pembayaran penjualan bulan ini,Sales Revenue
+10/25/2025,expense,5000000,Supplier A,Siti Aminah,Pembelian bahan baku,Operational Cost
+10/25/2025,expense,3000000,Transport Company,Ahmad Fauzi,Biaya transportasi,Transportation Cost
+10/26/2025,income,12000000,Pelanggan B,Cinta Dewi,Pembayaran penjualan minggu kedua,Sales Revenue
+10/26/2025,expense,2500000,Gaji Karyawan,Ibu Cinta,Gaji bulanan karyawan,Salary
+10/26/2025,expense,1800000,Supplier B,Joko Susilo,Pembelian pupuk,Operational Cost
+10/26/2025,income,18000000,Pelanggan C,Dodi Firmansyah,Pembayaran penjualan minggu ketiga,Sales Revenue
+10/27/2025,expense,4000000,Transport Company,Eka Putri,Biaya transportasi minggu kedua,Transportation Cost
+10/27/2025,expense,2000000,Gaji Karyawan,Fajar Nugroho,Gaji minggu pertama,Salary
+10/27/2025,income,10000000,Pelanggan D,Gina Kartika,Pembayaran penjualan minggu keempat,Sales Revenue

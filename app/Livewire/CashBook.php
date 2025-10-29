@@ -10,8 +10,9 @@ use App\Imports\CashBookImport;
 use App\Exports\CashBookExportWithHeaders;
 use App\Exports\CashBookPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
 
 class CashBook extends Component
 {
@@ -396,12 +397,54 @@ class CashBook extends Component
         ]);
         
         try {
-            Excel::import(new CashBookImport, $this->importFile);
+            $import = new CashBookImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Cash book data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure (BukuKasKebun model)
+        $sampleData = [
+            ['transaction_date', 'transaction_type', 'amount', 'purpose', 'notes', 'category'],
+            [now()->format('Y-m-d'), 'expense', '2500000', 'Fuel Purchase', 'Bensin kendaraan operasional', 'Transportation Cost'],
+            [now()->format('Y-m-d'), 'expense', '1800000', 'Fertilizer Purchase', 'Pembelian pupuk organik', 'Fertilizer Cost'],
+            [now()->format('Y-m-d'), 'income', '5000000', 'Petty Cash Return', 'Pengembalian dana petty cash', 'Other Income'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_cashbook_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
     }
     
     // Export methods
@@ -416,30 +459,10 @@ class CashBook extends Component
     
     public function exportToPdf()
     {
-        $exporter = new CashBookPdfExporter($this->exportStartDate, $this->exportEndDate);
-        
-        $html = $exporter->generate();
-        
-        // Ensure proper UTF-8 encoding with fallback
-        if (function_exists('mb_convert_encoding')) {
-            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
-        } else {
-            $html = utf8_encode($html);
-        }
-        
-        $filename = 'cash_book_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        // Create DomPDF instance
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        
-        return response()->make($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('cashbook.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
     }
 }

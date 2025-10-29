@@ -58,7 +58,10 @@ class DebtsExportWithHeaders implements FromCollection, WithHeadings, WithMappin
         return [
             'ID',
             'Amount',
+            'Sisa Hutang',
+            'Cicilan Per Bulan',
             'Creditor',
+            'Debt Type',
             'Due Date',
             'Description',
             'Status',
@@ -73,7 +76,10 @@ class DebtsExportWithHeaders implements FromCollection, WithHeadings, WithMappin
         return [
             $debt->id,
             $debt->amount,
+            $debt->sisa_hutang,
+            $debt->cicilan_per_bulan,
             $debt->creditor,
+            $debt->debtType ? $debt->debtType->name : null, // Get debt type name if available
             $debt->due_date->format('d-m-Y'),
             $debt->description,
             $debt->status,

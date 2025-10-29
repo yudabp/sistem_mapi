@@ -14,8 +14,9 @@ use App\Imports\EmployeesImport;
 use App\Exports\EmployeesExportWithHeaders;
 use App\Exports\EmployeesPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
 use App\Livewire\Concerns\WithRoleCheck;
 
 class Employees extends Component
@@ -76,7 +77,6 @@ class Employees extends Component
         'monthly_salary' => 'required|numeric',
         'hire_date' => 'required|date_format:d-m-Y',
         'status' => 'required',
-        'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
 
     public function mount()
@@ -275,10 +275,21 @@ class Employees extends Component
 
     public function saveEmployeeModal()
     {
-        if ($this->isEditing) {
-            $this->updateEmployee();
-        } else {
-            $this->saveEmployee();
+        try {
+            if ($this->isEditing) {
+                $this->updateEmployee();
+            } else {
+                $this->saveEmployee();
+            }
+            
+            $this->closeCreateModal();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
         }
 
         $this->closeCreateModal();
@@ -371,15 +382,69 @@ class Employees extends Component
     public function importEmployee()
     {
         $this->authorizeEdit();
-        $this->validate();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
         
         try {
-            Excel::import(new EmployeesImport, $this->importFile);
+            $import = new EmployeesImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Employee data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                // Ensure all error messages are UTF-8 clean
+                $row = $failure->row();
+                $errors = $failure->errors();
+                $cleanErrors = array_map(function($error) {
+                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                }, $errors);
+                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            // Ensure the error message is UTF-8 clean
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage($cleanErrorMessage, 'error');
         } catch (\Exception $e) {
-            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+            // Ensure exception message is UTF-8 clean
+            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
         }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
+        $sampleData = [
+            ['ndp', 'name', 'department', 'position', 'grade', 'family_composition', 'monthly_salary', 'status', 'hire_date', 'address', 'phone', 'email'],
+            ['NDP001', 'Budi Santoso', 'Finance', 'Manager', 'A', '3', '8000000', 'active', now()->format('Y-m-d'), 'Jl. Merdeka No. 123', '081234567890', 'budi@example.com'],
+            ['NDP002', 'Siti Aminah', 'Production', 'Supervisor', 'B', '2', '6000000', 'active', now()->format('Y-m-d'), 'Jl. Sudirman No. 45', '082345678901', 'siti@example.com'],
+            ['NDP003', 'Ahmad Fauzi', 'Sales', 'Staff', 'C', '1', '4500000', 'active', now()->format('Y-m-d'), 'Jl. Gatot Subroto No. 78', '083456789012', 'ahmad@example.com'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_employees_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
     }
     
     // Export methods
@@ -396,30 +461,10 @@ class Employees extends Component
     public function exportToPdf()
     {
         $this->authorizeView();
-        $exporter = new EmployeesPdfExporter($this->exportStartDate, $this->exportEndDate);
-        
-        $html = $exporter->generate();
-        
-        // Ensure proper UTF-8 encoding with fallback
-        if (function_exists('mb_convert_encoding')) {
-            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
-        } else {
-            $html = utf8_encode($html);
-        }
-        
-        $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        // Create DomPDF instance
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        
-        return response()->make($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('employees.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
     }
 }

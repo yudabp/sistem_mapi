@@ -8,12 +8,13 @@ class FinancialSampleController extends Controller
 {
     public function downloadSample()
     {
-        // Sample data for financial
+        // Sample data for financial - Updated to match current table structure
+        // Categories will be used to determine routing to KP or BKK tables by the import
         $sampleData = [
             ['transaction_date', 'transaction_type', 'amount', 'source_destination', 'received_by', 'notes', 'category'],
-            [date('d-m-Y'), 'income', '5000000', 'Penjualan TBS', 'Bpk. Andi', 'Pembayaran penjualan TBS minggu ini', 'Sales'],
-            [date('d-m-Y'), 'expense', '2500000', 'Biaya Transport', 'Bpk. Budi', 'Biaya angkut TBS ke PKS', 'Transport'],
-            [date('d-m-Y'), 'expense', '1500000', 'Gaji Karyawan', 'Ibu Cinta', 'Gaji bulanan karyawan', 'Salary'],
+            [date('Y-m-d'), 'income', '15000000', 'Customer Payment', 'Budi Santoso', 'Pembayaran penjualan bulan ini', 'Sales Revenue'],
+            [date('Y-m-d'), 'expense', '5000000', 'Supplier', 'Siti Aminah', 'Pembelian bahan baku', 'Operational Cost'],
+            [date('Y-m-d'), 'expense', '3000000', 'Transport Company', 'Ahmad Fauzi', 'Biaya transportasi', 'Transportation Cost'],
         ];
         
         $csv = '';

@@ -13,8 +13,9 @@ use App\Imports\DebtsImport;
 use App\Exports\DebtsExportWithHeaders;
 use App\Exports\DebtsPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
 use App\Livewire\Concerns\WithRoleCheck;
 
 class Debts extends Component
@@ -75,6 +76,7 @@ class Debts extends Component
         'debt_type_id' => 'nullable|exists:master_debt_types,id',
         'cicilan_per_bulan' => 'nullable|numeric|min:0',
         'proof_document' => 'nullable|file|max:10240', // Max 10MB
+        'importFile' => 'nullable|file|mimes:xlsx,xls,csv', // Make importFile nullable for regular form operations
     ];
 
     // Validation rules for import
@@ -378,18 +380,27 @@ class Debts extends Component
 
     public function saveDebtModal()
     {
-        // Check which branch we're taking
-        if ($this->isEditing) {
-            $this->setPersistentMessage('Updating existing debt...', 'info');
-            $result = $this->updateDebt();
-        } else {
-            $this->setPersistentMessage('Creating new debt...', 'info');
-            $result = $this->saveDebt();
-        }
+        try {
+            // Check which branch we're taking
+            if ($this->isEditing) {
+                $this->setPersistentMessage('Updating existing debt...', 'info');
+                $result = $this->updateDebt();
+            } else {
+                $this->setPersistentMessage('Creating new debt...', 'info');
+                $result = $this->saveDebt();
+            }
 
-        // Only close modal if operation was successful
-        if ($result) {
-            $this->closeCreateModal();
+            // Only close modal if operation was successful
+            if ($result) {
+                $this->closeCreateModal();
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
         }
     }
 
@@ -485,12 +496,54 @@ class Debts extends Component
         $this->validate($this->importRules);
 
         try {
-            Excel::import(new DebtsImport, $this->importFile);
+            $import = new DebtsImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Debt data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                $failureMessages[] = 'Row ' . $failure->row() . ': ' . implode(', ', $failure->errors());
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $this->setPersistentMessage($errorMessage, 'error');
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
         }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure with foreign keys
+        $sampleData = [
+            ['amount', 'sisa_hutang', 'cicilan_per_bulan', 'creditor', 'debt_type', 'due_date', 'description', 'status', 'paid_date'],
+            ['50000000', '50000000', '10000000', 'Bank Mandiri', 'Hutang Bank', now()->addMonth()->format('Y-m-d'), 'Pembelian alat produksi', 'unpaid', ''],
+            ['25000000', '15000000', '5000000', 'Supplier A', 'Hutang Supplier', now()->addDays(15)->format('Y-m-d'), 'Pembelian bahan baku', 'unpaid', ''],
+            ['15000000', '0', '0', 'PT. Karyawan Sejahtera', 'Hutang Karyawan', now()->addDays(7)->format('Y-m-d'), 'Bonus tahunan', 'paid', now()->format('Y-m-d')],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_debts_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
     }
     
     // Export methods
@@ -507,30 +560,10 @@ class Debts extends Component
     public function exportToPdf()
     {
         $this->authorizeView();
-        $exporter = new DebtsPdfExporter($this->exportStartDate, $this->exportEndDate);
-        
-        $html = $exporter->generate();
-        
-        // Ensure proper UTF-8 encoding with fallback
-        if (function_exists('mb_convert_encoding')) {
-            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
-        } else {
-            $html = utf8_encode($html);
-        }
-        
-        $filename = 'debt_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        // Create DomPDF instance
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        
-        return response()->make($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('debts.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
     }
 }

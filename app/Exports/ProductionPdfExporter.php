@@ -45,7 +45,7 @@ class ProductionPdfExporter
             $query->whereBetween('date', [$this->startDate, $this->endDate]);
         }
 
-        $productions = $query->get();
+        $productions = $query->with(['divisionRel', 'pksRel', 'vehicle'])->get();
         
         $exportInfo = [
             'exportedBy' => $this->user ? $this->user->name : 'System',

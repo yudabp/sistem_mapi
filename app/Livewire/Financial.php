@@ -10,8 +10,9 @@ use App\Imports\FinancialImport;
 use App\Exports\FinancialExportWithHeaders;
 use App\Exports\FinancialPdfExporter;
 use Maatwebsite\Excel\Facades\Excel;
-use Dompdf\Dompdf;
-use Dompdf\Options;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
 
 class Financial extends Component
 {
@@ -341,13 +342,22 @@ class Financial extends Component
 
     public function saveTransactionModal()
     {
-        if ($this->isEditing) {
-            $this->updateTransaction();
-        } else {
-            $this->saveTransaction();
+        try {
+            if ($this->isEditing) {
+                $this->updateTransaction();
+            } else {
+                $this->saveTransaction();
+            }
+            
+            $this->closeCreateModal();
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
         }
-        
-        $this->closeCreateModal();
     }
 
     public function updateTransaction()
@@ -423,15 +433,69 @@ class Financial extends Component
     
     public function importTransaction()
     {
-        $this->validate();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
         
         try {
-            Excel::import(new FinancialImport, $this->importFile);
+            $import = new FinancialImport();
+            Excel::import($import, $this->importFile);
+            
             $this->setPersistentMessage('Financial transaction data imported successfully.', 'success');
             $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                // Ensure all error messages are UTF-8 clean
+                $row = $failure->row();
+                $errors = $failure->errors();
+                $cleanErrors = array_map(function($error) {
+                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                }, $errors);
+                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            // Ensure the error message is UTF-8 clean
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage($cleanErrorMessage, 'error');
         } catch (\Exception $e) {
-            $this->setPersistentMessage('Error importing data: ' . $e->getMessage(), 'error');
+            // Ensure exception message is UTF-8 clean
+            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
         }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure and category-based routing
+        $sampleData = [
+            ['transaction_date', 'transaction_type', 'amount', 'source_destination', 'received_by', 'notes', 'category'],
+            [now()->format('Y-m-d'), 'income', '15000000', 'Customer Payment', 'Budi Santoso', 'Pembayaran penjualan bulan ini', 'Sales Revenue'],
+            [now()->format('Y-m-d'), 'expense', '5000000', 'Supplier', 'Siti Aminah', 'Pembelian bahan baku', 'Operational Cost'],
+            [now()->format('Y-m-d'), 'expense', '3000000', 'Transport Company', 'Ahmad Fauzi', 'Biaya transportasi', 'Logistics Cost'],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_financial_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
     }
     
     // Export methods
@@ -446,30 +510,10 @@ class Financial extends Component
     
     public function exportToPdf()
     {
-        $exporter = new FinancialPdfExporter($this->exportStartDate, $this->exportEndDate);
-        
-        $html = $exporter->generate();
-        
-        // Ensure proper UTF-8 encoding with fallback
-        if (function_exists('mb_convert_encoding')) {
-            $html = mb_convert_encoding($html, 'UTF-8', 'auto');
-        } else {
-            $html = utf8_encode($html);
-        }
-        
-        $filename = 'financial_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
-        
-        // Create DomPDF instance
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html, 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-        
-        return response()->make($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('financial.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
         ]);
     }
 }

@@ -2,20 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\SalesExport;
-use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
+use App\Exports\SalesPdfExporter;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class SalesController extends Controller
 {
-    /**
-     * Export sales data to Excel
-     */
-    public function export(Request $request)
+    public function exportPdf(Request $request)
     {
-        $filter = $request->get('filter', 'all');
-        $filename = 'sales_data_' . $filter . '_' . date('Y-m-d_H-i-s') . '.xlsx';
+        $startDate = $request->query('start_date');
+        $endDate = $request->query('end_date');
         
-        return Excel::download(new SalesExport($filter), $filename);
+        // Create the PDF exporter
+        $exporter = new SalesPdfExporter($startDate, $endDate);
+        $html = $exporter->generate();
+
+        // Ensure proper UTF-8 encoding
+        $html = mb_convert_encoding($html, 'UTF-8', 'auto');
+        
+        $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.pdf';
+
+        // Create DomPDF instance with proper UTF-8 configuration
+        $options = new \Dompdf\Options();
+        $options->set('defaultFont', 'DejaVu Sans');
+        $options->set('isRemoteEnabled', false);
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('enable_font_subsetting', true);
+        $options->setChroot(__DIR__ . '/../../../');
+        
+        $dompdf = new \Dompdf\Dompdf($options);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+
+        return response()->make($dompdf->output(), 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
     }
 }

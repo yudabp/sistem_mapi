@@ -45,7 +45,7 @@ class EmployeesPdfExporter
             $query->whereBetween('hire_date', [$this->startDate, $this->endDate]);
         }
 
-        $employees = $query->get();
+        $employees = $query->with(['departmentRel', 'position', 'familyCompositionRel'])->get();
         
         $exportInfo = [
             'exportedBy' => $this->user ? $this->user->name : 'System',

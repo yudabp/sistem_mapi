@@ -80,11 +80,11 @@ class ProductionExportWithHeaders implements FromCollection, WithHeadings, WithM
             $production->transaction_number,
             $production->date->format('d-m-Y'),
             $production->sp_number,
-            $production->vehicle_number,
+            $production->vehicle_number, // Uses the accessor method which handles both old and new structures
             $production->tbs_quantity,
             $production->kg_quantity,
-            $production->division,
-            $production->pks,
+            $production->division_name, // Uses the accessor method which handles both old and new structures
+            $production->pks_name, // Uses the accessor method which handles both old and new structures
             $production->created_at->format('d-m-Y H:i:s'),
             $production->updated_at->format('d-m-Y H:i:s'),
         ];

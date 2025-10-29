@@ -1,10 +1,15 @@
 <?php
 
+use App\Http\Controllers\CashBookSampleController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataFeedController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DebtsSampleController;
+use App\Http\Controllers\EmployeesSampleController;
+use App\Http\Controllers\FinancialSampleController;
 use App\Http\Controllers\PalmOilController;
 use App\Http\Controllers\ProductionSampleController;
+use App\Http\Controllers\SalesSampleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -55,13 +60,19 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
 
     // Palm Oil Management System routes - Indonesian versions (matching sidebar menu)
     Route::get('/data-produksi', [App\Http\Controllers\PalmOilController::class, 'production'])->name('data-produksi');
+    Route::get('/data-produksi/export-pdf', [App\Http\Controllers\ProductionController::class, 'exportPdf'])->name('production.export.pdf');
     Route::get('/data-penjualan', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('data-penjualan');
     Route::get('/data-penjualan/export', [App\Http\Controllers\SalesController::class, 'export'])->name('sales.export');
+    Route::get('/data-penjualan/export-pdf', [App\Http\Controllers\SalesController::class, 'exportPdf'])->name('sales.export.pdf');
     Route::get('/data-karyawan', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('data-karyawan');
+    Route::get('/data-karyawan/export-pdf', [App\Http\Controllers\EmployeesController::class, 'exportPdf'])->name('employees.export.pdf');
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'keuanganPerusahaan'])->name('keuangan-perusahaan');
+    Route::get('/keuangan-perusahaan/export-pdf', [App\Http\Controllers\FinancialController::class, 'exportPdf'])->name('financial.export.pdf');
     Route::get('/buku-kas-kebun', [App\Http\Controllers\PalmOilController::class, 'bukuKasKebun'])->name('buku-kas-kebun');
     Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
+    Route::get('/keuangan-perusahaan/buku-kas/export-pdf', [App\Http\Controllers\CashBookController::class, 'exportPdf'])->name('cashbook.export.pdf');
     Route::get('/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
+    Route::get('/data-hutang/export-pdf', [App\Http\Controllers\DebtsController::class, 'exportPdf'])->name('debts.export.pdf');
     Route::get('/akses-user', [App\Http\Controllers\PalmOilController::class, 'userAccess'])->name('akses-user');
     // Manajemen User with CRUD operations (NEW - using palm-oil layout)
     Route::get('/user-management', [App\Http\Controllers\PalmOilController::class, 'userManagement'])->name('user-management')->middleware('role:superadmin');

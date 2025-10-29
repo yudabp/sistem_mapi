@@ -1,0 +1,6 @@
+transaction_date,transaction_type,amount,purpose,notes,category
+10/25/2025,expense,2500000,Fuel Purchase,Bensin kendaraan operasional,Transportation Cost
+10/25/2025,expense,1800000,Fertilizer Purchase,Pembelian pupuk organik,Fertilizer Cost
+10/25/2025,income,5000000,Petty Cash Return,Pengembalian dana petty cash,Other Income
+10/26/2025,expense,3200000,Transportation Cost,Biaya angkut TBS ke PKS,Logistics Cost
+10/26/2025,expense,1500000,Maintenance Cost,Perbaikan alat berat,Maintenance Cost
