@@ -16,10 +16,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Production extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $transaction_number;
     public $date; // This will hold the DD-MM-YYYY format from the view
@@ -99,6 +101,7 @@ class Production extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadOptions();
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
@@ -129,6 +132,8 @@ class Production extends Component
 
     public function saveProduction()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -280,6 +285,8 @@ class Production extends Component
 
     public function deleteProduction($id)
     {
+        $this->authorizeDelete();
+
         $production = ProductionModel::find($id);
         if ($production) {
             // Delete the photo if it exists
@@ -343,6 +350,7 @@ class Production extends Component
 
     public function deleteProductionConfirmed()
     {
+        $this->authorizeDelete();
         $production = ProductionModel::find($this->deletingProductionId);
         if ($production) {
             // Delete the photo if it exists
@@ -378,8 +386,10 @@ class Production extends Component
 
     public function updateProduction()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
-        
+
         $production = ProductionModel::find($this->editingId);
         if ($production) {
             // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -447,6 +457,7 @@ class Production extends Component
     
     public function importProduction()
     {
+        $this->authorizeEdit();
         $this->validate([
             'importFile' => 'required|file|mimes:xlsx,xls,csv',
         ]);
@@ -515,6 +526,8 @@ class Production extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
+
         $export = new ProductionExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'production_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -524,6 +537,7 @@ class Production extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
         // Redirect to the dedicated PDF export controller route
         return redirect()->route('production.export.pdf', [
             'start_date' => $this->exportStartDate,

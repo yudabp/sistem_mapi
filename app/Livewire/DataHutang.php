@@ -6,10 +6,12 @@ use Livewire\Component;
 use App\Models\Debt;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class DataHutang extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $amount;
     public $creditor;
@@ -56,6 +58,7 @@ class DataHutang extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
     }
 
     public function render()
@@ -72,6 +75,7 @@ class DataHutang extends Component
 
     public function saveDebt()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Handle file upload
@@ -268,6 +272,7 @@ class DataHutang extends Component
 
     public function deleteDebtConfirmed()
     {
+        $this->authorizeDelete();
         $debt = Debt::find($this->deletingDebtId);
         if ($debt) {
             // Delete the proof if it exists
@@ -294,6 +299,7 @@ class DataHutang extends Component
 
     public function updateDebt()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         $debt = Debt::find($this->editingId);

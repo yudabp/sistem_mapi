@@ -417,6 +417,7 @@
     <!-- Form Section - Buttons to open modal and import/export -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+<<<<<<< Feature-#11-Fix-Import-Feature-Bug
             <div class="flex flex-wrap justify-between items-center gap-4">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Buku Kas Kebun Transaction Input</h2>
                 <div class="flex flex-wrap gap-2">
@@ -582,15 +583,40 @@
                     </div>
                     
                     <button 
+=======
+            <div class="flex justify-between items-center">
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Buku Kas Kebun</h2>
+                <!-- <button 
+                    wire:click="openCreateModal"
+                    class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                    Add Transaction
+                </button> -->
+                @canedit
+                    <button
+>>>>>>> main
                         wire:click="openCreateModal"
                         class="px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-2"
                     >
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
+<<<<<<< Feature-#11-Fix-Import-Feature-Bug
                         Add Transaction
                     </button>
                 </div>
+=======
+                        Add Record
+                    </button>
+                @else
+                    <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Add Record
+                    </div> -->
+                @endcanedit
+>>>>>>> main
             </div>
         </header>
     </div>
@@ -719,6 +745,7 @@
                                                 View KP
                                             </button>
                                         @endif
+                                        @canedit
                                         <button 
                                             wire:click="openEditModal({{ $transaction->id }})"
                                             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
@@ -731,6 +758,20 @@
                                         >
                                             Delete
                                         </button>
+                                        @else
+                                        <!-- <button 
+                                            class="px-3 py-1 bg-gray-400 text-white rounded cursor-not-allowed text-sm"
+                                            title="You do not have permission to edit"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            class="px-3 py-1 bg-gray-400 text-white rounded cursor-not-allowed text-sm"
+                                            title="You do not have permission to delete"
+                                        >
+                                            Delete
+                                        </button> -->
+                                        @endcanedit
                                     </div>
                                 </td>
                             </tr>

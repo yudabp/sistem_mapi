@@ -56,8 +56,49 @@ class PalmOilController extends Controller
         return view('palm-oil.user-access');
     }
     
+    // Master Data Methods
+    public function vehicleNumbers()
+    {
+        return view('palm-oil.master-data.vehicle-numbers');
+    }
+
+    public function divisions()
+    {
+        return view('palm-oil.master-data.divisions');
+    }
+
+    public function pks()
+    {
+        return view('palm-oil.master-data.pks');
+    }
+
+    public function departments()
+    {
+        return view('palm-oil.master-data.departments');
+    }
+
+    public function positions()
+    {
+        return view('palm-oil.master-data.positions');
+    }
+
+    public function familyCompositions()
+    {
+        return view('palm-oil.master-data.family-compositions');
+    }
+
+    public function employmentStatuses()
+    {
+        return view('palm-oil.master-data.employment-statuses');
+    }
+
     public function settings()
     {
         return view('palm-oil.settings');
+    }
+
+    public function userManagement()
+    {
+        return view('palm-oil.user-management');
     }
 }

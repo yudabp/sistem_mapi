@@ -7,17 +7,33 @@ use App\Models\FamilyComposition;
 
 class FamilyCompositions extends Component
 {
-    public $family_compositions = [];
+    // Modal states
+    public $showModal = false;
+    public $showDeleteConfirmation = false;
+    public $isEditing = false;
+
+    // Form fields
     public $number;
     public $description;
     public $is_active = true;
     public $editing_id;
+    public $delete_id;
     public $search = '';
+    public $deletingFamilyCompositionInfo = '';
+
+    // Data
+    public $family_compositions = [];
 
     protected $rules = [
         'number' => 'required|integer|unique:family_compositions,number',
         'description' => 'nullable',
         'is_active' => 'boolean',
+    ];
+
+    protected $messages = [
+        'number.required' => 'Nomor susunan keluarga wajib diisi.',
+        'number.integer' => 'Nomor susunan keluarga harus berupa angka.',
+        'number.unique' => 'Nomor susunan keluarga sudah terdaftar.',
     ];
 
     public function mount()
@@ -30,38 +46,15 @@ class FamilyCompositions extends Component
         return view('livewire.family-compositions');
     }
 
-    public function saveFamilyComposition()
+    // Modal methods
+    public function openCreateModal()
     {
-        if ($this->editing_id) {
-            $familyComposition = FamilyComposition::find($this->editing_id);
-            if ($familyComposition) {
-                $this->validate([
-                    'number' => 'required|integer|unique:family_compositions,number,' . $this->editing_id,
-                    'description' => 'nullable',
-                    'is_active' => 'boolean',
-                ]);
-                
-                $familyComposition->update([
-                    'number' => $this->number,
-                    'description' => $this->description,
-                    'is_active' => $this->is_active,
-                ]);
-
-                session()->flash('message', 'Susunan keluarga berhasil diperbarui.');
-            }
-        } else {
-            $validated = $this->validate();
-            
-            FamilyComposition::create($validated);
-
-            session()->flash('message', 'Susunan keluarga berhasil ditambahkan.');
-        }
-
         $this->resetForm();
-        $this->loadFamilyCompositions();
+        $this->isEditing = false;
+        $this->showModal = true;
     }
 
-    public function editFamilyComposition($id)
+    public function openEditModal($id)
     {
         $familyComposition = FamilyComposition::find($id);
         if ($familyComposition) {
@@ -69,25 +62,103 @@ class FamilyCompositions extends Component
             $this->number = $familyComposition->number;
             $this->description = $familyComposition->description;
             $this->is_active = $familyComposition->is_active;
+            $this->isEditing = true;
+            $this->showModal = true;
         }
     }
 
-    public function deleteFamilyComposition($id)
+    public function closeModal()
+    {
+        $this->showModal = false;
+        $this->resetForm();
+    }
+
+    public function confirmDelete($id)
     {
         $familyComposition = FamilyComposition::find($id);
         if ($familyComposition) {
-            $familyComposition->delete();
-            session()->flash('message', 'Susunan keluarga berhasil dihapus.');
-            $this->loadFamilyCompositions();
+            $this->delete_id = $id;
+            $this->deletingFamilyCompositionInfo = "Susunan Keluarga {$familyComposition->number}";
+            $this->showDeleteConfirmation = true;
         }
     }
 
+    public function closeDeleteConfirmation()
+    {
+        $this->showDeleteConfirmation = false;
+        $this->delete_id = null;
+        $this->deletingFamilyCompositionInfo = '';
+    }
+
+    // CRUD operations
+    public function saveFamilyComposition()
+    {
+        if ($this->isEditing) {
+            $this->validate([
+                'number' => 'required|integer|unique:family_compositions,number,' . $this->editing_id,
+                'description' => 'nullable',
+                'is_active' => 'boolean',
+            ]);
+
+            $familyComposition = FamilyComposition::find($this->editing_id);
+            if ($familyComposition) {
+                $familyComposition->update([
+                    'number' => $this->number,
+                    'description' => $this->description,
+                    'is_active' => $this->is_active,
+                ]);
+
+                session()->flash('message', 'Susunan keluarga berhasil diperbarui.');
+                $this->closeModal();
+            }
+        } else {
+            $this->validate([
+                'number' => 'required|integer|unique:family_compositions,number',
+                'description' => 'nullable',
+                'is_active' => 'boolean',
+            ]);
+
+            FamilyComposition::create([
+                'number' => $this->number,
+                'description' => $this->description,
+                'is_active' => $this->is_active,
+            ]);
+
+            session()->flash('message', 'Susunan keluarga berhasil ditambahkan.');
+            $this->closeModal();
+        }
+
+        $this->loadFamilyCompositions();
+    }
+
+    public function deleteFamilyComposition()
+    {
+        if ($this->delete_id) {
+            $familyComposition = FamilyComposition::find($this->delete_id);
+            if ($familyComposition) {
+                $familyComposition->delete();
+                session()->flash('message', 'Susunan keluarga berhasil dihapus.');
+            }
+        }
+
+        $this->closeDeleteConfirmation();
+        $this->loadFamilyCompositions();
+    }
+
+    // Utility methods
     public function resetForm()
     {
         $this->number = 0;
         $this->description = '';
         $this->is_active = true;
         $this->editing_id = null;
+        $this->isEditing = false;
+    }
+
+    public function resetSearch()
+    {
+        $this->search = '';
+        $this->loadFamilyCompositions();
     }
 
     public function loadFamilyCompositions()

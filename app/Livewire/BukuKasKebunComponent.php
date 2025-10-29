@@ -17,10 +17,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class BukuKasKebunComponent extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $transaction_date; // This will hold the DD-MM-YYYY format from the view
     public $transaction_date_formatted; // This will hold the YYYY-MM-DD format for processing
@@ -150,6 +152,7 @@ class BukuKasKebunComponent extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadTransactions();
         $this->loadUnpaidDebts();
         $this->loadDebtCategories();
@@ -428,6 +431,7 @@ class BukuKasKebunComponent extends Component
 
     public function saveTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -663,6 +667,7 @@ class BukuKasKebunComponent extends Component
 
     public function deleteTransactionConfirmed()
     {
+        $this->authorizeDelete();
         $transaction = BukuKasKebun::find($this->deletingTransactionId);
         if ($transaction) {
             // Delete the proof if it exists
@@ -701,6 +706,7 @@ class BukuKasKebunComponent extends Component
 
     public function updateTransaction()
     {
+        $this->authorizeEdit();
         $validated = $this->validate();
         
         $transaction = BukuKasKebun::find($this->editingId);

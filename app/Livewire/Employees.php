@@ -17,9 +17,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Employees extends Component
 {
+    use WithFileUploads;
+    use WithRoleCheck;
     public $ndp; // Employee ID
     public $name;
     public $department; // Keep for backward compatibility
@@ -30,7 +33,8 @@ class Employees extends Component
     public $family_composition; // Keep for backward compatibility
     public $family_composition_id;
     public $monthly_salary;
-    public $status;
+    public $status; // Keep for backward compatibility
+    public $employment_status_id;
     public $hire_date;
     public $address;
     public $phone;
@@ -42,7 +46,7 @@ class Employees extends Component
     public $employment_statuses = [];
     
     public $search = '';
-    public $departmentFilter = '';
+    public $departmentFilter = null;
 
     // Modal control
     public $showModal = false;
@@ -68,8 +72,8 @@ class Employees extends Component
     protected $rules = [
         'ndp' => 'required|unique:employees,ndp',
         'name' => 'required',
-        'department_id' => 'required|exists:departments,id',
-        'position_id' => 'required|exists:positions,id',
+        'department' => 'required',
+        'position' => 'required',
         'monthly_salary' => 'required|numeric',
         'hire_date' => 'required|date_format:d-m-Y',
         'status' => 'required',
@@ -77,6 +81,7 @@ class Employees extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         $this->loadOptions();
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
@@ -108,23 +113,31 @@ class Employees extends Component
 
     public function saveEmployee()
     {
-        $validated = $this->validate();
-        
+        $this->authorizeEdit();
+        $validated = $this->validate($this->getValidationRules());
+
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
         $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
-        
+
+        // Get department, position, and employment status for backward compatibility
+        $dept = Department::find($this->department_id);
+        $pos = Position::find($this->position_id);
+        $famComp = FamilyComposition::find($this->family_composition_id);
+        $empStatus = EmploymentStatus::find($this->employment_status_id);
+
         EmployeeModel::create([
             'ndp' => $this->ndp,
             'name' => $this->name,
-            'department' => $this->department, // Keep for backward compatibility
+            'department' => $dept?->name, // Keep for backward compatibility
             'department_id' => $this->department_id,
-            'position' => $this->position, // Keep for backward compatibility
+            'position' => $pos?->name, // Keep for backward compatibility
             'position_id' => $this->position_id,
             'grade' => $this->grade,
-            'family_composition' => $this->family_composition, // Keep for backward compatibility
+            'family_composition' => $famComp?->number, // Keep for backward compatibility
             'family_composition_id' => $this->family_composition_id,
             'monthly_salary' => $this->monthly_salary,
-            'status' => $this->status,
+            'status' => $empStatus?->value, // Keep for backward compatibility
+            'employment_status_id' => $this->employment_status_id,
             'hire_date' => $hireDateForDb,
             'address' => $this->address,
             'phone' => $this->phone,
@@ -134,7 +147,7 @@ class Employees extends Component
         // Reset form
         $this->resetForm();
         $this->loadOptions();
-        
+
         $this->setPersistentMessage('Employee record created successfully.', 'success');
     }
 
@@ -143,14 +156,15 @@ class Employees extends Component
         $this->ndp = '';
         $this->name = '';
         $this->department = ''; // Keep for backward compatibility
-        $this->department_id = '';
+        $this->department_id = null;
         $this->position = ''; // Keep for backward compatibility
-        $this->position_id = '';
+        $this->position_id = null;
         $this->grade = '';
         $this->family_composition = 0; // Keep for backward compatibility
-        $this->family_composition_id = '';
+        $this->family_composition_id = null;
         $this->monthly_salary = '';
-        $this->status = 'active';
+        $this->status = 'active'; // Keep for backward compatibility
+        $this->employment_status_id = null;
         $this->hire_date = '';
         $this->address = '';
         $this->phone = '';
@@ -159,19 +173,26 @@ class Employees extends Component
 
     public function filterEmployees()
     {
-        $query = EmployeeModel::orderBy('name', 'asc');
+        $query = EmployeeModel::with(['department', 'position', 'familyComposition', 'employmentStatus'])
+                              ->orderBy('name', 'asc');
 
         if ($this->search) {
             $query->where(function($q) {
                 $q->where('ndp', 'like', '%' . $this->search . '%')
                   ->orWhere('name', 'like', '%' . $this->search . '%')
                   ->orWhere('department', 'like', '%' . $this->search . '%')
-                  ->orWhere('position', 'like', '%' . $this->search . '%');
+                  ->orWhere('position', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('department', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('position', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  });
             });
         }
 
         if ($this->departmentFilter) {
-            $query->where('department', '=', $this->departmentFilter);
+            $query->where('department_id', $this->departmentFilter);
         }
 
         return $query->get();
@@ -194,17 +215,21 @@ class Employees extends Component
 
     public function openEditModal($id)
     {
-        $employee = EmployeeModel::find($id);
+        $employee = EmployeeModel::with(['department', 'position', 'familyComposition', 'employmentStatus'])->find($id);
         if ($employee) {
             $this->editingId = $employee->id;
             $this->ndp = $employee->ndp;
             $this->name = $employee->name;
-            $this->department = $employee->department;
-            $this->position = $employee->position;
+            $this->department = $employee->department; // Keep for backward compatibility
+            $this->department_id = $employee->department_id;
+            $this->position = $employee->position; // Keep for backward compatibility
+            $this->position_id = $employee->position_id;
             $this->grade = $employee->grade;
-            $this->family_composition = $employee->family_composition;
+            $this->family_composition = $employee->family_composition; // Keep for backward compatibility
+            $this->family_composition_id = $employee->family_composition_id;
             $this->monthly_salary = $employee->monthly_salary;
-            $this->status = $employee->status;
+            $this->status = $employee->status; // Keep for backward compatibility
+            $this->employment_status_id = $employee->employment_status_id;
             $this->hire_date = $employee->hire_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->address = $employee->address;
             $this->phone = $employee->phone;
@@ -238,6 +263,7 @@ class Employees extends Component
 
     public function deleteEmployeeConfirmed()
     {
+        $this->authorizeDelete();
         $employee = EmployeeModel::find($this->deletingEmployeeId);
         if ($employee) {
             $employee->delete();
@@ -265,26 +291,60 @@ class Employees extends Component
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
         }
+
+        $this->closeCreateModal();
+    }
+
+    protected function getValidationRules()
+    {
+        $rules = [
+            'ndp' => 'required|unique:employees,ndp',
+            'name' => 'required',
+            'department_id' => 'required|exists:departments,id',
+            'position_id' => 'required|exists:positions,id',
+            'family_composition_id' => 'nullable|exists:family_compositions,id',
+            'monthly_salary' => 'required|numeric',
+            'hire_date' => 'required|date_format:d-m-Y',
+            'employment_status_id' => 'required|exists:employment_statuses,id',
+        ];
+
+        // When editing, exclude current record from unique validation
+        if ($this->isEditing && $this->editingId) {
+            $rules['ndp'] = 'required|unique:employees,ndp,' . $this->editingId;
+        }
+
+        return $rules;
     }
 
     public function updateEmployee()
     {
-        $validated = $this->validate();
-        
+        $this->authorizeEdit();
+        $validated = $this->validate($this->getValidationRules());
+
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
         $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
-        
+
+        // Get department, position, and employment status for backward compatibility
+        $dept = Department::find($this->department_id);
+        $pos = Position::find($this->position_id);
+        $famComp = FamilyComposition::find($this->family_composition_id);
+        $empStatus = EmploymentStatus::find($this->employment_status_id);
+
         $employee = EmployeeModel::find($this->editingId);
         if ($employee) {
             $employee->update([
                 'ndp' => $this->ndp,
                 'name' => $this->name,
-                'department' => $this->department,
-                'position' => $this->position,
+                'department' => $dept?->name, // Keep for backward compatibility
+                'department_id' => $this->department_id,
+                'position' => $pos?->name, // Keep for backward compatibility
+                'position_id' => $this->position_id,
                 'grade' => $this->grade,
-                'family_composition' => $this->family_composition,
+                'family_composition' => $famComp?->number, // Keep for backward compatibility
+                'family_composition_id' => $this->family_composition_id,
                 'monthly_salary' => $this->monthly_salary,
-                'status' => $this->status,
+                'status' => $empStatus?->value, // Keep for backward compatibility
+                'employment_status_id' => $this->employment_status_id,
                 'hire_date' => $hireDateForDb,
                 'address' => $this->address,
                 'phone' => $this->phone,
@@ -321,6 +381,7 @@ class Employees extends Component
     
     public function importEmployee()
     {
+        $this->authorizeEdit();
         $this->validate([
             'importFile' => 'required|file|mimes:xlsx,xls,csv',
         ]);
@@ -389,6 +450,7 @@ class Employees extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
         $export = new EmployeesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'employee_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -398,6 +460,7 @@ class Employees extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
         // Redirect to the dedicated PDF export controller route
         return redirect()->route('employees.export.pdf', [
             'start_date' => $this->exportStartDate,

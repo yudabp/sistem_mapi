@@ -14,10 +14,12 @@ use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\View;
+use App\Livewire\Concerns\WithRoleCheck;
 
 class Sales extends Component
 {
     use WithFileUploads;
+    use WithRoleCheck;
 
     public $sp_number; // Keep for backward compatibility
     public $production_id;
@@ -103,6 +105,7 @@ class Sales extends Component
 
     public function mount()
     {
+        $this->mountWithRoleCheck();
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
             $this->exportStartDate = now()->subMonth()->format('d-m-Y');
@@ -244,6 +247,8 @@ class Sales extends Component
 
     public function saveSales()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
         
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
@@ -387,6 +392,8 @@ class Sales extends Component
 
     public function deleteSales($id)
     {
+        $this->authorizeDelete();
+
         $sale = SaleModel::find($id);
         if ($sale) {
             // Delete the proof if it exists
@@ -457,6 +464,7 @@ class Sales extends Component
 
     public function deleteSalesConfirmed()
     {
+        $this->authorizeDelete();
         $sale = SaleModel::find($this->deletingSaleId);
         if ($sale) {
             // Delete the proof if it exists
@@ -492,8 +500,10 @@ class Sales extends Component
 
     public function updateSale()
     {
+        $this->authorizeEdit();
+
         $validated = $this->validate();
-        
+
         // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
         $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->sale_date)->format('Y-m-d');
         
@@ -561,6 +571,7 @@ class Sales extends Component
     
     public function importSales()
     {
+        $this->authorizeEdit();
         $this->validate([
             'importFile' => 'required|file|mimes:xlsx,xls,csv',
         ]);
@@ -629,6 +640,8 @@ class Sales extends Component
     // Export methods
     public function exportToExcel()
     {
+        $this->authorizeView();
+
         $export = new SalesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
         
         $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
@@ -638,6 +651,7 @@ class Sales extends Component
     
     public function exportToPdf()
     {
+        $this->authorizeView();
         // Redirect to the dedicated PDF export controller route
         return redirect()->route('sales.export.pdf', [
             'start_date' => $this->exportStartDate,

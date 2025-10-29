@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin Perusahaan',
             'email' => 'admin@example.com',
             'password' => Hash::make('password'),
-            'role' => 'admin',
+            'role' => 'superadmin',
         ]);
 
         // Create direksi user (Superadmin)
@@ -27,7 +27,7 @@ class UserSeeder extends Seeder
             'name' => 'Direksi Perusahaan',
             'email' => 'direksi@example.com',
             'password' => Hash::make('password'),
-            'role' => 'superadmin',
+            'role' => 'direksi',
         ]);
 
         // Create direktur user (Director/Rektor)
@@ -35,7 +35,7 @@ class UserSeeder extends Seeder
             'name' => 'Direktur Perusahaan',
             'email' => 'direktur@example.com',
             'password' => Hash::make('password'),
-            'role' => 'direktur',
+            'role' => 'direksi',
         ]);
     }
 }
