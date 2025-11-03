@@ -30,7 +30,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total KG Sold</span>
+                            <span>Total KG Terjual</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -160,7 +160,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total Sales</span>
+                            <span>Total Penjualan</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -285,7 +285,7 @@
     <!-- Sales Data Modal -->
     <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
         <x-slot name="title">
-            {{ $isEditing ? 'Edit Sales Record' : 'Add Sales Record' }}
+            {{ $isEditing ? 'Edit Data Penjualan' : 'Tambah Data Penjualan' }}
         </x-slot>
 
         <x-slot name="content">
@@ -295,7 +295,7 @@
                 <!-- SP Number with Autocomplete -->
                 <div class="relative">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_search">
-                        SP Number
+                        Nomor SP
                     </label>
                     <div class="relative">
                         <input 
@@ -367,7 +367,7 @@
                         type="number" 
                         step="0.01"
                         wire:model="tbs_quantity"
-                        placeholder="Enter TBS quantity"
+                        placeholder="Masukkan jumlah TBS"
                     />
                     @error('tbs_quantity') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -388,7 +388,7 @@
                         type="number" 
                         step="0.01"
                         wire:model.live="kg_quantity"
-                        placeholder="Enter KG quantity"
+                        placeholder="Masukkan jumlah KG"
                     />
                     @error('kg_quantity') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -398,7 +398,7 @@
                 <!-- Price per KG -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="price_per_kg">
-                        Price per KG (Rp)
+                        Harga per KG (Rp)
                     </label>
                     <input 
                         id="price_per_kg"
@@ -406,7 +406,7 @@
                         type="number" 
                         step="0.01"
                         wire:model.live="price_per_kg"
-                        placeholder="Enter price per KG"
+                        placeholder="Masukkan harga per KG"
                     />
                     @error('price_per_kg') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -416,7 +416,7 @@
                 <!-- Total Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="total_amount">
-                        Total Amount (Rp)
+                        Jumlah Total (Rp)
                     </label>
                     <input 
                         id="total_amount"
@@ -431,7 +431,7 @@
                 <!-- Sale Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sale_date">
-                        Sale Date (DD-MM-YYYY)
+                        Tanggal Penjualan (DD-MM-YYYY)
                     </label>
                     <input 
                         id="sale_date"
@@ -485,14 +485,14 @@
                 <!-- Customer Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_name">
-                        Customer Name
+                        Nama Pelanggan
                     </label>
                     <input 
                         id="customer_name"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="customer_name"
-                        placeholder="Enter customer name"
+                        placeholder="Masukkan nama pelanggan"
                     />
                     @error('customer_name') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -502,13 +502,13 @@
                 <!-- Customer Address -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_address">
-                        Customer Address
+                        Alamat Pelanggan
                     </label>
                     <textarea 
                         id="customer_address"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="customer_address"
-                        placeholder="Enter customer address"
+                        placeholder="Masukkan alamat pelanggan"
                         rows="2"
                     ></textarea>
                     @error('customer_address') 
@@ -589,7 +589,7 @@
                 <!-- Sales Proof -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
-                        Sales Proof
+                        Bukti Penjualan
                     </label>
                     <input 
                         id="sales_proof"
@@ -599,7 +599,7 @@
                     />
                     @if($isEditing && $sales_proof === null)
                         <div class="mt-2">
-                            <small class="text-gray-500">Leave blank to keep existing proof</small>
+                            <small class="text-gray-500">Kosongkan untuk pertahankan bukti yang ada</small>
                         </div>
                     @endif
                     @error('sales_proof') 
@@ -611,11 +611,11 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveSalesModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Sales Record
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }} Data Penjualan
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -623,21 +623,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Sales Record') }}
+            Hapus Data Penjualan
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the sales record ":name"?', ['name' => $deletingSaleName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            Apakah Anda yakin ingin menghapus data penjualan "{{ $deletingSaleName }}"?
+            Setelah data dihapus, semua informasi akan dihapus secara permanen.
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteSalesConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Sales') }}
+                Hapus Data
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
@@ -645,20 +645,20 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Sales Proof Preview
+            Pratinjau Bukti Penjualan
         </x-slot>
 
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Sales Proof" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Bukti Penjualan" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('showPhotoModal', false)" wire:loading.attr="disabled">
-                {{ __('Close') }}
+                Tutup
             </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
@@ -669,7 +669,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex flex-wrap justify-between items-center gap-4">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Sales Data</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Data Penjualan</h2>
                 <div class="flex flex-wrap gap-2">
                     <!-- Import button with dropdown -->
                     @canedit
@@ -681,7 +681,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -691,16 +691,16 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Upload Excel
+                                Unggah Excel
                             </button>
-                            <a 
+                            <a
                                 href="{{ route('sales.sample.download') }}"
                                 class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Unduh Contoh
                             </a>
                         </div>
                     </div>
@@ -714,14 +714,14 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            Export
+                            Ekspor
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -767,7 +767,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Akhir</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -819,16 +819,16 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
-                            <button 
+                            <button
                                 wire:click="exportToPdf"
                                 class="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
                             >
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -850,14 +850,14 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </button>
                 @else
                     <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </div> -->
                 @endcanedit
                 </div>
@@ -868,16 +868,16 @@
     <!-- Search and Filter Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
-            <input 
-                type="text" 
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cari</label>
+            <input
+                type="text"
                 wire:model.live="search"
-                placeholder="Search by SP number or customer name"
+                placeholder="Cari berdasarkan nomor SP atau nama pelanggan"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter Berdasarkan Tanggal</label>
             <input 
                 type="month" 
                 wire:model.live="dateFilter"
@@ -889,24 +889,24 @@
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Sales Records</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Data Penjualan</h2>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
                 <table class="table-auto w-full">
                     <thead>
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                            <th class="p-2 whitespace-nowrap">SP Number</th>
-                            <th class="p-2 whitespace-nowrap">Date</th>
+                            <th class="p-2 whitespace-nowrap">Nomor SP</th>
+                            <th class="p-2 whitespace-nowrap">Tanggal</th>
                             <th class="p-2 whitespace-nowrap">KG</th>
-                            <th class="p-2 whitespace-nowrap">Price/KG</th>
-                            <th class="p-2 whitespace-nowrap">Total Amount</th>
+                            <th class="p-2 whitespace-nowrap">Harga/KG</th>
+                            <th class="p-2 whitespace-nowrap">Jumlah Total</th>
                             <th class="p-2 whitespace-nowrap">Pajak</th>
                             <th class="p-2 whitespace-nowrap">Total + Pajak</th>
-                            <th class="p-2 whitespace-nowrap">Customer</th>
-                            <th class="p-2 whitespace-nowrap">Sales Proof</th>
+                            <th class="p-2 whitespace-nowrap">Pelanggan</th>
+                            <th class="p-2 whitespace-nowrap">Bukti Penjualan</th>
                             @canedit
-                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            <th class="p-2 whitespace-nowrap">Aksi</th>
                             @else
                             <!-- <th class="p-2 whitespace-nowrap">Actions</th> -->
                             @endcanedit
@@ -959,10 +959,10 @@
                                             wire:click="showPhoto('{{ $sale->sales_proof_path }}')"
                                             class="text-blue-600 hover:underline dark:text-blue-400"
                                         >
-                                            View Proof
+                                            Lihat Bukti
                                         </button>
                                     @else
-                                        <span class="text-gray-500 dark:text-gray-400">No proof</span>
+                                        <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
@@ -974,11 +974,11 @@
                                         >
                                             Edit
                                         </button>
-                                        <button 
+                                        <button
                                             wire:click="confirmDelete({{ $sale->id }}, '{{ $sale->sp_number }}')"
                                             class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
                                         >
-                                            Delete
+                                            Hapus
                                         </button>
                                         @else
                                         <!-- <button 
@@ -1000,7 +1000,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
-                                    No sales records found
+                                    Tidak ada data penjualan ditemukan
                                 </td>
                             </tr>
                         @endforelse
@@ -1013,30 +1013,30 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Sales Data from Excel
+            Impor Data Penjualan dari Excel
         </x-slot>
 
         <x-slot name="content">
             <div class="mb-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Upload an Excel file to import sales data. The file should contain the following columns:
+                    Unggah file Excel untuk mengimpor data penjualan. File harus mengandung kolom-kolom berikut:
                 </p>
                 <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
-                    <li><strong>sp_number</strong> - SP number</li>
-                    <li><strong>tbs_quantity</strong> - TBS quantity</li>
-                    <li><strong>kg_quantity</strong> - KG quantity</li>
-                    <li><strong>price_per_kg</strong> - Price per KG</li>
-                    <li><strong>total_amount</strong> - Total amount</li>
-                    <li><strong>sale_date</strong> - Sale date</li>
-                    <li><strong>customer_name</strong> - Customer name</li>
-                    <li><strong>customer_address</strong> - Customer address</li>
+                    <li><strong>sp_number</strong> - Nomor SP</li>
+                    <li><strong>tbs_quantity</strong> - Jumlah TBS</li>
+                    <li><strong>kg_quantity</strong> - Jumlah KG</li>
+                    <li><strong>price_per_kg</strong> - Harga per KG</li>
+                    <li><strong>total_amount</strong> - Jumlah total</li>
+                    <li><strong>sale_date</strong> - Tanggal penjualan</li>
+                    <li><strong>customer_name</strong> - Nama pelanggan</li>
+                    <li><strong>customer_address</strong> - Alamat pelanggan</li>
                 </ul>
             </div>
-            
+
             <form wire:submit.prevent="importSales" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
-                        Excel File
+                        File Excel
                     </label>
                     <input 
                         id="importFile"
@@ -1051,18 +1051,18 @@
                 </div>
                 
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: .xlsx, .xls, .csv
+                    Format yang didukung: .xlsx, .xls, .csv
                 </div>
             </form>
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeImportModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importSales" wire:loading.attr="disabled">
-                Import Data
+                Impor Data
             </x-button>
         </x-slot>
     </x-dialog-modal>

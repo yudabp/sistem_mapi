@@ -30,7 +30,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total Income</span>
+                            <span>Total Pemasukan</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -161,7 +161,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total Expenses</span>
+                            <span>Total Pengeluaran</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -216,7 +216,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Balance</span>
+                            <span>Saldo</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -266,7 +266,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex flex-wrap justify-between items-center gap-4">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Financial Transaction Input</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Input Transaksi Keuangan</h2>
                 <div class="flex flex-wrap gap-2">
                     <!-- Import button with dropdown -->
                     <div class="relative group">
@@ -277,7 +277,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -296,7 +296,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Download Contoh
                             </a>
                         </div>
                     </div>
@@ -313,10 +313,10 @@
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -362,7 +362,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Selesai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -414,7 +414,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
                             <button 
                                 wire:click="exportToPdf"
@@ -423,7 +423,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -435,7 +435,7 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Transaction
+                        Tambah Transaksi
                     </button>
                 </div>
             </div>
@@ -445,16 +445,16 @@
     <!-- Search and Filter Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pencarian</label>
             <input 
                 type="text" 
                 wire:model.live="search"
-                placeholder="Search by source, destination, or category"
+                placeholder="Cari berdasarkan sumber, tujuan, atau kategori"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter berdasarkan Tanggal</label>
             <input 
                 type="month" 
                 wire:model.live="dateFilter"
@@ -462,14 +462,14 @@
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Type</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter berdasarkan Jenis</label>
             <select 
                 wire:model.live="typeFilter"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             >
-                <option value="">All Types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
+                <option value="">Semua Jenis</option>
+                <option value="income">Pemasukan</option>
+                <option value="expense">Pengeluaran</option>
             </select>
         </div>
     </div>
@@ -477,21 +477,21 @@
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Financial Transactions</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Transaksi Keuangan</h2>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
                 <table class="table-auto w-full">
                     <thead>
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                            <th class="p-2 whitespace-nowrap">Date</th>
-                            <th class="p-2 whitespace-nowrap">Transaction #</th>
-                            <th class="p-2 whitespace-nowrap">Type</th>
-                            <th class="p-2 whitespace-nowrap">Source/Destination</th>
-                            <th class="p-2 whitespace-nowrap">Amount</th>
-                            <th class="p-2 whitespace-nowrap">Category</th>
-                            <th class="p-2 whitespace-nowrap">Proof</th>
-                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            <th class="p-2 whitespace-nowrap">Tanggal</th>
+                            <th class="p-2 whitespace-nowrap">No. Transaksi</th>
+                            <th class="p-2 whitespace-nowrap">Jenis</th>
+                            <th class="p-2 whitespace-nowrap">Sumber/Tujuan</th>
+                            <th class="p-2 whitespace-nowrap">Jumlah</th>
+                            <th class="p-2 whitespace-nowrap">Kategori</th>
+                            <th class="p-2 whitespace-nowrap">Bukti</th>
+                            <th class="p-2 whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -507,13 +507,13 @@
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                                         {{ $transaction->transaction_type === 'income' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-500' : 
                                            'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-500' }}">
-                                        {{ ucfirst($transaction->transaction_type) }}
+                                        {{ $transaction->transaction_type === 'income' ? 'Pemasukan' : 'Pengeluaran' }}
                                     </span>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left">{{ $transaction->source_destination }}</div>
                                     @if($transaction->received_by)
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">Received by: {{ $transaction->received_by }}</div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">Diterima oleh: {{ $transaction->received_by }}</div>
                                     @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
@@ -530,10 +530,10 @@
                                             wire:click="showPhoto('{{ $transaction->proof_document_path }}')"
                                             class="text-blue-600 hover:underline dark:text-blue-400"
                                         >
-                                            View Document
+                                            Lihat Dokumen
                                         </button>
                                     @else
-                                        <span class="text-gray-500 dark:text-gray-400">No proof</span>
+                                        <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
@@ -548,7 +548,7 @@
                                             wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
                                             class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
                                         >
-                                            Delete
+                                            Hapus
                                         </button>
                                     </div>
                                 </td>
@@ -556,7 +556,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
-                                    No financial transactions found
+                                    Tidak ada transaksi keuangan ditemukan
                                 </td>
                             </tr>
                         @endforelse
@@ -569,7 +569,7 @@
     <!-- Transaction Data Modal -->
     <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
         <x-slot name="title">
-            {{ $isEditing ? 'Edit Financial Transaction' : 'Add Financial Transaction' }}
+            {{ $isEditing ? 'Edit Transaksi Keuangan' : 'Tambah Transaksi Keuangan' }}
         </x-slot>
 
         <x-slot name="content">
@@ -577,7 +577,7 @@
                 <!-- Transaction Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
-                        Transaction Date (DD-MM-YYYY)
+                        Tanggal Transaksi (DD-MM-YYYY)
                     </label>
                     <input 
                         id="transaction_date"
@@ -631,15 +631,15 @@
                 <!-- Transaction Type -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
-                        Transaction Type
+                        Jenis Transaksi
                     </label>
                     <select 
                         id="transaction_type"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="transaction_type"
                     >
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
+                        <option value="income">Pemasukan</option>
+                        <option value="expense">Pengeluaran</option>
                     </select>
                     @error('transaction_type') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -649,7 +649,7 @@
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
-                        Amount (Rp)
+                        Jumlah (Rp)
                     </label>
                     <input 
                         id="amount"
@@ -657,7 +657,7 @@
                         type="number" 
                         step="0.01"
                         wire:model="amount"
-                        placeholder="Enter amount"
+                        placeholder="Masukkan jumlah"
                     />
                     @error('amount') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -667,14 +667,14 @@
                 <!-- Source/Destination -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="source_destination">
-                        Source/Destination
+                        Sumber/Tujuan
                     </label>
                     <input 
                         id="source_destination"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="source_destination"
-                        placeholder="Enter source or destination"
+                        placeholder="Masukkan sumber atau tujuan"
                     />
                     @error('source_destination') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -684,28 +684,28 @@
                 <!-- Received By -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="received_by">
-                        Received By
+                        Diterima Oleh
                     </label>
                     <input 
                         id="received_by"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="received_by"
-                        placeholder="Enter name of person who received"
+                        placeholder="Masukkan nama penerima"
                     />
                 </div>
 
                 <!-- Category -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category">
-                        Category
+                        Kategori
                     </label>
                     <input 
                         id="category"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="category"
-                        placeholder="Enter transaction category"
+                        placeholder="Masukkan kategori transaksi"
                     />
                     @error('category') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -715,13 +715,13 @@
                 <!-- Notes -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="notes">
-                        Notes
+                        Catatan
                     </label>
                     <textarea 
                         id="notes"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="notes"
-                        placeholder="Enter additional notes"
+                        placeholder="Masukkan catatan tambahan"
                         rows="2"
                     ></textarea>
                 </div>
@@ -729,7 +729,7 @@
                 <!-- Proof Document -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
-                        Proof Document
+                        Bukti Dokumen
                     </label>
                     <input 
                         id="proof_document"
@@ -739,7 +739,7 @@
                     />
                     @if($isEditing && $proof_document === null)
                         <div class="mt-2">
-                            <small class="text-gray-500">Leave blank to keep existing document</small>
+                            <small class="text-gray-500">Biarkan kosong untuk menyimpan dokumen yang ada</small>
                         </div>
                     @endif
                     @error('proof_document') 
@@ -755,7 +755,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveTransactionModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Transaction
+                {{ $isEditing ? 'Update' : 'Simpan' }} Transaksi
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -763,12 +763,12 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Financial Transaction') }}
+            Hapus Transaksi Keuangan
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the financial transaction ":name"?', ['name' => $deletingTransactionName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            Apakah Anda yakin ingin menghapus transaksi keuangan "{{ $deletingTransactionName }}"?
+            Setelah catatan dihapus, semua datanya akan dihapus secara permanen.
         </x-slot>
 
         <x-slot name="footer">
@@ -785,7 +785,7 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Document Preview
+            Pratinjau Dokumen
         </x-slot>
 
         <x-slot name="content">
@@ -806,7 +806,7 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Financial Transaction Data from Excel
+            Impor Data Transaksi Keuangan dari Excel
         </x-slot>
 
         <x-slot name="content">
@@ -815,20 +815,20 @@
                     Upload an Excel file to import financial transaction data. The file should contain the following columns:
                 </p>
                 <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
-                    <li><strong>transaction_date</strong> - Transaction date</li>
-                    <li><strong>transaction_type</strong> - Transaction type: income or expense</li>
-                    <li><strong>amount</strong> - Transaction amount</li>
-                    <li><strong>source_destination</strong> - Source or destination</li>
-                    <li><strong>received_by</strong> - Received by</li>
-                    <li><strong>notes</strong> - Additional notes</li>
-                    <li><strong>category</strong> - Transaction category</li>
+                    <li><strong>transaction_date</strong> - Tanggal transaksi</li>
+                    <li><strong>transaction_type</strong> - Jenis transaksi: income (pemasukan) atau expense (pengeluaran)</li>
+                    <li><strong>amount</strong> - Jumlah transaksi</li>
+                    <li><strong>source_destination</strong> - Sumber atau tujuan</li>
+                    <li><strong>received_by</strong> - Diterima oleh</li>
+                    <li><strong>notes</strong> - Catatan tambahan</li>
+                    <li><strong>category</strong> - Kategori transaksi</li>
                 </ul>
             </div>
             
             <form wire:submit.prevent="importTransaction" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
-                        Excel File
+                        File Excel
                     </label>
                     <input 
                         id="importFile"
@@ -843,7 +843,7 @@
                 </div>
                 
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: .xlsx, .xls, .csv
+                    Format yang didukung: .xlsx, .xls, .csv
                 </div>
             </form>
         </x-slot>
@@ -854,7 +854,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importTransaction" wire:loading.attr="disabled">
-                Import Data
+                Impor Data
             </x-button>
         </x-slot>
     </x-dialog-modal>

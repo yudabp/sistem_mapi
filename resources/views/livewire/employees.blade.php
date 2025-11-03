@@ -29,7 +29,7 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Employees</div>
+                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Karyawan</div>
                         <div class="flex items-baseline">
                             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $total_employees }}</div>
                         </div>
@@ -46,7 +46,7 @@
                         </svg>
                     </div>
                     <div>
-                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Monthly Salary</div>
+                        <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Total Gaji Bulanan</div>
                         <div class="flex items-baseline">
                             <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">Rp {{ number_format($total_salary, 2, ',', '.') }}</div>
                         </div>
@@ -59,7 +59,7 @@
     <!-- Employee Data Modal -->
     <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
         <x-slot name="title">
-            {{ $isEditing ? 'Edit Employee Record' : 'Add Employee Record' }}
+            {{ $isEditing ? 'Edit Data Karyawan' : 'Tambah Data Karyawan' }}
         </x-slot>
 
         <x-slot name="content">
@@ -69,14 +69,14 @@
                 <!-- Employee ID (NDP) -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ndp">
-                        Employee ID (NDP)
+                        ID Karyawan (NDP)
                     </label>
                     <input 
                         id="ndp"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="ndp"
-                        placeholder="Enter employee ID"
+                        placeholder="Masukkan ID karyawan"
                         {{ $isEditing ? 'readonly' : '' }}
                     />
                     @error('ndp') 
@@ -87,14 +87,14 @@
                 <!-- Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="name">
-                        Name
+                        Nama
                     </label>
                     <input 
                         id="name"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="name"
-                        placeholder="Enter employee name"
+                        placeholder="Masukkan nama karyawan"
                     />
                     @error('name') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -144,14 +144,14 @@
                 <!-- Grade -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="grade">
-                        Grade
+                        Golongan
                     </label>
                     <input 
                         id="grade"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="grade"
-                        placeholder="Enter grade"
+                        placeholder="Masukkan golongan"
                     />
                 </div>
 
@@ -175,7 +175,7 @@
                 <!-- Monthly Salary -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="monthly_salary">
-                        Monthly Salary (Rp)
+                        Gaji Bulanan (Rp)
                     </label>
                     <input 
                         id="monthly_salary"
@@ -183,7 +183,7 @@
                         type="number" 
                         step="0.01"
                         wire:model="monthly_salary"
-                        placeholder="Enter monthly salary"
+                        placeholder="Masukkan gaji bulanan"
                     />
                     @error('monthly_salary') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -213,7 +213,7 @@
                 <!-- Hire Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="hire_date">
-                        Hire Date (DD-MM-YYYY)
+                        Tanggal Masuk (DD-MM-YYYY)
                     </label>
                     <input 
                         id="hire_date"
@@ -267,13 +267,13 @@
                 <!-- Address -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="address">
-                        Address
+                        Alamat
                     </label>
                     <textarea 
                         id="address"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="address"
-                        placeholder="Enter employee address"
+                        placeholder="Masukkan alamat karyawan"
                         rows="2"
                     ></textarea>
                 </div>
@@ -281,14 +281,14 @@
                 <!-- Phone -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="phone">
-                        Phone
+                        Telepon
                     </label>
                     <input 
                         id="phone"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="phone"
-                        placeholder="Enter phone number"
+                        placeholder="Masukkan nomor telepon"
                     />
                 </div>
 
@@ -302,7 +302,7 @@
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="email" 
                         wire:model="email"
-                        placeholder="Enter email address"
+                        placeholder="Masukkan alamat email"
                     />
                 </div>
             </form>
@@ -310,11 +310,11 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveEmployeeModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Employee Record
+                {{ $isEditing ? 'Update' : 'Simpan' }} Data Karyawan
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -322,21 +322,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Employee Record') }}
+            Hapus Data Karyawan
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the employee ":name"?', ['name' => $deletingEmployeeName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            Apakah Anda yakin ingin menghapus karyawan "{{ $deletingEmployeeName }}"?
+            Setelah catatan dihapus, semua datanya akan dihapus secara permanen.
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteEmployeeConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Employee') }}
+                Hapus Karyawan
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
@@ -345,7 +345,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex flex-wrap justify-between items-center gap-4">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Employee Registration</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Pendaftaran Karyawan</h2>
                 <div class="flex flex-wrap gap-2">
                     <!-- Import button with dropdown -->
                     @canedit
@@ -357,7 +357,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -376,7 +376,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Download Contoh
                             </a>
                         </div>
                     </div>
@@ -394,10 +394,10 @@
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -443,7 +443,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Selesai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -495,7 +495,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
                             <button 
                                 wire:click="exportToPdf"
@@ -504,7 +504,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -526,14 +526,14 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </button>
                 @else
                     <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </div> -->
                 @endcanedit
                 </div>
@@ -544,21 +544,21 @@
     <!-- Search and Filter Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Pencarian</label>
             <input 
                 type="text" 
                 wire:model.live="search"
-                placeholder="Search by name, ND, department, or position"
+                placeholder="Cari berdasarkan nama, NDP, departemen, atau posisi"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Department</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter berdasarkan Departemen</label>
             <select
                 wire:model.live="departmentFilter"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             >
-                <option value="">All Departments</option>
+                <option value="">Semua Departemen</option>
                 @foreach($departments as $department)
                     <option value="{{ $department->id }}">{{ $department->name }}</option>
                 @endforeach
@@ -569,7 +569,7 @@
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Employee Records</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Data Karyawan</h2>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
@@ -577,15 +577,15 @@
                     <thead>
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
                             <th class="p-2 whitespace-nowrap">NDP</th>
-                            <th class="p-2 whitespace-nowrap">Name</th>
-                            <th class="p-2 whitespace-nowrap">Department</th>
-                            <th class="p-2 whitespace-nowrap">Position</th>
-                            <th class="p-2 whitespace-nowrap">Grade</th>
-                            <th class="p-2 whitespace-nowrap">Family Comp.</th>
-                            <th class="p-2 whitespace-nowrap">Salary</th>
+                            <th class="p-2 whitespace-nowrap">Nama</th>
+                            <th class="p-2 whitespace-nowrap">Departemen</th>
+                            <th class="p-2 whitespace-nowrap">Posisi</th>
+                            <th class="p-2 whitespace-nowrap">Golongan</th>
+                            <th class="p-2 whitespace-nowrap">Susunan Kel.</th>
+                            <th class="p-2 whitespace-nowrap">Gaji</th>
                             <th class="p-2 whitespace-nowrap">Status</th>
                             @canedit
-                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            <th class="p-2 whitespace-nowrap">Aksi</th>
                             @else
                             <!-- <th class="p-2 whitespace-nowrap">--</th> -->
                             @endcanedit
@@ -649,7 +649,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
-                                    No employee records found
+                                    Tidak ada data karyawan ditemukan
                                 </td>
                             </tr>
                         @endforelse
@@ -662,7 +662,7 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Employee Data from Excel
+            Impor Data Karyawan dari Excel
         </x-slot>
 
         <x-slot name="content">
@@ -671,25 +671,25 @@
                     Upload an Excel file to import employee data. The file should contain the following columns:
                 </p>
                 <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
-                    <li><strong>ndp</strong> - Employee ID</li>
-                    <li><strong>name</strong> - Employee name</li>
-                    <li><strong>department</strong> - Department</li>
-                    <li><strong>position</strong> - Position</li>
-                    <li><strong>grade</strong> - Grade</li>
-                    <li><strong>family_composition</strong> - Family composition</li>
-                    <li><strong>monthly_salary</strong> - Monthly salary</li>
-                    <li><strong>status</strong> - Status: active or inactive</li>
-                    <li><strong>hire_date</strong> - Hire date</li>
-                    <li><strong>address</strong> - Address</li>
-                    <li><strong>phone</strong> - Phone number</li>
-                    <li><strong>email</strong> - Email address</li>
+                    <li><strong>ndp</strong> - ID Karyawan</li>
+                    <li><strong>name</strong> - Nama karyawan</li>
+                    <li><strong>department</strong> - Departemen</li>
+                    <li><strong>position</strong> - Posisi</li>
+                    <li><strong>grade</strong> - Golongan</li>
+                    <li><strong>family_composition</strong> - Susunan keluarga</li>
+                    <li><strong>monthly_salary</strong> - Gaji bulanan</li>
+                    <li><strong>status</strong> - Status: active (aktif) atau inactive (tidak aktif)</li>
+                    <li><strong>hire_date</strong> - Tanggal masuk</li>
+                    <li><strong>address</strong> - Alamat</li>
+                    <li><strong>phone</strong> - Nomor telepon</li>
+                    <li><strong>email</strong> - Alamat email</li>
                 </ul>
             </div>
             
             <form wire:submit.prevent="importEmployee" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
-                        Excel File
+                        File Excel
                     </label>
                     <input 
                         id="importFile"
@@ -704,18 +704,18 @@
                 </div>
                 
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: .xlsx, .xls, .csv
+                    Format yang didukung: .xlsx, .xls, .csv
                 </div>
             </form>
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeImportModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importEmployee" wire:loading.attr="disabled">
-                Import Data
+                Impor Data
             </x-button>
         </x-slot>
     </x-dialog-modal>

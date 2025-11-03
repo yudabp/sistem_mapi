@@ -91,7 +91,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -101,7 +101,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Upload Excel
+                                Unggah Excel
                             </button>
                             <a 
                                 href="{{ route('debts.sample.download') }}"
@@ -110,7 +110,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Unduh Contoh
                             </a>
                         </div>
                     </div>
@@ -124,14 +124,14 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            Export
+                            Ekspor
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -177,7 +177,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Akhir</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -229,7 +229,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
                             <button 
                                 wire:click="exportToPdf"
@@ -238,7 +238,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -260,14 +260,14 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </button>
                 @else
                     <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </div> -->
                 @endcanedit
                 </div>
@@ -605,7 +605,7 @@
                 wire:loading.attr="disabled"
                 class="ms-3 px-4 py-2 bg-violet-600 text-white hover:bg-violet-700 rounded-lg font-medium transition-colors"
             >
-                {{ $isEditing ? 'Update' : 'Save' }} Debt Record
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }} Data Hutang
             </button>
         </x-slot>
     </x-dialog-modal>
@@ -635,13 +635,13 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Debt Document Preview
+            Preview Dokumen Hutang
         </x-slot>
 
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Debt Document" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Dokumen Hutang" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>
@@ -656,28 +656,28 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Debt Data from Excel
+            Impor Data Hutang dari Excel
         </x-slot>
 
         <x-slot name="content">
             <div class="mb-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Upload an Excel file to import debt data. The file should contain the following columns:
+                    Unggah file Excel untuk mengimpor data hutang. File harus mengandung kolom-kolom berikut:
                 </p>
                 <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
-                    <li><strong>amount</strong> - Debt amount</li>
-                    <li><strong>creditor</strong> - Creditor name</li>
-                    <li><strong>due_date</strong> - Due date</li>
-                    <li><strong>description</strong> - Debt description</li>
-                    <li><strong>status</strong> - Status: unpaid or paid</li>
-                    <li><strong>paid_date</strong> - Paid date</li>
+                    <li><strong>amount</strong> - Jumlah hutang</li>
+                    <li><strong>creditor</strong> - Nama pemberi hutang</li>
+                    <li><strong>due_date</strong> - Tanggal jatuh tempo</li>
+                    <li><strong>description</strong> - Keterangan hutang</li>
+                    <li><strong>status</strong> - Status: unpaid (belum lunas) atau paid (lunas)</li>
+                    <li><strong>paid_date</strong> - Tanggal pembayaran</li>
                 </ul>
             </div>
 
             <form wire:submit.prevent="importDebt" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
-                        Excel File
+                        File Excel
                     </label>
                     <input
                         id="importFile"
@@ -692,7 +692,7 @@
                 </div>
 
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: .xlsx, .xls, .csv
+                    Format yang didukung: .xlsx, .xls, .csv
                 </div>
             </form>
         </x-slot>
@@ -703,7 +703,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importDebt" wire:loading.attr="disabled">
-                Import Data
+                Impor Data
             </x-button>
         </x-slot>
     </x-dialog-modal>

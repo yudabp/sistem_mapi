@@ -64,11 +64,11 @@
 
                     <!-- Links -->
                     <div class="space-y-8">
-                        <!-- Palm Oil Management group -->
+                        <!-- Manajemen Kelapa Sawit group -->
                         <div>
                             <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                                 <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Palm Oil Management</span>
+                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Manajemen Kelapa Sawit</span>
                             </h3>
                             <ul class="mt-3">
                                 <!-- Dashboard -->
@@ -84,43 +84,43 @@
                                     </a>
                                 </li>
                                 
-                                <!-- Production Management -->
+                                <!-- Data Produksi -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('production') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('production') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('production') }}">
                                         <div class="flex items-center">
                                             <svg class="shrink-0 fill-current {{ Request::is('production') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                 <path d="M5 10h2v10H5V10zm4-2h2v12H9V8zm4 6h2v6h-2v-6z"/>
                                             </svg>
-                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Production</span>
+                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Produksi</span>
                                         </div>
                                     </a>
                                 </li>
                                 
-                                <!-- Sales Management -->
+                                <!-- Data Penjualan -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('sales') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('sales') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('sales') }}">
                                         <div class="flex items-center">
                                             <svg class="shrink-0 fill-current {{ Request::is('sales') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                                             </svg>
-                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Sales</span>
+                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Penjualan</span>
                                         </div>
                                     </a>
                                 </li>
                                 
-                                <!-- Employee Management -->
+                                <!-- Data Karyawan -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('employees') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('employees') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="{{ route('employees') }}">
                                         <div class="flex items-center">
                                             <svg class="shrink-0 fill-current {{ Request::is('employees') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                 <path d="M16 4c0-1.11.89-2 2-2s2 .89 2 2-.89 2-2 2-2-.89-2-2zm4 4v12c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2h1v-1c0-1.66 1.34-3 3-3s3 1.34 3 3v1h4c1.1 0 2 .9 2 2zm-8 9c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z"/>
                                             </svg>
-                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Employees</span>
+                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Karyawan</span>
                                         </div>
                                     </a>
                                 </li>
                                 
-                                <!-- Financial Management -->
+                                <!-- Keuangan Perusahaan -->
                                 <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 {{ Request::is('financial*') ? 'bg-linear-to-r from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]' : '' }}" x-data="{ open: {{ Request::is('financial*') ? 1 : 0 }} }">
                                     <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ Request::is('financial*') ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="#" @click.prevent="open = !open; sidebarExpanded = true">
                                         <div class="flex items-center justify-between">
@@ -128,7 +128,7 @@
                                                 <svg class="shrink-0 fill-current {{ Request::is('financial*') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                     <path d="M11.8 10.9c-2.27-.59-3.06-1.24-3.06-2.08 0-1.05 1.02-1.67 2.71-1.67 1.66 0 2.45.66 2.45 1.72 0 .76-.42 1.21-1.6 1.51l-1.56.38c-.7.16-.96.44-.96.87 0 .52.39.83 1.2.83.52 0 .96-.16 1.26-.41.39-.31.45-.53.45-1.26V7.59c0-.22.16-.33.33-.33h1.03c.21 0 .33.13.33.33v.33c0 1.1-.66 1.72-1.5 2.02l-1.54.38c-.94.23-1.5.61-1.5 1.35 0 .76.63 1.22 1.71 1.22 1.31 0 2.05-.55 2.05-1.55 0-.65-.31-1.06-.77-1.22.45-.6.71-1.35.71-2.05v-.33c0-.22-.16-.33-.33-.33h-.98c-.21 0-.33.13-.33.33v.33c0 .51.28.84.69.93l1.57.39c.7.19 1.05.56 1.05 1.19 0 1.11-1.04 1.71-2.71 1.71-1.65 0-2.5-.64-2.5-1.81 0-.79.4-1.26 1.65-1.56l1.54-.38c.72-.18.98-.44.98-.88 0-.52-.4-.86-1.11-.86-.55 0-1.15.18-1.41.42-.41.3-.45.57-.45 1.28v.33c0 .22.16.33.33.33h1.08c.21 0 .33-.13.33-.33v-.33c0-1.1.69-1.71 1.5-2.02l1.54-.38c.95-.23 1.5-.59 1.5-1.35 0-.77-.66-1.22-1.71-1.22-1.31 0-2.05.54-2.05 1.55 0 .64.31 1.07.74 1.24-.46.57-.74 1.31-.74 2.03v.33c0 .22.16.33.33.33h.98c.21 0 .33-.13.33-.33v-.33c0-.52-.3-.84-.7-.93l-1.57-.39c-.67-.19-1.05-.55-1.05-1.18z"/>
                                                 </svg>
-                                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Financial</span>
+                                                <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Keuangan</span>
                                             </div>
                                             <!-- Icon -->
                                             <div class="flex shrink-0 ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
@@ -142,17 +142,17 @@
                                         <ul class="pl-8 mt-1 {{ Request::is('financial*') ? 'hidden' : 'block' }}" :class="open ? 'block!' : 'hidden'">
                                             <li class="mb-1 last:mb-0">
                                                 <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial') ? 'text-violet-500!' : '' }}" href="{{ route('financial') }}">
-                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Company Financials</span>
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Keuangan Perusahaan</span>
                                                 </a>
                                             </li>
                                             <li class="mb-1 last:mb-0">
                                                 <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial.cash-book') ? 'text-violet-500!' : '' }}" href="{{ route('financial.cash-book') }}">
-                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Cash Book</span>
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Buku Kas</span>
                                                 </a>
                                             </li>
                                             <li class="mb-1 last:mb-0">
                                                 <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial.debts') ? 'text-violet-500!' : '' }}" href="{{ route('financial.debts') }}">
-                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Debt Management</span>
+                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Hutang</span>
                                                 </a>
                                             </li>
                                         </ul>
@@ -161,11 +161,11 @@
                             </ul>
                         </div>
                         
-                        <!-- Settings group -->
+                        <!-- Grup Pengaturan -->
                         <div>
                             <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                                 <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Settings</span>
+                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Pengaturan</span>
                             </h3>
                             <ul class="mt-3">
                                 <!-- Profile -->

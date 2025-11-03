@@ -210,8 +210,8 @@
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">⚖️ Penjualan vs Produksi</h2>
                     <div class="flex space-x-2">
-                        <button class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors" id="chartTypeLine">Line</button>
-                        <button class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" id="chartTypeBar">Bar</button>
+                        <button class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition-colors" id="chartTypeLine">Garis</button>
+                        <button class="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors" id="chartTypeBar">Batang</button>
                     </div>
                 </div>
                 <div class="h-80">

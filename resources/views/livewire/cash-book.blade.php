@@ -401,7 +401,7 @@
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Cash Book Transactions</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Transaksi Buku Kas</h2>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
@@ -658,7 +658,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveTransactionModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Transaction
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }} Transaksi
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -709,7 +709,7 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Cash Book Data from Excel
+            Import Data Buku Kas dari Excel
         </x-slot>
 
         <x-slot name="content">

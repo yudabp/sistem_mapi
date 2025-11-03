@@ -289,11 +289,11 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveDebtModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Data Hutang
+                {{ $isEditing ? 'Update' : 'Simpan' }} Data Hutang
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -301,21 +301,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Debt Record') }}
+            Hapus Data Hutang
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the debt record for ":name"?', ['name' => $deletingDebtName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            Apakah Anda yakin ingin menghapus data hutang untuk "{{ $deletingDebtName }}"?
+            Setelah catatan dihapus, semua datanya akan dihapus secara permanen.
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteDebtConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Debt') }}
+                Hapus Hutang
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
@@ -323,7 +323,7 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Debt Document Preview
+            Pratinjau Dokumen Hutang
         </x-slot>
 
         <x-slot name="content">
@@ -336,7 +336,7 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="$set('showPhotoModal', false)" wire:loading.attr="disabled">
-                {{ __('Close') }}
+                Tutup
             </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
