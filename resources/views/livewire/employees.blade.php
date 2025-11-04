@@ -314,7 +314,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveEmployeeModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Simpan' }} Data Karyawan
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }} Data Karyawan
             </x-button>
         </x-slot>
     </x-dialog-modal>

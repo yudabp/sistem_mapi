@@ -62,7 +62,7 @@
     <!-- User Management Modal -->
     <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
         <x-slot name="title">
-            {{ $isEditMode ? 'Edit User' : 'Tambah User Baru' }}
+            {{ $isEditMode ? 'Edit Pengguna' : 'Tambah Pengguna Baru' }}
         </x-slot>
 
         <x-slot name="content">
@@ -146,7 +146,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="save" wire:loading.attr="disabled">
-                {{ $isEditMode ? 'Update User' : 'Buat User' }}
+                {{ $isEditMode ? 'Perbarui Pengguna' : 'Buat Pengguna' }}
             </x-button>
         </x-slot>
     </x-dialog-modal>
