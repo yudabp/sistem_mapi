@@ -16,6 +16,7 @@ class Debt extends Model
         'due_date',
         'description',
         'debt_type_id',
+        'employee_id',
         'proof_document_path',
         'status',
         'paid_date',
@@ -35,6 +36,14 @@ class Debt extends Model
     public function debtType(): BelongsTo
     {
         return $this->belongsTo(MasterDebtType::class, 'debt_type_id');
+    }
+
+    /**
+     * Get the employee that owns the debt.
+     */
+    public function employee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     /**

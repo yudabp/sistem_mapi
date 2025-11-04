@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Sales Data Export</title>
+    <title>Ekspor Data Penjualan</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -104,14 +104,14 @@
     </div>
 
     <div class="document-title">
-        Sales Data Export
+        Ekspor Data Penjualan
     </div>
 
     <div class="export-info">
-        <p><strong>Exported by:</strong> <span class="accent">{{ $exportInfo['exportedBy'] }}</span></p>
-        <p><strong>Exported on:</strong> {{ $exportInfo['exportedOn'] }}</p>
+        <p><strong>Diekspor oleh:</strong> <span class="accent">{{ $exportInfo['exportedBy'] }}</span></p>
+        <p><strong>Diekspor pada:</strong> {{ $exportInfo['exportedOn'] }}</p>
         @if($exportInfo['startDate'] && $exportInfo['endDate'])
-            <p><strong>Date Range:</strong> {{ $exportInfo['startDate'] }} to {{ $exportInfo['endDate'] }}</p>
+            <p><strong>Rentang Tanggal:</strong> {{ $exportInfo['startDate'] }} hingga {{ $exportInfo['endDate'] }}</p>
         @endif
     </div>
 
@@ -125,8 +125,6 @@
                 <th>Price per KG</th>
                 <th>Total Amount</th>
                 <th>Sale Date</th>
-                <th>Customer Name</th>
-                <th>Customer Address</th>
                 <th>Created At</th>
                 <th>Updated At</th>
             </tr>
@@ -141,14 +139,12 @@
                     <td class="text-right">{{ number_format($sale->price_per_kg, 2, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($sale->total_amount, 2, ',', '.') }}</td>
                     <td>{{ $sale->sale_date->format('d-m-Y') }}</td>
-                    <td>{{ e($sale->customer_name) }}</td>
-                    <td>{{ e($sale->customer_address) }}</td>
                     <td>{{ $sale->created_at->format('d-m-Y H:i:s') }}</td>
                     <td>{{ $sale->updated_at->format('d-m-Y H:i:s') }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="11" class="text-center">No sales records found</td>
+                    <td colspan="9" class="text-center">No sales records found</td>
                 </tr>
             @endforelse
             <!-- Total Row -->
@@ -159,14 +155,14 @@
                     <td class="text-right"><strong>{{ number_format($sales->sum('kg_quantity'), 2, ',', '.') }}</strong></td>
                     <td></td> <!-- Empty for price per kg -->
                     <td class="text-right"><strong>{{ number_format($sales->sum('total_amount'), 2, ',', '.') }}</strong></td>
-                    <td colspan="5"></td> <!-- Empty cells for remaining columns -->
+                    <td colspan="3"></td> <!-- Empty cells for remaining columns -->
                 </tr>
             @endif
         </tbody>
     </table>
 
     <div class="footer">
-        <p>Generated on {{ now()->format('d-m-Y H:i:s') }}</p>
+        <p>Dibuat pada {{ now()->format('d-m-Y H:i:s') }}</p>
     </div>
 </body>
 </html>

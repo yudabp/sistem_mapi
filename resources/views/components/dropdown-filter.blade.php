@@ -9,7 +9,7 @@
         @click.prevent="open = !open"
         :aria-expanded="open"
     >
-        <span class="sr-only">Filter</span><wbr>
+        <span class="sr-only">Saring</span><wbr>
         <svg class="fill-current" width="16" height="16" viewBox="0 0 16 16">
             <path d="M0 3a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H1a1 1 0 0 1-1-1ZM3 8a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1ZM7 12a1 1 0 1 0 0 2h2a1 1 0 1 0 0-2H7Z" />
         </svg>
@@ -27,7 +27,7 @@
         x-transition:leave-end="opacity-0"
         x-cloak                
     >
-        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-3">Filters</div>
+        <div class="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-3">Saring</div>
         <ul class="mb-4">
             <li class="py-1 px-3">
                 <label class="flex items-center">
@@ -69,10 +69,10 @@
         <div class="py-2 px-3 border-t border-gray-200 dark:border-gray-700/60 bg-gray-50 dark:bg-gray-700/20">
             <ul class="flex items-center justify-between">
                 <li>
-                    <button class="btn-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500">Clear</button>
+                    <button class="btn-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-red-500">Hapus</button>
                 </li>
                 <li>
-                    <button class="btn-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300" @click="open = false" @focusout="open = false">Apply</button>
+                    <button class="btn-xs bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300" @click="open = false" @focusout="open = false">Terapkan</button>
                 </li>
             </ul>
         </div>

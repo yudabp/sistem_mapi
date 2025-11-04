@@ -755,7 +755,19 @@ class BukuKasKebunComponent extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Pembayaran hutang berhasil diproses!' => 'Pembayaran hutang berhasil diproses!',
+            'Buku Kas Kebun transaction created successfully.' => 'Transaksi buku kas kebun berhasil ditambahkan.',
+            'Buku Kas Kebun transaction deleted successfully.' => 'Transaksi buku kas kebun berhasil dihapus.',
+            'Buku Kas Kebun transaction updated successfully.' => 'Transaksi buku kas kebun berhasil diperbarui.',
+            'Buku Kas Kebun transaction data imported successfully.' => 'Data buku kas kebun berhasil diimpor.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 

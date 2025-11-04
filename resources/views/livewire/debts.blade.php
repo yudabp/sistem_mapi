@@ -7,14 +7,61 @@
     <!-- Persistent Message -->
     @if($persistentMessage)
         <div class="mb-6">
-            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
-                <span>{{ $persistentMessage }}</span>
-                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+            @switch($messageType)
+                @case('success')
+                    <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('error')
+                    <div class="bg-red-50 text-red-700 p-4 rounded-lg dark:bg-red-500/10 dark:text-red-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('warning')
+                    <div class="bg-amber-50 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:text-amber-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('info')
+                    <div class="bg-blue-50 text-blue-700 p-4 rounded-lg dark:bg-blue-500/10 dark:text-blue-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @default
+                    <div class="bg-gray-50 text-gray-700 p-4 rounded-lg dark:bg-gray-500/10 dark:text-gray-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+            @endswitch
         </div>
     @endif
 
@@ -91,7 +138,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -101,7 +148,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Upload Excel
+                                Unggah Excel
                             </button>
                             <a 
                                 href="{{ route('debts.sample.download') }}"
@@ -110,7 +157,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Unduh Contoh
                             </a>
                         </div>
                     </div>
@@ -124,14 +171,14 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            Export
+                            Ekspor
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -177,7 +224,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Akhir</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -229,7 +276,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
                             <button 
                                 wire:click="exportToPdf"
@@ -238,7 +285,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -260,14 +307,14 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </button>
                 @else
                     <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </div> -->
                 @endcanedit
                 </div>
@@ -327,7 +374,22 @@
                             <tr>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $debt->creditor }}</div>
+                                    @if($debt->debt_type_id == 3 && $debt->employee)
+                                        <div class="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ $debt->employee->name }} ({{ $debt->employee->ndp }})
+                                        </div>
+                                    @endif
                                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ $debt->description }}</div>
+                                    @if($debt->debtType)
+                                        <div class="text-xs text-amber-600 dark:text-amber-400">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30">
+                                                {{ $debt->debtType->name }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">Rp {{ number_format($debt->amount, 2, ',', '.') }}</div>
@@ -449,15 +511,31 @@
                 <!-- Creditor -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
-                        Pemberi Hutang
+                        Pemberi Hutang <span x-show="$wire.debt_type_id != 3" class="text-red-500">*</span>
                     </label>
-                    <input
-                        id="creditor"
-                        class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="text"
-                        wire:model="creditor"
-                        placeholder="Masukkan nama pemberi hutang"
-                    />
+                    <div x-data="{
+                        readOnly: false,
+                        init() {
+                            const updateReadOnly = (value) => {
+                                this.readOnly = String(value) === '3';
+                            };
+                            $watch('$wire.debt_type_id', updateReadOnly);
+                            updateReadOnly(@entangle('debt_type_id'));
+                        }
+                    }">
+                        <input
+                            id="creditor"
+                            class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $debt_type_id == 3 ? 'bg-gray-50 dark:bg-gray-600' : '' }}"
+                            type="text"
+                            wire:model="creditor"
+                            placeholder="{{ $debt_type_id == 3 ? 'Nama karyawan akan terisi otomatis' : 'Masukkan nama pemberi hutang' }}"
+                            :readonly="readOnly"
+                            :class="{ 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed': readOnly }"
+                        />
+                        <p x-show="readOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Nama karyawan akan terisi otomatis saat memilih karyawan
+                        </p>
+                    </div>
                     @error('creditor')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
@@ -526,6 +604,8 @@
                         id="debt_type_id"
                         class="w-full px-3 py-2 border {{ $errors->has('debt_type_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="debt_type_id"
+                        x-data
+                        x-on:change="$dispatch('debt-type-changed', { value: $el.value })"
                     >
                         <option value="">Pilih Jenis Hutang</option>
                         @foreach($debtTypes as $debtType)
@@ -533,6 +613,34 @@
                         @endforeach
                     </select>
                     @error('debt_type_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Employee Selection - Only show for Hutang Gaji Karyawan -->
+                <div x-data="{
+                    showEmployee: false,
+                    init() {
+                        $watch('$wire.debt_type_id', (value) => {
+                            this.showEmployee = value == '3';
+                        });
+                        this.showEmployee = @entangle('debt_type_id') == '3';
+                    }
+                }" x-show="showEmployee" x-transition>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employee_id">
+                        Nama Karyawan <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                        id="employee_id"
+                        class="w-full px-3 py-2 border {{ $errors->has('employee_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="employee_id"
+                    >
+                        <option value="">Pilih Karyawan</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->ndp }})</option>
+                        @endforeach
+                    </select>
+                    @error('employee_id')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
@@ -580,7 +688,7 @@
                     <input
                         id="proof_document"
                         type="file"
-                        wire:model="proof_document"
+                        wire:model.lazy="proof_document"
                         class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)
@@ -605,7 +713,7 @@
                 wire:loading.attr="disabled"
                 class="ms-3 px-4 py-2 bg-violet-600 text-white hover:bg-violet-700 rounded-lg font-medium transition-colors"
             >
-                {{ $isEditing ? 'Update' : 'Save' }} Debt Record
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }} Data Hutang
             </button>
         </x-slot>
     </x-dialog-modal>
@@ -613,21 +721,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Debt Record') }}
+            {{ __('Hapus Data Hutang') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the debt record ":name"?', ['name' => $deletingDebtName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            {{ __('Apakah Anda yakin ingin menghapus data hutang ":name"?', ['name' => $deletingDebtName]) }}
+            {{ __('Setelah catatan dihapus, semua datanya akan dihapus secara permanen.') }}
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                {{ __('Batal') }}
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteDebtConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Debt') }}
+                {{ __('Hapus Hutang') }}
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
@@ -635,13 +743,13 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Debt Document Preview
+            Preview Dokumen Hutang
         </x-slot>
 
         <x-slot name="content">
             @if($photoToView)
                 <div class="flex justify-center">
-                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Debt Document" class="max-w-full h-auto rounded-lg shadow-md">
+                    <img src="{{ asset('storage/' . $photoToView) }}" alt="Dokumen Hutang" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
             @endif
         </x-slot>
@@ -656,28 +764,28 @@
     <!-- Import Modal -->
     <x-dialog-modal wire:model.live="showImportModal" maxWidth="2xl">
         <x-slot name="title">
-            Import Debt Data from Excel
+            Impor Data Hutang dari Excel
         </x-slot>
 
         <x-slot name="content">
             <div class="mb-4">
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                    Upload an Excel file to import debt data. The file should contain the following columns:
+                    Unggah file Excel untuk mengimpor data hutang. File harus mengandung kolom-kolom berikut:
                 </p>
                 <ul class="mt-2 text-sm text-gray-600 dark:text-gray-400 list-disc list-inside">
-                    <li><strong>amount</strong> - Debt amount</li>
-                    <li><strong>creditor</strong> - Creditor name</li>
-                    <li><strong>due_date</strong> - Due date</li>
-                    <li><strong>description</strong> - Debt description</li>
-                    <li><strong>status</strong> - Status: unpaid or paid</li>
-                    <li><strong>paid_date</strong> - Paid date</li>
+                    <li><strong>amount</strong> - Jumlah hutang</li>
+                    <li><strong>creditor</strong> - Nama pemberi hutang</li>
+                    <li><strong>due_date</strong> - Tanggal jatuh tempo</li>
+                    <li><strong>description</strong> - Keterangan hutang</li>
+                    <li><strong>status</strong> - Status: unpaid (belum lunas) atau paid (lunas)</li>
+                    <li><strong>paid_date</strong> - Tanggal pembayaran</li>
                 </ul>
             </div>
 
             <form wire:submit.prevent="importDebt" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
-                        Excel File
+                        File Excel
                     </label>
                     <input
                         id="importFile"
@@ -692,7 +800,7 @@
                 </div>
 
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                    Supported formats: .xlsx, .xls, .csv
+                    Format yang didukung: .xlsx, .xls, .csv
                 </div>
             </form>
         </x-slot>
@@ -703,7 +811,7 @@
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importDebt" wire:loading.attr="disabled">
-                Import Data
+                Impor Data
             </x-button>
         </x-slot>
     </x-dialog-modal>

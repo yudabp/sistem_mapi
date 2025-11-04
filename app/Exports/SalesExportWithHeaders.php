@@ -65,8 +65,6 @@ class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMappin
             'Tax Amount',
             'Total with Tax',
             'Sale Date',
-            'Customer Name',
-            'Customer Address',
             'Created At',
             'Updated At',
         ];
@@ -84,8 +82,6 @@ class SalesExportWithHeaders implements FromCollection, WithHeadings, WithMappin
             $sale->tax_amount,
             $sale->total_with_tax,
             $sale->sale_date->format('d-m-Y'),
-            $sale->customer_name,
-            $sale->customer_address,
             $sale->created_at->format('d-m-Y H:i:s'),
             $sale->updated_at->format('d-m-Y H:i:s'),
         ];

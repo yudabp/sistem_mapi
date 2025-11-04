@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Cash Book Data Export</title>
+    <title>Export Data Buku Kas</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -104,7 +104,7 @@
     </div>
 
     <div class="document-title">
-        Cash Book Data Export
+        Export Data Buku Kas
     </div>
 
     <div class="export-info">

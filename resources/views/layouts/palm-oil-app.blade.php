@@ -64,11 +64,11 @@
 
                     <!-- Links -->
                     <div class="space-y-8">
-                        <!-- Palm Oil Management group -->
+                        <!-- Manajemen Kelapa Sawit group -->
                         <div>
                             <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                                 <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Main Menu</span>
+                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Menu Utama</span>
                             </h3>
                             <ul class="mt-3">
                                 <!-- Dashboard -->
@@ -79,7 +79,7 @@
                                                 <path d="M5.936.278A7.983 7.983 0 0 1 8 0a8 8 0 1 1-8 8c0-.722.104-1.413.278-2.064a1 1 0 1 1 1.932.516A5.99 5.99 0 0 0 2 8a6 6 0 1 0 6-6c-.53 0-1.045.076-1.548.21A1 1 0 1 1 5.936.278Z" />
                                                 <path d="M6.068 7.482A2.003 2.003 0 0 0 8 10a2 2 0 1 0-.518-3.932L3.707 2.293a1 1 0 0 0-1.414 1.414l3.775 3.775Z" />
                                             </svg>
-                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboards</span>
+                                            <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Dashboard</span>
                                         </div>
                                     </a>
                                 </li>
@@ -109,27 +109,27 @@
                                 </li>
                                 
                                 <!-- Keuangan Perusahaan -->
-                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0" x-data="{ open: {{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 1 : 0 }} }" x-init="if ('{{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas') || Request::is('data-hutang')) }}' == '1') open = true">
-                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="#" @click.prevent="open = !open; sidebarExpanded = true">
+                                <li class="pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0" x-data="{ open: {{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 1 : 0 }} }" x-init="if ('{{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) }}' == '1') open = true">
+                                    <a class="block text-gray-800 dark:text-gray-100 truncate transition {{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? '' : 'hover:text-gray-900 dark:hover:text-white' }}" href="#" @click.prevent="open = !open; sidebarExpanded = true">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center">
-                                                <svg class="shrink-0 fill-current {{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                                                <svg class="shrink-0 fill-current {{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500' }}" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
                                                     <path d="M11.8 10.9c-2.27-.59-3.06-1.24-3.06-2.08 0-1.05 1.02-1.67 2.71-1.67 1.66 0 2.45.66 2.45 1.72 0 .76-.42 1.21-1.6 1.51l-1.56.38c-.7.16-.96.44-.96.87 0 .52.39.83 1.2.83.52 0 .96-.16 1.26-.41.39-.31.45-.53.45-1.22V7.59c0-.22.16-.33.33-.33h1.03c.21 0 .33.13.33.33v.33c0 1.1-.66 1.72-1.5 2.02l-1.54.38c-.94.23-1.5.61-1.5 1.35 0 .76.63 1.22 1.71 1.22 1.31 0 2.05-.55 2.05-1.55 0-.65-.31-1.06-.77-1.22.45-.6.71-1.35.71-2.05v-.33c0-.22-.16-.33-.33-.33h-.98c-.21 0-.33.13-.33.33v.33c0 .51.28.84.69.93l1.57.39c.7.19 1.05.56 1.05 1.19 0 1.11-1.04 1.71-2.71 1.71-1.65 0-2.5-.64-2.5-1.81 0-.79.4-1.26 1.65-1.56l1.54-.38c.72-.18.98-.44.98-.88 0-.52-.4-.86-1.11-.86-.55 0-1.15.18-1.41.42-.41.3-.45.57-.45 1.28v.33c0 .22.16.33.33.33h1.08c.21 0 .33-.13.33-.33v-.33c0-1.1.69-1.71 1.5-2.02l1.54-.38c.95-.23 1.5-.59 1.5-1.35 0-.77-.66-1.22-1.71-1.22-1.31 0-2.05.54-2.05 1.55 0 .64.31 1.07.74 1.24-.46.57-.74 1.31-.74 2.03v.33c0 .22.16.33.33.33h.98c.21 0 .33-.13.33-.33v-.33c0-.52-.3-.84-.7-.93l-1.57-.39c-.67-.19-1.05-.55-1.05-1.18z"/>
                                                 </svg>
                                                 <span class="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Keuangan Perusahaan</span>
                                             </div>
                                             <!-- Icon -->
                                             <div class="flex shrink-0 ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                                <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 {{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'rotate-180' : 'rotate-0' }}" :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 12 12">
+                                                <svg class="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 {{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'rotate-180' : 'rotate-0' }}" :class="open ? 'rotate-180' : 'rotate-0'" viewBox="0 0 12 12">
                                                     <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
                                                 </svg>
                                             </div>
                                         </div>
                                     </a>
                                     <div class="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                                        <ul class="pl-8 mt-1 {{ (Request::is('financial*') || Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'hidden' : 'block' }}" :class="open ? 'block!' : 'hidden'">
+                                        <ul class="pl-8 mt-1 {{ (Request::is('keuangan-perusahaan') || Request::is('buku-kas-kebun') || Request::is('data-hutang')) ? 'hidden' : 'block' }}" :class="open ? 'block!' : 'hidden'">
                                             <li class="mb-1 last:mb-0">
-                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial') || Request::is('keuangan-perusahaan') ? 'text-violet-500!' : '' }}" href="{{ route('keuangan-perusahaan') }}">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('keuangan-perusahaan') ? 'text-violet-500!' : '' }}" href="{{ route('keuangan-perusahaan') }}">
                                                     <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Keuangan Perusahaan (KP)</span>
                                                 </a>
                                             </li>
@@ -138,13 +138,8 @@
                                                     <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Buku Kas Kebun (BKK)</span>
                                                 </a>
                                             </li>
-                                            <!-- <li class="mb-1 last:mb-0">
-                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial.cash-book') || Request::is('buku-kas-kebun') ? 'text-violet-500!' : '' }}" href="{{ route('buku-kas') }}">
-                                                    <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Buku Kas</span>
-                                                </a>
-                                            </li> -->
                                             <li class="mb-1 last:mb-0">
-                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('financial.debts') || Request::is('data-hutang') ? 'text-violet-500!' : '' }}" href="{{ route('data-hutang') }}">
+                                                <a class="block text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition truncate {{ Request::is('data-hutang') ? 'text-violet-500!' : '' }}" href="{{ route('data-hutang') }}">
                                                     <span class="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">Data Hutang</span>
                                                 </a>
                                             </li>
@@ -197,7 +192,7 @@
                         <div>
                             <h3 class="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                                 <span class="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">•••</span>
-                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">System</span>
+                                <span class="lg:hidden lg:sidebar-expanded:block 2xl:block">Sistem</span>
                             </h3>
                             <ul class="mt-3">
                                 <!-- Master Data -->

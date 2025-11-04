@@ -86,4 +86,47 @@ class Production extends Model
     {
         return $this->pksRel?->name ?? $this->attributes['pks'] ?? '';
     }
+
+    /**
+     * Generate automatic transaction number
+     * Format: TN + MM + YY + 4 digit urut
+     * Example: TN10250001 (for October 2025, sequence 0001)
+     */
+    public static function generateTransactionNumber(): string
+    {
+        $now = now();
+        $monthYear = $now->format('my'); // mY format (1025 for October 2025)
+
+        // Get the last transaction number for this month
+        $lastTransaction = self::where('transaction_number', 'like', 'TN' . $monthYear . '%')
+            ->orderBy('transaction_number', 'desc')
+            ->first();
+
+        if ($lastTransaction) {
+            // Extract the last 4 digits and increment
+            $lastSequence = (int)substr($lastTransaction->transaction_number, -4);
+            $newSequence = $lastSequence + 1;
+        } else {
+            // Start with 0001 for new month or if no transactions exist
+            $newSequence = 1;
+        }
+
+        // Format: TN + MM + YY + 4 digit sequence (padded with zeros)
+        return 'TN' . $monthYear . str_pad($newSequence, 4, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Boot the model
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-generate transaction number when creating new record
+        static::creating(function ($production) {
+            if (empty($production->transaction_number)) {
+                $production->transaction_number = self::generateTransactionNumber();
+            }
+        });
+    }
 }

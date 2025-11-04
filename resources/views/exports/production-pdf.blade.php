@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Production Data Export</title>
+    <title>Ekspor Data Produksi</title>
     <style>
         body {
             font-family: 'DejaVu Sans', sans-serif;
@@ -104,14 +104,14 @@
     </div>
 
     <div class="document-title">
-        Production Data Export
+        Ekspor Data Produksi
     </div>
 
     <div class="export-info">
-        <p><strong>Exported by:</strong> <span class="accent">{{ $exportInfo['exportedBy'] }}</span></p>
-        <p><strong>Exported on:</strong> {{ $exportInfo['exportedOn'] }}</p>
+        <p><strong>Diekspor oleh:</strong> <span class="accent">{{ $exportInfo['exportedBy'] }}</span></p>
+        <p><strong>Diekspor pada:</strong> {{ $exportInfo['exportedOn'] }}</p>
         @if($exportInfo['startDate'] && $exportInfo['endDate'])
-            <p><strong>Date Range:</strong> {{ $exportInfo['startDate'] }} to {{ $exportInfo['endDate'] }}</p>
+            <p><strong>Rentang Tanggal:</strong> {{ $exportInfo['startDate'] }} hingga {{ $exportInfo['endDate'] }}</p>
         @endif
     </div>
 
@@ -164,7 +164,7 @@
     </table>
 
     <div class="footer">
-        <p>Generated on {{ now()->format('Y-m-d H:i:s') }}</p>
+        <p>Dibuat pada {{ now()->format('Y-m-d H:i:s') }}</p>
     </div>
 </body>
 </html>

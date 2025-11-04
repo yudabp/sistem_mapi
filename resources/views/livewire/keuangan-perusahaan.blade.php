@@ -7,14 +7,61 @@
     <!-- Persistent Message -->
     @if($persistentMessage)
         <div class="mb-6">
-            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
-                <span>{{ $persistentMessage }}</span>
-                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+            @switch($messageType)
+                @case('success')
+                    <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('error')
+                    <div class="bg-red-50 text-red-700 p-4 rounded-lg dark:bg-red-500/10 dark:text-red-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('warning')
+                    <div class="bg-amber-50 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:text-amber-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('info')
+                    <div class="bg-blue-50 text-blue-700 p-4 rounded-lg dark:bg-blue-500/10 dark:text-blue-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @default
+                    <div class="bg-gray-50 text-gray-700 p-4 rounded-lg dark:bg-gray-500/10 dark:text-gray-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+            @endswitch
         </div>
     @endif
 
@@ -30,7 +77,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total Income</span>
+                            <span>Total Pemasukan</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -161,7 +208,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Total Expenses</span>
+                            <span>Total Pengeluaran</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -292,7 +339,7 @@
                     </div>
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1 flex justify-between items-center">
-                            <span>Balance</span>
+                            <span>Saldo</span>
                             <select 
                                 wire:model.live="metricFilter" 
                                 class="text-xs bg-transparent border-0 focus:ring-0 dark:text-gray-500"
@@ -418,7 +465,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex flex-wrap justify-between items-center gap-4">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Keuangan Perusahaan Transaction Input</h2>
+                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Input Transaksi Keuangan Perusahaan</h2>
                 <div class="flex flex-wrap gap-2">
                     @canedit
                     <!-- Import button with dropdown -->
@@ -430,7 +477,7 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
                             </svg>
-                            Import
+                            Impor
                         </button>
                         <div class="absolute right-0 mt-0 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <button 
@@ -440,7 +487,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Upload Excel
+                                Unggah Excel
                             </button>
                             <button 
                                 wire:click="downloadSampleExcel"
@@ -449,7 +496,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                 </svg>
-                                Download Sample
+                                Unduh Contoh
                             </button>
                         </div>
                     </div>
@@ -464,14 +511,14 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
-                            Export
+                            Ekspor
                         </button>
                         <div class="absolute right-0 mt-0 w-56 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
                             <div class="px-4 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
-                                Export Options
+                                Opsi Ekspor
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Mulai</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportStartDate"
@@ -517,7 +564,7 @@
                                 />
                             </div>
                             <div class="px-4 py-2">
-                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                                <label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Tanggal Akhir</label>
                                 <input 
                                     type="text" 
                                     wire:model="exportEndDate"
@@ -569,7 +616,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to Excel
+                                Ekspor ke Excel
                             </button>
                             <button 
                                 wire:click="exportToPdf"
@@ -578,7 +625,7 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                Export to PDF
+                                Ekspor ke PDF
                             </button>
                         </div>
                     </div>
@@ -590,14 +637,14 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </button>
                 @else
                     <!-- <div class="px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Add Record
+                        Tambah Data
                     </div> -->
                 @endcanedit
             </div>
@@ -607,16 +654,16 @@
     <!-- Search and Filter Section -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm mb-8 p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cari</label>
             <input 
                 type="text" 
                 wire:model.live="search"
-                placeholder="Search by source, destination, or category"
+                placeholder="Cari berdasarkan sumber, tujuan, atau kategori"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Date</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter berdasarkan Tanggal</label>
             <input 
                 type="month" 
                 wire:model.live="dateFilter"
@@ -624,14 +671,14 @@
             />
         </div>
         <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter by Type</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Filter berdasarkan Jenis</label>
             <select 
                 wire:model.live="typeFilter"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
             >
-                <option value="">All Types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
+                <option value="">Semua Jenis</option>
+                <option value="income">Pemasukan</option>
+                <option value="expense">Pengeluaran</option>
             </select>
         </div>
     </div>
@@ -639,24 +686,24 @@
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Keuangan Perusahaan Transactions</h2>
+            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Transaksi Keuangan Perusahaan</h2>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
                 <table class="table-auto w-full">
                     <thead>
                         <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                            <th class="p-2 whitespace-nowrap">Date</th>
-                            <th class="p-2 whitespace-nowrap">Transaction #</th>
-                            <th class="p-2 whitespace-nowrap">Type</th>
-                            <th class="p-2 whitespace-nowrap">Source/Destination</th>
-                            <th class="p-2 whitespace-nowrap">Amount</th>
-                            <th class="p-2 whitespace-nowrap">Category</th>
-                            <th class="p-2 whitespace-nowrap">Proof</th>
+                            <th class="p-2 whitespace-nowrap">Tanggal</th>
+                            <th class="p-2 whitespace-nowrap">No. Transaksi</th>
+                            <th class="p-2 whitespace-nowrap">Jenis</th>
+                            <th class="p-2 whitespace-nowrap">Sumber/Tujuan</th>
+                            <th class="p-2 whitespace-nowrap">Jumlah</th>
+                            <th class="p-2 whitespace-nowrap">Kategori</th>
+                            <th class="p-2 whitespace-nowrap">Bukti</th>
                             @canedit
-                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            <th class="p-2 whitespace-nowrap">Aksi</th>
                             @else
-                            <th class="p-2 whitespace-nowrap">Actions</th>
+                            <th class="p-2 whitespace-nowrap">Aksi</th>
                             @endcanedit
                         </tr>
                     </thead>
@@ -703,10 +750,10 @@
                                             wire:click="showPhoto('{{ $transaction->proof_document_path }}')"
                                             class="text-blue-600 hover:underline dark:text-blue-400"
                                         >
-                                            View Document
+                                            Lihat Dokumen
                                         </button>
                                     @else
-                                        <span class="text-gray-500 dark:text-gray-400">No proof</span>
+                                        <span class="text-gray-500 dark:text-gray-400">Tidak ada bukti</span>
                                     @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
@@ -725,13 +772,13 @@
                                             wire:click="openEditModal({{ $transaction->id }})"
                                             class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
                                         >
-                                            Edit
+                                            Ubah
                                         </button>
                                         <button 
                                             wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
                                             class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
                                         >
-                                            Delete
+                                            Hapus
                                         </button>
                                         @else
                                         <!-- <button 
@@ -739,14 +786,14 @@
                                             wire:click="openEditModal({{ $transaction->id }})"
                                             class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-400 text-sm"
                                         >
-                                            Edit
+                                            Ubah
                                         </button>
                                         <button 
                                             disabled
                                             wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
                                             class="px-3 py-1 bg-gray-400 text-white rounded hover:bg-gray-400 text-sm"
                                         >
-                                            Delete
+                                            Hapus
                                         </button> -->
                                         @endcanedit
                                     </div>
@@ -755,7 +802,7 @@
                         @empty
                             <tr>
                                 <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
-                                    No Keuangan Perusahaan transactions found
+                                    Tidak ada transaksi keuangan perusahaan ditemukan
                                 </td>
                             </tr>
                         @endforelse
@@ -768,7 +815,7 @@
     <!-- Transaction Data Modal -->
     <x-dialog-modal wire:model.live="showModal" maxWidth="2xl">
         <x-slot name="title">
-            {{ $isEditing ? 'Edit Keuangan Perusahaan Transaction' : 'Add Keuangan Perusahaan Transaction' }}
+            {{ $isEditing ? 'Edit Transaksi Keuangan Perusahaan' : 'Tambah Transaksi Keuangan Perusahaan' }}
         </x-slot>
 
         <x-slot name="content">
@@ -790,7 +837,7 @@
                 <!-- Transaction Date -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
-                        Transaction Date (DD-MM-YYYY)
+                        Tanggal Transaksi (DD-MM-YYYY)
                     </label>
                     <input 
                         id="transaction_date"
@@ -844,15 +891,15 @@
                 <!-- Transaction Type -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
-                        Transaction Type
+                        Jenis Transaksi
                     </label>
                     <select 
                         id="transaction_type"
                         class="w-full px-3 py-2 border {{ $errors->has('transaction_type') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="transaction_type"
                     >
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
+                        <option value="income">Pemasukan</option>
+                        <option value="expense">Pengeluaran</option>
                     </select>
                     @error('transaction_type') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -862,7 +909,7 @@
                 <!-- Amount -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
-                        Amount (Rp)
+                        Jumlah (Rp)
                     </label>
                     <input 
                         id="amount"
@@ -870,58 +917,58 @@
                         type="number" 
                         step="0.01"
                         wire:model="amount"
-                        placeholder="Enter amount"
+                        placeholder="Masukkan jumlah"
                     />
                     @error('amount') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
 
-                <!-- Source/Destination -->
+                <!-- Sumber/Tujuan -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="source_destination">
-                        Source/Destination
+                        Sumber/Tujuan
                     </label>
                     <input 
                         id="source_destination"
                         class="w-full px-3 py-2 border {{ $errors->has('source_destination') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="source_destination"
-                        placeholder="Enter source or destination"
+                        placeholder="Masukkan sumber atau tujuan"
                     />
                     @error('source_destination') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
 
-                <!-- Received By -->
+                <!-- Diterima oleh -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="received_by">
-                        Received By
+                        Diterima oleh
                     </label>
                     <input 
                         id="received_by"
                         class="w-full px-3 py-2 border {{ $errors->has('received_by') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="received_by"
-                        placeholder="Enter name of person who received"
+                        placeholder="Masukkan nama orang yang menerima"
                     />
                     @error('received_by') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                     @enderror
                 </div>
 
-                <!-- Category -->
+                <!-- Kategori -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category">
-                        Category
+                        Kategori
                     </label>
                     <input 
                         id="category"
                         class="w-full px-3 py-2 border {{ $errors->has('category') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         type="text" 
                         wire:model="category"
-                        placeholder="Enter transaction category"
+                        placeholder="Masukkan kategori transaksi"
                     />
                     @error('category') 
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
@@ -931,13 +978,13 @@
                 <!-- Notes -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="notes">
-                        Notes
+                        Catatan
                     </label>
                     <textarea 
                         id="notes"
                         class="w-full px-3 py-2 border {{ $errors->has('notes') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
                         wire:model="notes"
-                        placeholder="Enter additional notes"
+                        placeholder="Masukkan catatan tambahan"
                         rows="2"
                     ></textarea>
                     @error('notes') 
@@ -945,15 +992,15 @@
                     @enderror
                 </div>
 
-                <!-- Proof Document -->
+                <!-- Dokumen Bukti -->
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
-                        Proof Document
+                        Dokumen Bukti
                     </label>
-                    <input 
+                    <input
                         id="proof_document"
-                        type="file" 
-                        wire:model="proof_document"
+                        type="file"
+                        wire:model.lazy="proof_document"
                         class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)
@@ -970,11 +1017,11 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeCreateModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="saveTransactionModal" wire:loading.attr="disabled">
-                {{ $isEditing ? 'Update' : 'Save' }} Transaction
+                {{ $isEditing ? 'Perbarui' : 'Simpan' }}
             </x-button>
         </x-slot>
     </x-dialog-modal>
@@ -982,21 +1029,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Keuangan Perusahaan Transaction') }}
+            Hapus Transaksi Keuangan Perusahaan
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the Keuangan Perusahaan transaction ":name"?', ['name' => $deletingTransactionName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            Apakah Anda yakin ingin menghapus transaksi keuangan perusahaan "{{ $deletingTransactionName }}"?
+            Setelah dihapus, tindakan ini tidak dapat dibatalkan.
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteTransactionConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Transaction') }}
+                Hapus Transaksi
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
@@ -1004,7 +1051,7 @@
     <!-- Photo Preview Modal -->
     <x-dialog-modal wire:model.live="showPhotoModal" maxWidth="2xl">
         <x-slot name="title">
-            Document Preview
+            Pratinjau Dokumen
         </x-slot>
 
         <x-slot name="content">
@@ -1017,7 +1064,7 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closePhotoModal" wire:loading.attr="disabled">
-                {{ __('Close') }}
+                Tutup
             </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
@@ -1043,8 +1090,8 @@
                 <p><strong>Transaction Details:</strong></p>
                 <ul class="list-disc list-inside text-sm space-y-1">
                     <li><strong>Type:</strong> Expense (Rp {{ number_format((float)$amount, 2, ',', '.') }})</li>
-                    <li><strong>Source/Destination:</strong> {{ $source_destination }}</li>
-                    <li><strong>Category:</strong> {{ $category }}</li>
+                    <li><strong>Sumber/Tujuan:</strong> {{ $source_destination }}</li>
+                    <li><strong>Kategori:</strong> {{ $category }}</li>
                     <li><strong>Date:</strong> {{ $transaction_date ? \Carbon\Carbon::parse($transaction_date)->format('d M Y') : '' }}</li>
                 </ul>
             </div>
@@ -1054,23 +1101,23 @@
                 <ul class="list-disc list-inside text-sm space-y-1 mt-1">
                     <li><strong>Type:</strong> Income (Rp {{ number_format((float)$amount, 2, ',', '.') }})</li>
                     <li><strong>Source:</strong> Keuangan Perusahaan (Auto-generated)</li>
-                    <li><strong>Category:</strong> Operational Cost</li>
+                    <li><strong>Kategori:</strong> Operational Cost</li>
                     <li><strong>Transaction #:</strong> BKK-AUTO-XXXXXX</li>
                 </ul>
             </div>
             
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-4">
-                {{ __('Are you sure you want to proceed with creating this KP expense and the auto-generated BKK entry?') }}
+                Apakah Anda yakin ingin melanjutkan membuat biaya KP dan entri BKK yang otomatis dibuat?
             </p>
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeExpenseConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="confirmExpenseCreation" wire:loading.attr="disabled">
-                {{ __('Create Expense & Auto-BKK') }}
+                Lanjutkan
             </x-button>
         </x-slot>
     </x-confirmation-modal>
@@ -1099,14 +1146,14 @@
                     <table class="table-auto w-full">
                         <thead>
                             <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                                <th class="p-2 whitespace-nowrap">BKK Transaction #</th>
-                                <th class="p-2 whitespace-nowrap">Date</th>
-                                <th class="p-2 whitespace-nowrap">Type</th>
-                                <th class="p-2 whitespace-nowrap">Amount</th>
-                                <th class="p-2 whitespace-nowrap">Category</th>
-                                <th class="p-2 whitespace-nowrap">Source/Destination</th>
+                                <th class="p-2 whitespace-nowrap">No. Transaksi BKK</th>
+                                <th class="p-2 whitespace-nowrap">Tanggal</th>
+                                <th class="p-2 whitespace-nowrap">Jenis</th>
+                                <th class="p-2 whitespace-nowrap">Jumlah</th>
+                                <th class="p-2 whitespace-nowrap">Kategori</th>
+                                <th class="p-2 whitespace-nowrap">Sumber/Tujuan</th>
                                 <th class="p-2 whitespace-nowrap">Status</th>
-                                <th class="p-2 whitespace-nowrap">Actions</th>
+                                <th class="p-2 whitespace-nowrap">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
@@ -1185,7 +1232,7 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="hideRelatedBkkTransactions" wire:loading.attr="disabled">
-                {{ __('Close') }}
+                Tutup
             </x-secondary-button>
         </x-slot>
     </x-dialog-modal>
@@ -1208,7 +1255,7 @@
                     <li><strong>source_destination</strong> - Source or destination</li>
                     <li><strong>received_by</strong> - Person who received (optional)</li>
                     <li><strong>notes</strong> - Additional notes (optional)</li>
-                    <li><strong>category</strong> - Category of the transaction</li>
+                    <li><strong>category</strong> - Kategori of the transaction</li>
                 </ul>
             </div>
             
@@ -1237,7 +1284,7 @@
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeImportModal" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                Batal
             </x-secondary-button>
 
             <x-button class="ms-3" wire:click="importTransaction" wire:loading.attr="disabled">

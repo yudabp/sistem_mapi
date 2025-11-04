@@ -51,12 +51,12 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/dashboard/fintech', [DashboardController::class, 'fintech'])->name('fintech');
     
     // Palm Oil Management System routes - English versions
-    Route::get('/production', [App\Http\Controllers\PalmOilController::class, 'production'])->name('production');
-    Route::get('/sales', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('sales');
-    Route::get('/employees', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('employees');
-    Route::get('/financial', [App\Http\Controllers\PalmOilController::class, 'financial'])->name('financial');
-    Route::get('/financial/cash-book', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('financial.cash-book');
-    Route::get('/financial/debts', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('financial.debts');
+    // Route::get('/production', [App\Http\Controllers\PalmOilController::class, 'production'])->name('production');
+    // Route::get('/sales', [App\Http\Controllers\PalmOilController::class, 'sales'])->name('sales');
+    // Route::get('/employees', [App\Http\Controllers\PalmOilController::class, 'employees'])->name('employees');
+    // Route::get('/financial', [App\Http\Controllers\PalmOilController::class, 'financial'])->name('financial');
+    // Route::get('/financial/cash-book', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('financial.cash-book');
+    // Route::get('/financial/debts', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('financial.debts');
 
     // Palm Oil Management System routes - Indonesian versions (matching sidebar menu)
     Route::get('/data-produksi', [App\Http\Controllers\PalmOilController::class, 'production'])->name('data-produksi');
@@ -69,7 +69,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'keuanganPerusahaan'])->name('keuangan-perusahaan');
     Route::get('/keuangan-perusahaan/export-pdf', [App\Http\Controllers\FinancialController::class, 'exportPdf'])->name('financial.export.pdf');
     Route::get('/buku-kas-kebun', [App\Http\Controllers\PalmOilController::class, 'bukuKasKebun'])->name('buku-kas-kebun');
-    Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
+    // Route /keuangan-perusahaan/buku-kas removed - using /buku-kas-kebun instead
     Route::get('/keuangan-perusahaan/buku-kas/export-pdf', [App\Http\Controllers\CashBookController::class, 'exportPdf'])->name('cashbook.export.pdf');
     Route::get('/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
     Route::get('/data-hutang/export-pdf', [App\Http\Controllers\DebtsController::class, 'exportPdf'])->name('debts.export.pdf');
@@ -86,7 +86,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/master-data/employment-statuses', [App\Http\Controllers\PalmOilController::class, 'employmentStatuses'])->name('master-data.employment-statuses');
 
     // Legacy settings route (redirect to first master data item)
-    Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'vehicleNumbers'])->name('settings');
+    // Route::get('/settings', [App\Http\Controllers\PalmOilController::class, 'vehicleNumbers'])->name('settings');
 
     // Route::get('/messages', function () {
     //     return view('pages/messages');

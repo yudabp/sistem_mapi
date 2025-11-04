@@ -451,7 +451,17 @@ class KeuanganPerusahaanComponent extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Keuangan Perusahaan transaction deleted successfully.' => 'Transaksi keuangan perusahaan berhasil dihapus.',
+            'Keuangan Perusahaan transaction updated successfully.' => 'Transaksi keuangan perusahaan berhasil diperbarui.',
+            'Keuangan Perusahaan transaction data imported successfully.' => 'Data transaksi keuangan perusahaan berhasil diimpor.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 

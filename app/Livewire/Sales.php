@@ -29,8 +29,6 @@ class Sales extends Component
     public $total_amount;
     public $sales_proof;
     public $sale_date;
-    public $customer_name;
-    public $customer_address;
     public $is_taxable = false;
     public $tax_percentage = 11.00;
     public $tax_amount = 0;
@@ -82,8 +80,6 @@ class Sales extends Component
         'kg_quantity' => 'required|numeric',
         'price_per_kg' => 'required|numeric',
         'sale_date' => 'required|date_format:d-m-Y',
-        'customer_name' => 'required',
-        'customer_address' => 'required',
         'sales_proof' => 'nullable|image|max:10240', // Max 10MB
         'is_taxable' => 'boolean',
         'tax_percentage' => 'required|numeric|min:0|max:100',
@@ -269,8 +265,6 @@ class Sales extends Component
             'total_amount' => $this->total_amount,
             'sales_proof_path' => $proofPath,
             'sale_date' => $dateForDb,
-            'customer_name' => $this->customer_name,
-            'customer_address' => $this->customer_address,
             'is_taxable' => $this->is_taxable,
             'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
             'tax_amount' => $this->tax_amount,
@@ -292,8 +286,6 @@ class Sales extends Component
         $this->total_amount = 0;
         $this->sales_proof = null;
         $this->sale_date = '';
-        $this->customer_name = '';
-        $this->customer_address = '';
         $this->is_taxable = false;
         $this->tax_percentage = 11.00;
         $this->tax_amount = 0;
@@ -310,9 +302,7 @@ class Sales extends Component
 
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('sp_number', 'like', '%' . $this->search . '%')
-                  ->orWhere('customer_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('customer_address', 'like', '%' . $this->search . '%');
+                $q->where('sp_number', 'like', '%' . $this->search . '%');
             });
         }
 
@@ -423,8 +413,6 @@ class Sales extends Component
             $this->price_per_kg = $sale->price_per_kg;
             $this->total_amount = $sale->total_amount;
             $this->sale_date = $sale->sale_date->format('d-m-Y'); // Format for DD-MM-YYYY display
-            $this->customer_name = $sale->customer_name;
-            $this->customer_address = $sale->customer_address;
             $this->is_taxable = $sale->is_taxable ?? false;
             $this->tax_percentage = $sale->tax_percentage ?? 11.00;
             $this->tax_amount = $sale->tax_amount ?? 0;
@@ -526,8 +514,6 @@ class Sales extends Component
                 'price_per_kg' => $this->price_per_kg,
                 'total_amount' => $this->total_amount,
                 'sale_date' => $dateForDb,
-                'customer_name' => $this->customer_name,
-                'customer_address' => $this->customer_address,
                 'sales_proof_path' => $proofPath,
                 'is_taxable' => $this->is_taxable,
                 'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
@@ -547,7 +533,21 @@ class Sales extends Component
     public function setPersistentMessage($message, $type = 'success')
     {
         // Ensure message is UTF-8 clean
-        $this->persistentMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+        $cleanMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+
+        // Translate common messages to Indonesian
+        $translations = [
+            'Sales record created successfully.' => 'Data penjualan berhasil ditambahkan.',
+            'Sales record updated successfully.' => 'Data penjualan berhasil diperbarui.',
+            'Sales record deleted successfully.' => 'Data penjualan berhasil dihapus.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Sales data imported successfully.' => 'Data penjualan berhasil diimpor.',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $cleanMessage);
         $this->messageType = $type;
     }
 
@@ -610,12 +610,12 @@ class Sales extends Component
     public function downloadSampleExcel()
     {
         // Create a sample CSV file and store it temporarily
-        // Updated to match current table structure with foreign keys
+        // Updated to match current table structure without customer fields
         $sampleData = [
-            ['sp_number', 'tbs_quantity', 'kg_quantity', 'price_per_kg', 'total_amount', 'sale_date', 'customer_name', 'customer_address'],
-            ['SP001', '1000.50', '950.20', '2500.00', '2375475.00', now()->format('Y-m-d'), 'PT. ABC Perkasa', 'Jl. Raya No. 123, Jakarta'],
-            ['SP002', '1200.75', '1140.80', '2600.00', '2966080.00', now()->format('Y-m-d'), 'CV. XYZ Makmur', 'Jl. Merdeka No. 45, Bandung'],
-            ['SP003', '950.25', '902.75', '2450.00', '2211737.50', now()->format('Y-m-d'), 'PT. Kertas Kita', 'Jl. Diponegoro No. 78, Semarang'],
+            ['sp_number', 'tbs_quantity', 'kg_quantity', 'price_per_kg', 'total_amount', 'sale_date'],
+            ['SP001', '1000.50', '950.20', '2500.00', '2375475.00', now()->format('Y-m-d')],
+            ['SP002', '1200.75', '1140.80', '2600.00', '2966080.00', now()->format('Y-m-d')],
+            ['SP003', '950.25', '902.75', '2450.00', '2211737.50', now()->format('Y-m-d')],
         ];
         
         $csv = '';

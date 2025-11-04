@@ -90,7 +90,7 @@ class CashBookExportWithHeaders implements FromCollection, WithHeadings, WithMap
         return [
             AfterSheet::class => function(AfterSheet $event) {
                 // Add header information
-                $event->sheet->setCellValue('A1', 'Cash Book Data Export');
+                $event->sheet->setCellValue('A1', 'Export Data Buku Kas');
                 $event->sheet->setCellValue('A2', 'Exported by: ' . ($this->user ? $this->user->name : 'System'));
                 $event->sheet->setCellValue('A3', 'Exported on: ' . now()->format('Y-m-d H:i:s'));
                 
