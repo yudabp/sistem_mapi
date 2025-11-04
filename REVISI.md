@@ -33,16 +33,16 @@
 - [x] Update breadcrumbs ke bahasa Indonesia
 - [x] Update semua tooltips ke bahasa Indonesia
 
-### Data Produksi
-- [ ] Buat fungsi generate nomor transaksi otomatis (format: TN + MM + YY + 4 digit urut)
-- [ ] Set start number TN10250001
-- [ ] 4 digit urut dibelakang otomatis reset setiap awal bulan
-- [ ] Implementasi auto-increment untuk nomor transaksi
-- [ ] Hapus validasi required pada field TBS di migration dan form
-- [ ] Hapus validasi required pada field No Pol di migration dan form
-- [ ] Update tampilan tabel untuk menampilkan data kosong jika TBS/No Pol tidak diisi
-- [ ] Update form input data produksi
-- [ ] Update validasi di Livewire Production.php
+### Data Produksi ✅ COMPLETED
+- [x] Buat fungsi generate nomor transaksi otomatis (format: TN + MM + YY + 4 digit urut)
+- [x] Set start number TN10250001 (sekarang TN11250001 untuk Nov 2025)
+- [x] 4 digit urut dibelakang otomatis reset setiap awal bulan
+- [x] Implementasi auto-increment untuk nomor transaksi
+- [x] Hapus validasi required pada field TBS di migration dan form
+- [x] Hapus validasi required pada field No Pol di migration dan form
+- [x] Update tampilan tabel untuk menampilkan data kosong jika TBS/No Pol tidak diisi
+- [x] Update form input data produksi
+- [x] Update validasi di Livewire Production.php
 
 ### Data Penjualan
 - [ ] Hapus kolom "customer_name" dari migration database

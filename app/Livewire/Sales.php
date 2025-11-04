@@ -547,7 +547,21 @@ class Sales extends Component
     public function setPersistentMessage($message, $type = 'success')
     {
         // Ensure message is UTF-8 clean
-        $this->persistentMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+        $cleanMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+
+        // Translate common messages to Indonesian
+        $translations = [
+            'Sales record created successfully.' => 'Data penjualan berhasil ditambahkan.',
+            'Sales record updated successfully.' => 'Data penjualan berhasil diperbarui.',
+            'Sales record deleted successfully.' => 'Data penjualan berhasil dihapus.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Sales data imported successfully.' => 'Data penjualan berhasil diimpor.',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $cleanMessage);
         $this->messageType = $type;
     }
 

@@ -409,7 +409,17 @@ class Financial extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Financial transaction created successfully.' => 'Transaksi keuangan berhasil ditambahkan.',
+            'Financial transaction deleted successfully.' => 'Transaksi keuangan berhasil dihapus.',
+            'Financial transaction updated successfully.' => 'Transaksi keuangan berhasil diperbarui.',
+            'Financial transaction data imported successfully.' => 'Data transaksi keuangan berhasil diimpor.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 

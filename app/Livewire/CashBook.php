@@ -363,7 +363,17 @@ class CashBook extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Cash book transaction created successfully.' => 'Transaksi buku kas berhasil ditambahkan.',
+            'Cash book transaction deleted successfully.' => 'Transaksi buku kas berhasil dihapus.',
+            'Cash book transaction updated successfully.' => 'Transaksi buku kas berhasil diperbarui.',
+            'Cash book data imported successfully.' => 'Data buku kas berhasil diimpor.',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Error: ' => 'Terjadi kesalahan: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 

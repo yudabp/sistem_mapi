@@ -66,7 +66,7 @@ class Production extends Component
 
     // Persistent message
     public $persistentMessage = '';
-    public $messageType = 'success'; // success, error, warning, info
+    public $messageType = ''; // success, error, warning, info
     
     // Import/Export properties
     public $importFile = null;
@@ -81,22 +81,33 @@ class Production extends Component
         $rules = [
             'date' => 'required|date',
             'sp_number' => 'required',
-            'vehicle_id' => 'required|exists:vehicle_numbers,id',
-            'tbs_quantity' => 'required|numeric',
+            'vehicle_id' => 'nullable|exists:vehicle_numbers,id', // Made nullable
+            'tbs_quantity' => 'nullable|numeric', // Made nullable
             'kg_quantity' => 'required|numeric',
             'division_id' => 'required|exists:divisions,id',
             'pks_id' => 'required|exists:pks,id',
             'sp_photo' => 'nullable|image|max:10240', // Max 10MB
         ];
 
-        // For transaction_number, add unique validation except for current record
+        // For transaction_number, only validate when editing (auto-generated when creating)
         if ($this->isEditing) {
             $rules['transaction_number'] = 'required|unique:production,transaction_number,' . $this->editingId;
-        } else {
-            $rules['transaction_number'] = 'required|unique:production,transaction_number';
         }
 
         return $rules;
+    }
+
+    /**
+     * Intercept property updates
+     */
+    public function updatedVehicleId($value)
+    {
+        $this->vehicle_id = $value === '' ? null : $value;
+    }
+
+    public function updatedTbsQuantity($value)
+    {
+        $this->tbs_quantity = $value === '' ? null : $value;
     }
 
     public function mount()
@@ -145,17 +156,36 @@ class Production extends Component
             $photoPath = $this->sp_photo->store('sp_photos', 'public');
         }
 
+        // Get the actual values from relationships for backward compatibility
+        $vehicleNumber = null;
+        if ($this->vehicle_id) {
+            $vehicle = VehicleNumber::find($this->vehicle_id);
+            $vehicleNumber = $vehicle ? $vehicle->number : null;
+        }
+
+        $divisionName = null;
+        if ($this->division_id) {
+            $division = Division::find($this->division_id);
+            $divisionName = $division ? $division->name : null;
+        }
+
+        $pksName = null;
+        if ($this->pks_id) {
+            $pks = PksModel::find($this->pks_id);
+            $pksName = $pks ? $pks->name : null;
+        }
+
         ProductionModel::create([
             'transaction_number' => $this->transaction_number,
             'date' => $dateForDb,
             'sp_number' => $this->sp_number,
-            'vehicle_number' => $this->vehicle_number, // Keep for backward compatibility
-            'vehicle_id' => $this->vehicle_id,
+            'vehicle_number' => $vehicleNumber, // Keep for backward compatibility
+            'vehicle_id' => $this->vehicle_id ?: null, // Convert empty string to null
             'tbs_quantity' => $this->tbs_quantity,
             'kg_quantity' => $this->kg_quantity,
-            'division' => $this->division, // Keep for backward compatibility
+            'division' => $divisionName, // Keep for backward compatibility
             'division_id' => $this->division_id,
-            'pks' => $this->pks, // Keep for backward compatibility
+            'pks' => $pksName, // Keep for backward compatibility
             'pks_id' => $this->pks_id,
             'sp_photo_path' => $photoPath,
         ]);
@@ -173,8 +203,8 @@ class Production extends Component
         $this->date = '';
         $this->sp_number = '';
         $this->vehicle_number = ''; // Keep for backward compatibility
-        $this->vehicle_id = '';
-        $this->tbs_quantity = '';
+        $this->vehicle_id = null;
+        $this->tbs_quantity = null;
         $this->kg_quantity = '';
         $this->division = ''; // Keep for backward compatibility
         $this->division_id = '';
@@ -300,6 +330,8 @@ class Production extends Component
     public function openCreateModal()
     {
         $this->resetForm();
+        // Auto-generate transaction number for new entries
+        $this->transaction_number = ProductionModel::generateTransactionNumber();
         $this->isEditing = false;
         $this->showModal = true;
     }
@@ -405,17 +437,36 @@ class Production extends Component
                 $photoPath = $this->sp_photo->store('sp_photos', 'public');
             }
 
+            // Get the actual values from relationships for backward compatibility
+            $vehicleNumber = null;
+            if ($this->vehicle_id) {
+                $vehicle = VehicleNumber::find($this->vehicle_id);
+                $vehicleNumber = $vehicle ? $vehicle->number : null;
+            }
+
+            $divisionName = null;
+            if ($this->division_id) {
+                $division = Division::find($this->division_id);
+                $divisionName = $division ? $division->name : null;
+            }
+
+            $pksName = null;
+            if ($this->pks_id) {
+                $pks = PksModel::find($this->pks_id);
+                $pksName = $pks ? $pks->name : null;
+            }
+
             $production->update([
                 'transaction_number' => $this->transaction_number,
                 'date' => $dateForDb,
                 'sp_number' => $this->sp_number,
-                'vehicle_number' => $this->vehicle_number, // Keep for backward compatibility
-                'vehicle_id' => $this->vehicle_id,
+                'vehicle_number' => $vehicleNumber, // Keep for backward compatibility
+                'vehicle_id' => $this->vehicle_id ?: null, // Convert empty string to null
                 'tbs_quantity' => $this->tbs_quantity,
                 'kg_quantity' => $this->kg_quantity,
-                'division' => $this->division, // Keep for backward compatibility
+                'division' => $divisionName, // Keep for backward compatibility
                 'division_id' => $this->division_id,
-                'pks' => $this->pks, // Keep for backward compatibility
+                'pks' => $pksName, // Keep for backward compatibility
                 'pks_id' => $this->pks_id,
                 'sp_photo_path' => $photoPath,
             ]);
@@ -433,7 +484,19 @@ class Production extends Component
     public function setPersistentMessage($message, $type = 'success')
     {
         // Ensure message is UTF-8 clean
-        $this->persistentMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+        $cleanMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+
+        // Translate common messages to Indonesian
+        $translations = [
+            'Production record created successfully.' => 'Data produksi berhasil ditambahkan.',
+            'Production record updated successfully.' => 'Data produksi berhasil diperbarui.',
+            'Production record deleted successfully.' => 'Data produksi berhasil dihapus.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Production data imported successfully.' => 'Data produksi berhasil diimpor.',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $cleanMessage);
         $this->messageType = $type;
     }
 

@@ -7,14 +7,61 @@
     <!-- Persistent Message -->
     @if($persistentMessage)
         <div class="mb-6">
-            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
-                <span>{{ $persistentMessage }}</span>
-                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            </div>
+            @switch($messageType)
+                @case('success')
+                    <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('error')
+                    <div class="bg-red-50 text-red-700 p-4 rounded-lg dark:bg-red-500/10 dark:text-red-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('warning')
+                    <div class="bg-amber-50 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:text-amber-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @case('info')
+                    <div class="bg-blue-50 text-blue-700 p-4 rounded-lg dark:bg-blue-500/10 dark:text-blue-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    @break
+
+                @default
+                    <div class="bg-gray-50 text-gray-700 p-4 rounded-lg dark:bg-gray-500/10 dark:text-gray-500 flex justify-between items-center">
+                        <span>{{ $persistentMessage }}</span>
+                        <button wire:click="clearPersistentMessage" class="text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+            @endswitch
         </div>
     @endif
 
@@ -298,15 +345,19 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_number">
                         Nomor Transaksi
                     </label>
-                    <input 
+                    <input
                         id="transaction_number"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600"
+                        type="text"
                         wire:model="transaction_number"
-                        placeholder="Masukkan nomor transaksi"
+                        placeholder="Auto-generated"
+                        @if(!$isEditing) readonly @endif
                     />
-                    @error('transaction_number') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @if(!$isEditing)
+                        <small class="text-gray-500 dark:text-gray-400">Nomor transaksi akan di-generate otomatis</small>
+                    @endif
+                    @error('transaction_number')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -384,38 +435,40 @@
                 <!-- Vehicle Number -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_id">
-                        Nomor Kendaraan (No Polisi)
+                        Nomor Kendaraan (No Polisi) <span class="text-gray-400 text-xs">(Opsional)</span>
                     </label>
-                    <select 
+                    <select
                         id="vehicle_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="vehicle_id"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model.lazy="vehicle_id"
                     >
                         <option value="">Pilih No Polisi</option>
                         @foreach($vehicle_numbers as $vehicle_number_option)
                             <option value="{{ $vehicle_number_option->id }}">{{ $vehicle_number_option->number }}</option>
                         @endforeach
                     </select>
-                    @error('vehicle_id') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada kendaraan</small>
+                    @error('vehicle_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
                 <!-- TBS Quantity -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
-                        TBS Quantity (KG)
+                        TBS Quantity (KG) <span class="text-gray-400 text-xs">(Opsional)</span>
                     </label>
-                    <input 
+                    <input
                         id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="number"
                         step="0.01"
                         wire:model="tbs_quantity"
-                        placeholder="Enter TBS quantity"
+                        placeholder="Kosongkan jika tidak ada TBS"
                     />
-                    @error('tbs_quantity') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada data TBS</small>
+                    @error('tbs_quantity')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -519,7 +572,7 @@
 
         <x-slot name="content">
             {{ __('Apakah Anda yakin ingin menghapus data produksi ":name"?', ['name' => $deletingProductionName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            {{ __('Setelah data dihapus, semua informasi akan dihapus secara permanen.') }}
         </x-slot>
 
         <x-slot name="footer">
@@ -544,7 +597,7 @@
                 <div class="flex justify-center">
                     <img src="{{ asset('storage/' . $photoToView) }}" alt="SP Photo" class="max-w-full h-auto rounded-lg shadow-md">
                 </div>
-            @endif>
+            @endif
         </x-slot>
 
         <x-slot name="footer">
@@ -892,10 +945,10 @@
                                         <div class="text-left">{{ $production->sp_number }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="text-left">{{ $production->vehicle ? $production->vehicle->number : $production->vehicle_number }}</div>
+                                        <div class="text-left">{{ $production->vehicle ? $production->vehicle->number : ($production->vehicle_number ?? '-') }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="text-left">{{ number_format($production->tbs_quantity, 2) }}</div>
+                                        <div class="text-left">{{ $production->tbs_quantity ? number_format($production->tbs_quantity, 2) : '-' }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
                                         <div class="text-left">{{ number_format($production->kg_quantity, 2) }}</div>

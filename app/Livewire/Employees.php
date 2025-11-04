@@ -357,7 +357,19 @@ class Employees extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Employee record created successfully.' => 'Data karyawan berhasil ditambahkan.',
+            'Employee record updated successfully.' => 'Data karyawan berhasil diperbarui.',
+            'Employee record deleted successfully.' => 'Data karyawan berhasil dihapus.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Employee data imported successfully.' => 'Data karyawan berhasil diimpor.',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 

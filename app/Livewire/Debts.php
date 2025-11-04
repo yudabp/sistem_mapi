@@ -468,7 +468,20 @@ class Debts extends Component
 
     public function setPersistentMessage($message, $type = 'success')
     {
-        $this->persistentMessage = $message;
+        // Translate common messages to Indonesian
+        $translations = [
+            'Starting save process...' => 'Memulai proses penyimpanan...',
+            'Validation passed' => 'Validasi berhasil',
+            'Debt record created successfully.' => 'Data hutang berhasil ditambahkan.',
+            'Debt marked as paid successfully.' => 'Hutang berhasil ditandai sebagai lunas.',
+            'Debt record deleted successfully.' => 'Data hutang berhasil dihapus.',
+            'Updating existing debt...' => 'Memperbarui data hutang yang ada...',
+            'Creating new debt...' => 'Membuat data hutang baru...',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
         $this->messageType = $type;
     }
 
