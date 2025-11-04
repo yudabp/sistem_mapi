@@ -158,12 +158,12 @@
         </x-slot>
 
         <x-slot name="content">
-            Apakah Anda yakin ingin menghapus user ":name"?
+            Apakah Anda yakin ingin menghapus user "{{ $deletingUserName }}"?
             Setelah user dihapus, semua data mereka akan dihapus secara permanen.
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="cancelEdit" wire:loading.attr="disabled">
+            <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
                 Batal
             </x-secondary-button>
 

@@ -26,10 +26,8 @@ class PalmOilController extends Controller
         return view('palm-oil.employees');
     }
 
-    public function financial()
-    {
-        return view('palm-oil.financial');
-    }
+    // financial() method removed - financial.blade.php has been deleted
+    // Use keuanganPerusahaan() instead
 
     public function keuanganPerusahaan()
     {
@@ -41,10 +39,8 @@ class PalmOilController extends Controller
         return view('palm-oil.buku-kas-kebun');
     }
 
-    public function cashBook()
-    {
-        return view('palm-oil.cash-book');
-    }
+    // cashBook() method removed - cash-book.blade.php has been deleted
+    // Use bukuKasKebun() instead
 
     public function debts()
     {

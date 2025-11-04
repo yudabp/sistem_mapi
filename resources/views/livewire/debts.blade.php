@@ -374,7 +374,22 @@
                             <tr>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $debt->creditor }}</div>
+                                    @if($debt->debt_type_id == 3 && $debt->employee)
+                                        <div class="text-xs text-violet-600 dark:text-violet-400 font-medium">
+                                            <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                                            </svg>
+                                            {{ $debt->employee->name }} ({{ $debt->employee->ndp }})
+                                        </div>
+                                    @endif
                                     <div class="text-xs text-gray-500 dark:text-gray-400">{{ $debt->description }}</div>
+                                    @if($debt->debtType)
+                                        <div class="text-xs text-amber-600 dark:text-amber-400">
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 dark:bg-amber-900/30">
+                                                {{ $debt->debtType->name }}
+                                            </span>
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">Rp {{ number_format($debt->amount, 2, ',', '.') }}</div>
@@ -496,15 +511,31 @@
                 <!-- Creditor -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
-                        Pemberi Hutang
+                        Pemberi Hutang <span x-show="$wire.debt_type_id != 3" class="text-red-500">*</span>
                     </label>
-                    <input
-                        id="creditor"
-                        class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="text"
-                        wire:model="creditor"
-                        placeholder="Masukkan nama pemberi hutang"
-                    />
+                    <div x-data="{
+                        readOnly: false,
+                        init() {
+                            const updateReadOnly = (value) => {
+                                this.readOnly = String(value) === '3';
+                            };
+                            $watch('$wire.debt_type_id', updateReadOnly);
+                            updateReadOnly(@entangle('debt_type_id'));
+                        }
+                    }">
+                        <input
+                            id="creditor"
+                            class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $debt_type_id == 3 ? 'bg-gray-50 dark:bg-gray-600' : '' }}"
+                            type="text"
+                            wire:model="creditor"
+                            placeholder="{{ $debt_type_id == 3 ? 'Nama karyawan akan terisi otomatis' : 'Masukkan nama pemberi hutang' }}"
+                            :readonly="readOnly"
+                            :class="{ 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed': readOnly }"
+                        />
+                        <p x-show="readOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            Nama karyawan akan terisi otomatis saat memilih karyawan
+                        </p>
+                    </div>
                     @error('creditor')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
@@ -573,6 +604,8 @@
                         id="debt_type_id"
                         class="w-full px-3 py-2 border {{ $errors->has('debt_type_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                         wire:model="debt_type_id"
+                        x-data
+                        x-on:change="$dispatch('debt-type-changed', { value: $el.value })"
                     >
                         <option value="">Pilih Jenis Hutang</option>
                         @foreach($debtTypes as $debtType)
@@ -580,6 +613,34 @@
                         @endforeach
                     </select>
                     @error('debt_type_id')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <!-- Employee Selection - Only show for Hutang Gaji Karyawan -->
+                <div x-data="{
+                    showEmployee: false,
+                    init() {
+                        $watch('$wire.debt_type_id', (value) => {
+                            this.showEmployee = value == '3';
+                        });
+                        this.showEmployee = @entangle('debt_type_id') == '3';
+                    }
+                }" x-show="showEmployee" x-transition>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employee_id">
+                        Nama Karyawan <span class="text-red-500">*</span>
+                    </label>
+                    <select
+                        id="employee_id"
+                        class="w-full px-3 py-2 border {{ $errors->has('employee_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        wire:model="employee_id"
+                    >
+                        <option value="">Pilih Karyawan</option>
+                        @foreach($employees as $employee)
+                            <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->ndp }})</option>
+                        @endforeach
+                    </select>
+                    @error('employee_id')
                         <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
@@ -627,7 +688,7 @@
                     <input
                         id="proof_document"
                         type="file"
-                        wire:model="proof_document"
+                        wire:model.lazy="proof_document"
                         class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)
@@ -660,21 +721,21 @@
     <!-- Delete Confirmation Modal -->
     <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Delete Debt Record') }}
+            {{ __('Hapus Data Hutang') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the debt record ":name"?', ['name' => $deletingDebtName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            {{ __('Apakah Anda yakin ingin menghapus data hutang ":name"?', ['name' => $deletingDebtName]) }}
+            {{ __('Setelah catatan dihapus, semua datanya akan dihapus secara permanen.') }}
         </x-slot>
 
         <x-slot name="footer">
             <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+                {{ __('Batal') }}
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteDebtConfirmed" wire:loading.attr="disabled">
-                {{ __('Delete Debt') }}
+                {{ __('Hapus Hutang') }}
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>

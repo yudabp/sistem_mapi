@@ -535,10 +535,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_photo">
                         Foto SP
                     </label>
-                    <input 
+                    <input
                         id="sp_photo"
-                        type="file" 
-                        wire:model="sp_photo"
+                        type="file"
+                        wire:model.lazy="sp_photo"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $sp_photo === null)
@@ -635,10 +635,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="importFile">
                         File Excel
                     </label>
-                    <input 
+                    <input
                         id="importFile"
-                        type="file" 
-                        wire:model="importFile"
+                        type="file"
+                        wire:model.lazy="importFile"
                         accept=".xlsx,.xls,.csv"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />

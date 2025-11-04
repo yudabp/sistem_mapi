@@ -69,7 +69,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/keuangan-perusahaan', [App\Http\Controllers\PalmOilController::class, 'keuanganPerusahaan'])->name('keuangan-perusahaan');
     Route::get('/keuangan-perusahaan/export-pdf', [App\Http\Controllers\FinancialController::class, 'exportPdf'])->name('financial.export.pdf');
     Route::get('/buku-kas-kebun', [App\Http\Controllers\PalmOilController::class, 'bukuKasKebun'])->name('buku-kas-kebun');
-    Route::get('/keuangan-perusahaan/buku-kas', [App\Http\Controllers\PalmOilController::class, 'cashBook'])->name('buku-kas');
+    // Route /keuangan-perusahaan/buku-kas removed - using /buku-kas-kebun instead
     Route::get('/keuangan-perusahaan/buku-kas/export-pdf', [App\Http\Controllers\CashBookController::class, 'exportPdf'])->name('cashbook.export.pdf');
     Route::get('/data-hutang', [App\Http\Controllers\PalmOilController::class, 'debts'])->name('data-hutang');
     Route::get('/data-hutang/export-pdf', [App\Http\Controllers\DebtsController::class, 'exportPdf'])->name('debts.export.pdf');

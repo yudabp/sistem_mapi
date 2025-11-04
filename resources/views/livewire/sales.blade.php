@@ -447,16 +447,24 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="price_per_kg">
                         Harga per KG (Rp)
                     </label>
-                    <input 
+                    <input
                         id="price_per_kg"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                        type="text"
                         wire:model.live="price_per_kg"
                         placeholder="Masukkan harga per KG"
+                        x-data
+                        x-init="
+                            $el.addEventListener('input', function(e) {
+                                let value = e.target.value.replace(/\D/g, '');
+                                let formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                $el.value = formatted;
+                                $wire.set('price_per_kg', value.replace(/\./g, ''));
+                            });
+                        "
                     />
-                    @error('price_per_kg') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                    @error('price_per_kg')
+                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                     @enderror
                 </div>
 
@@ -465,13 +473,25 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="total_amount">
                         Jumlah Total (Rp)
                     </label>
-                    <input 
+                    <input
                         id="total_amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600" 
-                        type="number" 
-                        step="0.01"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600"
+                        type="text"
                         wire:model="total_amount"
                         readonly
+                        x-data
+                        x-init="
+                            $watch('$wire.total_amount', function(value) {
+                                if (value) {
+                                    let numValue = parseFloat(value);
+                                    if (!isNaN(numValue)) {
+                                        $el.value = numValue.toLocaleString('id-ID');
+                                    }
+                                } else {
+                                    $el.value = '';
+                                }
+                            });
+                        "
                     />
                 </div>
 
@@ -529,40 +549,7 @@
                     @enderror
                 </div>
 
-                <!-- Customer Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_name">
-                        Nama Pelanggan
-                    </label>
-                    <input 
-                        id="customer_name"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="customer_name"
-                        placeholder="Masukkan nama pelanggan"
-                    />
-                    @error('customer_name') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Customer Address -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="customer_address">
-                        Alamat Pelanggan
-                    </label>
-                    <textarea 
-                        id="customer_address"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="customer_address"
-                        placeholder="Masukkan alamat pelanggan"
-                        rows="2"
-                    ></textarea>
-                    @error('customer_address') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
+                
                 <!-- Tax Fields -->
                 <div class="md:col-span-2">
                     <label class="flex items-center">
@@ -638,10 +625,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
                         Bukti Penjualan
                     </label>
-                    <input 
+                    <input
                         id="sales_proof"
-                        type="file" 
-                        wire:model="sales_proof"
+                        type="file"
+                        wire:model.lazy="sales_proof"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $sales_proof === null)
@@ -950,7 +937,6 @@
                             <th class="p-2 whitespace-nowrap">Jumlah Total</th>
                             <th class="p-2 whitespace-nowrap">Pajak</th>
                             <th class="p-2 whitespace-nowrap">Total + Pajak</th>
-                            <th class="p-2 whitespace-nowrap">Pelanggan</th>
                             <th class="p-2 whitespace-nowrap">Bukti Penjualan</th>
                             @canedit
                             <th class="p-2 whitespace-nowrap">Aksi</th>
@@ -992,12 +978,6 @@
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium">
                                         Rp {{ number_format($sale->total_amount + ($sale->tax_amount ?? 0), 2, ',', '.') }}
-                                    </div>
-                                </td>
-                                <td class="p-2 whitespace-nowrap">
-                                    <div class="text-left">
-                                        <div class="font-medium">{{ $sale->customer_name }}</div>
-                                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ $sale->customer_address }}</div>
                                     </div>
                                 </td>
                                 <td class="p-2 whitespace-nowrap">
@@ -1046,7 +1026,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8" class="p-2 text-center text-gray-500 dark:text-gray-400">
+                                <td colspan="7" class="p-2 text-center text-gray-500 dark:text-gray-400">
                                     Tidak ada data penjualan ditemukan
                                 </td>
                             </tr>

@@ -997,10 +997,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
                         Dokumen Bukti
                     </label>
-                    <input 
+                    <input
                         id="proof_document"
-                        type="file" 
-                        wire:model="proof_document"
+                        type="file"
+                        wire:model.lazy="proof_document"
                         class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)

@@ -16,8 +16,6 @@ class Sale extends Model
         'total_amount',
         'sales_proof_path',
         'sale_date',
-        'customer_name',
-        'customer_address',
         'is_taxable',
         'tax_percentage',
         'tax_amount',

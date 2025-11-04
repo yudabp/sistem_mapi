@@ -194,6 +194,12 @@ class UserManagement extends Component
         $this->showDeleteConfirmation = true;
     }
 
+    public function closeDeleteConfirmation()
+    {
+        $this->showDeleteConfirmation = false;
+        $this->deletingUserName = '';
+    }
+
     public function deleteConfirmed()
     {
         // Find user by name (storing in modal)

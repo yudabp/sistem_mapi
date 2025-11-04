@@ -44,40 +44,41 @@
 - [x] Update form input data produksi
 - [x] Update validasi di Livewire Production.php
 
-### Data Penjualan
-- [ ] Hapus kolom "customer_name" dari migration database
-- [ ] Hapus kolom "address" dari migration database
-- [ ] Update model Sales.php (hapus properti customer_name dan address)
-- [ ] Update form input penjualan (hapus field customer dan alamat)
-- [ ] Tambahkan JavaScript untuk auto-format mata uang
-- [ ] Implementasi format ribuan dengan titik saat mengetik
-- [ ] Update validasi untuk menghilangkan required customer
-- [ ] Update tampilan tabel penjualan
-- [ ] Update export data tanpa kolom customer
+### Data Penjualan ✅ COMPLETED
+- [x] Hapus kolom "customer_name" dan "customer_address" dari migration database
+- [x] Update model Sales.php (hapus properti customer_name dan address)
+- [x] Update form input penjualan (hapus field customer dan alamat)
+- [x] Tambahkan JavaScript untuk auto-format mata uang
+- [x] Implementasi format ribuan dengan titik saat mengetik
+- [x] Update validasi untuk menghilangkan required customer
+- [x] Update tampilan tabel penjualan
+- [x] Update export data tanpa kolom customer (Excel dan PDF)
 
-### Data Hutang
-- [ ] Tambahkan field kategori hutang di form (jika belum ada)
-- [ ] Buat dropdown untuk memilih kategori "Hutang Gaji Karyawan"
-- [ ] Buat API endpoint untuk mengambil data karyawan
-- [ ] Implementasi Alpine.js untuk show/hide dropdown karyawan
-- [ ] Ambil data karyawan dari tabel employees
-- [ ] Tambahkan validasi jika memilih "Hutang Gaji Karyawan" harus pilih karyawan
-- [ ] Update form input hutang dengan filter karyawan
-- [ ] Update tampilan daftar hutang dengan info karyawan (jika applicable)
-- [ ] Update filter/search data hutang berdasarkan karyawan
+### Data Hutang ✅ COMPLETED
+- [x] Tambahkan field employee_id ke tabel debts
+- [x] Update model Debt dengan employee relationship
+- [x] Buat dropdown untuk memilih kategori "Hutang Gaji Karyawan" (sudah ada)
+- [x] Implementasi Alpine.js untuk show/hide dropdown karyawan
+- [x] Ambil data karyawan dari tabel employees
+- [x] Tambahkan validasi jika memilih "Hutang Gaji Karyawan" harus pilih karyawan
+- [x] Auto-fill creditor field dengan nama karyawan
+- [x] Update form input hutang dengan dropdown karyawan
+- [x] Update tampilan daftar hutang dengan info karyawan
+- [x] Tampilkan badge jenis hutang di daftar hutang
 
 ### Testing & Validasi
 - [x] Test nomor transaksi otomatis di data produksi
 - [x] Test input data produksi tanpa TBS dan No Pol
-- [ ] Test input penjualan tanpa customer
-- [ ] Test auto-format uang di form penjualan
-- [ ] Test filter hutang gaji karyawan
-- [ ] Test dropdown karyawan muncul saat pilih kategori
-- [x] Test semua label dalam bahasa Indonesia
+- [x] Test input penjualan tanpa customer
+- [x] Test auto-format uang di form penjualan
+- [x] Test filter hutang gaji karyawan
+- [x] Test dropdown karyawan muncul saat pilih kategori
+- [x] Test auto-fill creditor saat pilih karyawan
 - [x] Test validasi form dengan pesan bahasa Indonesia
+- [x] Test semua label dalam bahasa Indonesia
 
 ### Database Migration
-- [ ] Create migration untuk menghapus customer_name dan address dari sales table
+- [x] Create migration untuk menghapus customer_name dan address dari sales table
 - [x] Create migration untuk mengubah TBS dan no_pol menjadi nullable di production table
 - [x] Run migration pada environment development
 - [ ] Backup database sebelum menjalankan migration

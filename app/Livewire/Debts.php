@@ -30,12 +30,14 @@ class Debts extends Component
     public $due_date;
     public $description;
     public $debt_type_id;
+    public $employee_id;
     public $proof_document;
     public $status;
     public $paid_date;
 
     // Additional fields for payment history
     public $debtTypes = [];
+    public $employees = [];
     public $showPaymentHistory = false;
     public $selectedDebtId = null;
     public $selectedDebtPayments = [];
@@ -74,6 +76,7 @@ class Debts extends Component
         'due_date' => 'required|date_format:d-m-Y',
         'description' => 'required|string',
         'debt_type_id' => 'nullable|exists:master_debt_types,id',
+        'employee_id' => 'nullable|exists:employees,id',
         'cicilan_per_bulan' => 'nullable|numeric|min:0',
         'proof_document' => 'nullable|file|max:10240', // Max 10MB
         'importFile' => 'nullable|file|mimes:xlsx,xls,csv', // Make importFile nullable for regular form operations
@@ -83,6 +86,22 @@ class Debts extends Component
     protected $importRules = [
         'importFile' => 'required|file|mimes:xlsx,xls,csv',
     ];
+
+    /**
+     * Get the validation rules that apply to the request.
+     */
+    protected function rules()
+    {
+        $rules = $this->rules;
+
+        // If debt type is Hutang Karyawan (id = 3), make employee_id required
+        if ($this->debt_type_id == 3) {
+            $rules['employee_id'] = 'required|exists:employees,id';
+            $rules['creditor'] = 'nullable|string|max:255'; // Creditor can be auto-filled from employee
+        }
+
+        return $rules;
+    }
 
     public function mount()
     {
@@ -99,14 +118,17 @@ class Debts extends Component
         }
 
         $this->loadDebtTypes();
+        $this->loadEmployees();
     }
 
     public function render()
     {
-        $filteredDebts = $this->filterDebts()->load(['debtType', 'payments']);
+        $filteredDebts = $this->filterDebts()->load(['debtType', 'payments', 'employee']);
 
         return view('livewire.debts', [
             'debts' => $filteredDebts,
+            'debtTypes' => $this->debtTypes,
+            'employees' => $this->employees,
             'total_debt' => $filteredDebts->sum('amount'),
             'total_paid_amount' => $filteredDebts->sum(function($debt) { return $debt->total_paid; }),
             'total_remaining_amount' => $filteredDebts->sum(function($debt) { return $debt->remaining_debt; }),
@@ -121,6 +143,41 @@ class Debts extends Component
     public function loadDebtTypes()
     {
         $this->debtTypes = MasterDebtType::active()->get();
+    }
+
+    /**
+     * Load employees for dropdown
+     */
+    public function loadEmployees()
+    {
+        $this->employees = \App\Models\Employee::select('id', 'name', 'ndp')
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Update creditor when employee is selected
+     */
+    public function updatedEmployeeId($value)
+    {
+        if ($this->debt_type_id == 3 && $value) {
+            $employee = \App\Models\Employee::find($value);
+            if ($employee) {
+                $this->creditor = $employee->name;
+            }
+        }
+    }
+
+    /**
+     * Auto-fill creditor when debt type changes to Hutang Karyawan
+     */
+    public function updatedDebtTypeId($value)
+    {
+        if ($value != 3) {
+            $this->employee_id = null;
+            // Don't reset creditor if user already entered it
+        }
     }
 
     /**
@@ -160,6 +217,7 @@ class Debts extends Component
                 'due_date' => $dueDateForDb,
                 'description' => $this->description,
                 'debt_type_id' => $this->debt_type_id ?? null,
+                'employee_id' => $this->debt_type_id == 3 ? $this->employee_id : null,
                 'proof_document_path' => $proofPath,
                 'status' => 'unpaid', // Default to unpaid
                 'paid_date' => null,
@@ -185,6 +243,7 @@ class Debts extends Component
         $this->due_date = '';
         $this->description = '';
         $this->debt_type_id = null;
+        $this->employee_id = null;
         $this->proof_document = null;
         $this->status = 'unpaid';
         $this->paid_date = '';
@@ -326,6 +385,7 @@ class Debts extends Component
             $this->due_date = $debt->due_date->format('d-m-Y'); // Format for DD-MM-YYYY display
             $this->description = $debt->description;
             $this->debt_type_id = $debt->debt_type_id;
+            $this->employee_id = $debt->employee_id;
             $this->proof_document = null; // We don't load the file, just the path
             $this->status = $debt->status;
             $this->paid_date = $debt->paid_date ? $debt->paid_date->format('d-m-Y') : null; // Format for DD-MM-YYYY display
@@ -441,6 +501,7 @@ class Debts extends Component
                 'due_date' => $dueDateForDb,
                 'description' => $this->description,
                 'debt_type_id' => $this->debt_type_id,
+                'employee_id' => $this->debt_type_id == 3 ? $this->employee_id : null,
                 'proof_document_path' => $proofPath,
                 'status' => $this->status,
                 'paid_date' => $paidDateForDb,

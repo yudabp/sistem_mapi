@@ -783,7 +783,7 @@
                                             Ubah
                                         </button>
                                         <button 
-                                            wire:click="confirmHapus({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
+                                            wire:click="confirmDelete({{ $transaction->id }}, '{{ $transaction->transaction_number }}')"
                                             class="px-3 py-1 bg-rose-600 text-white rounded hover:bg-rose-700 text-sm"
                                         >
                                             Hapus
@@ -1181,10 +1181,10 @@
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
                         Dokumen Bukti
                     </label>
-                    <input 
+                    <input
                         id="proof_document"
-                        type="file" 
-                        wire:model="proof_document"
+                        type="file"
+                        wire:model.lazy="proof_document"
                         class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                     @if($isEditing && $proof_document === null)
@@ -1210,24 +1210,24 @@
         </x-slot>
     </x-dialog-modal>
 
-    <!-- Hapus Confirmation Modal -->
-    <x-confirmation-modal wire:model.live="showHapusConfirmation">
+    <!-- Delete Confirmation Modal -->
+    <x-confirmation-modal wire:model.live="showDeleteConfirmation">
         <x-slot name="title">
-            {{ __('Hapus Buku Kas Kebun Transaction') }}
+            {{ __('Hapus Transaksi Buku Kas') }}
         </x-slot>
 
         <x-slot name="content">
-            {{ __('Are you sure you want to delete the Buku Kas Kebun transaction ":name"?', ['name' => $deletingTransactionName]) }}
-            {{ __('Once the record is deleted, all of its data will be permanently removed.') }}
+            {{ __('Apakah Anda yakin ingin menghapus transaksi buku kas ":name"?', ['name' => $deletingTransactionName]) }}
+            {{ __('Setelah catatan dihapus, semua datanya akan dihapus secara permanen.') }}
         </x-slot>
 
         <x-slot name="footer">
-            <x-secondary-button wire:click="closeHapusConfirmation" wire:loading.attr="disabled">
-                {{ __('Cancel') }}
+            <x-secondary-button wire:click="closeDeleteConfirmation" wire:loading.attr="disabled">
+                {{ __('Batal') }}
             </x-secondary-button>
 
             <x-danger-button class="ms-3" wire:click="deleteTransactionConfirmed" wire:loading.attr="disabled">
-                {{ __('Hapus Transaction') }}
+                {{ __('Hapus Transaksi') }}
             </x-danger-button>
         </x-slot>
     </x-confirmation-modal>
