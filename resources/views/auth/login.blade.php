@@ -1,6 +1,23 @@
 <x-authentication-layout>
-    <h1 class="text-3xl text-gray-800 dark:text-gray-100 font-bold mb-3">{{ __('Selamat Datang') }}</h1>
-    <h2 class="text-l text-gray-400 dark:text-gray-100 font-bold mb-6">{{ __('Sistem Manajemen Digital PT. Agro Palma Industri') }}</h2>
+    <div class="flex-1 mb-12 -mt-8">
+        <div class="flex align-middle">
+            <div class="flex items-center">
+                <!-- Logo -->
+                <a class="hidden md:block mt-4" href="{{ route('dashboard') }}">
+                    <img src="{{ asset('images/agropalma-logo.png') }}" width="50" height="50" alt="AgroPalma Logo" />
+                </a>
+                <!-- Company Name -->
+                <span class="ml-3 text-2xl text-amber-600 dark:text-gray-100 font-bold mt-6 md:block hidden">{{ __('PT. Agro Palma Industri') }}</span>
+            </div>
+        </div>
+    </div>
+    <!-- Mobile illustration - only visible on mobile -->
+    <div class="md:hidden mb-4 flex justify-center">
+        <img src="{{ asset('images/login-illustration.png') }}" class="w-full object-contain rounded-2xl" alt="Login Illustration" />
+    </div>
+    <h1 class="text-3xl text-lime-800 dark:text-gray-100 font-bold mb-1">{{ __('Selamat Datang') }}</h1>
+    <h4 class=" font-medium text-gray-400 dark:text-gray-100 mb-0">{{ __('Sistem Manajemen Digital') }}</h4>
+    <h4 class=" font-medium text-gray-400 dark:text-gray-100 mb-6">{{ __('PT. Agro Palma Industri') }}</h4>
     @if (session('status'))
         <div class="mb-4 font-medium text-sm text-green-600">
             {{ session('status') }}
@@ -49,5 +66,10 @@
                 </span>
             </div>
         </div> -->
+    </div>
+    
+    <!-- Copyright -->
+    <div class="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        &copy; {{ date('Y') }} PT. Agro Palma Industri. All rights reserved. Version 0.1
     </div>
 </x-authentication-layout>
