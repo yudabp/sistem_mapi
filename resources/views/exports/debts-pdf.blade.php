@@ -96,7 +96,7 @@
 </head>
 <body>
     <div class="header-container">
-        <img src="{{ public_path('images/main-logo.png') }}" alt="Company Logo" class="logo">
+        <img src="{{ public_path('images/agropalma-logo.png') }}" alt="Company Logo" class="logo">
         <div class="company-info">
             <div class="company-name">PT. Agro Palma Indonesia</div>
             <div>Laporan Data Hutang</div>
