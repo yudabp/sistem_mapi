@@ -70,13 +70,9 @@ class Employees extends Component
     public $showImportModal = false;
 
     protected $rules = [
-        'ndp' => 'required|unique:employees,ndp',
         'name' => 'required',
-        'department' => 'required',
-        'position' => 'required',
+        'position_id' => 'required|exists:positions,id',
         'monthly_salary' => 'required|numeric',
-        'hire_date' => 'required|date_format:d-m-Y',
-        'status' => 'required',
     ];
 
     public function mount()
@@ -107,7 +103,7 @@ class Employees extends Component
     {
         $this->departments = Department::where('is_active', true)->orderBy('name')->get();
         $this->positions = Position::where('is_active', true)->orderBy('name')->get();
-        $this->family_compositions = FamilyComposition::where('is_active', true)->orderBy('number')->get();
+        $this->family_compositions = FamilyComposition::where('is_active', true)->orderBy('name')->get();
         $this->employment_statuses = EmploymentStatus::where('is_active', true)->orderBy('name')->get();
     }
 
@@ -133,7 +129,7 @@ class Employees extends Component
             'position' => $pos?->name, // Keep for backward compatibility
             'position_id' => $this->position_id,
             'grade' => $this->grade,
-            'family_composition' => $famComp?->number, // Keep for backward compatibility
+            'family_composition' => $famComp?->name, // Keep for backward compatibility
             'family_composition_id' => $this->family_composition_id,
             'monthly_salary' => $this->monthly_salary,
             'status' => $empStatus?->value, // Keep for backward compatibility
@@ -160,7 +156,7 @@ class Employees extends Component
         $this->position = ''; // Keep for backward compatibility
         $this->position_id = null;
         $this->grade = '';
-        $this->family_composition = 0; // Keep for backward compatibility
+        $this->family_composition = ''; // Keep for backward compatibility
         $this->family_composition_id = null;
         $this->monthly_salary = '';
         $this->status = 'active'; // Keep for backward compatibility
@@ -300,12 +296,12 @@ class Employees extends Component
         $rules = [
             'ndp' => 'required|unique:employees,ndp',
             'name' => 'required',
-            'department_id' => 'required|exists:departments,id',
+            'department_id' => 'nullable|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
             'family_composition_id' => 'nullable|exists:family_compositions,id',
             'monthly_salary' => 'required|numeric',
-            'hire_date' => 'required|date_format:d-m-Y',
-            'employment_status_id' => 'required|exists:employment_statuses,id',
+            'hire_date' => 'nullable|date_format:d-m-Y',
+            'employment_status_id' => 'nullable|exists:employment_statuses,id',
         ];
 
         // When editing, exclude current record from unique validation
@@ -340,7 +336,7 @@ class Employees extends Component
                 'position' => $pos?->name, // Keep for backward compatibility
                 'position_id' => $this->position_id,
                 'grade' => $this->grade,
-                'family_composition' => $famComp?->number, // Keep for backward compatibility
+                'family_composition' => $famComp?->name, // Keep for backward compatibility
                 'family_composition_id' => $this->family_composition_id,
                 'monthly_salary' => $this->monthly_salary,
                 'status' => $empStatus?->value, // Keep for backward compatibility
@@ -433,11 +429,12 @@ class Employees extends Component
     {
         // Create a sample CSV file and store it temporarily
         // Updated to match current table structure with foreign keys
+        // Only name, position, and monthly_salary are required; rest are optional
         $sampleData = [
             ['ndp', 'name', 'department', 'position', 'grade', 'family_composition', 'monthly_salary', 'status', 'hire_date', 'address', 'phone', 'email'],
             ['NDP001', 'Budi Santoso', 'Finance', 'Manager', 'A', '3', '8000000', 'active', now()->format('Y-m-d'), 'Jl. Merdeka No. 123', '081234567890', 'budi@example.com'],
-            ['NDP002', 'Siti Aminah', 'Production', 'Supervisor', 'B', '2', '6000000', 'active', now()->format('Y-m-d'), 'Jl. Sudirman No. 45', '082345678901', 'siti@example.com'],
-            ['NDP003', 'Ahmad Fauzi', 'Sales', 'Staff', 'C', '1', '4500000', 'active', now()->format('Y-m-d'), 'Jl. Gatot Subroto No. 78', '083456789012', 'ahmad@example.com'],
+            ['NDP002', 'Siti Aminah', 'Production', 'Supervisor', '', '2', '6000000', 'active', now()->format('Y-m-d'), 'Jl. Sudirman No. 45', '082345678901', 'siti@example.com'],
+            ['NDP003', 'Ahmad Fauzi', '', 'Staff', 'C', '', '4500000', 'active', '', '', '', ''],
         ];
         
         $csv = '';

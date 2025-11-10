@@ -10,9 +10,10 @@ use Carbon\Carbon;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 
 
-class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
+class EmployeesImport implements ToModel, WithHeadingRow, WithValidation, SkipsEmptyRows
 {
     private function parseFlexibleDate($dateValue)
     {
@@ -55,9 +56,35 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
         return null;
     }
 
+    private function normalizeStatus($statusValue)
+    {
+        if (empty($statusValue)) {
+            return 'active'; // Default value
+        }
+        
+        $statusValue = strtolower(trim($statusValue));
+        
+        switch ($statusValue) {
+            case 'active':
+            case 'aktif':
+                return 'active';
+            case 'inactive':
+            case 'tidak aktif':
+            case 'tidakaktif':
+                return 'inactive';
+            case 'resigned':
+            case 'berhenti':
+            case 'keluar':
+                return 'resigned';
+            default:
+                // If it's an unknown value, default to 'active'
+                return 'active';
+        }
+    }
+
     public function model(array $row)
     {
-        // Find or create department_id
+        // Find or create department_id (optional)
         $department = null;
         if (!empty($row['department'])) {
             $department = Department::firstOrCreate(
@@ -70,7 +97,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
             );
         }
 
-        // Find or create position_id
+        // Find or create position_id (required)
         $position = null;
         if (!empty($row['position'])) {
             $position = Position::firstOrCreate(
@@ -83,13 +110,13 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
             );
         }
 
-        // Find or create family_composition_id
+        // Find or create family_composition_id (optional)
         $familyComposition = null;
         if (!empty($row['family_composition'])) {
             $familyComposition = FamilyComposition::firstOrCreate(
-                ['number' => $row['family_composition']],
+                ['name' => $row['family_composition']],
                 [
-                    'number' => $row['family_composition'],
+                    'name' => $row['family_composition'],
                     'description' => 'Auto-created from import',
                     'is_active' => true,
                 ]
@@ -107,7 +134,7 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
             'family_composition' => $row['family_composition'] ?? null, // Backward compatibility
             'family_composition_id' => $familyComposition ? $familyComposition->id : null,
             'monthly_salary' => $row['monthly_salary'] ?? null,
-            'status' => $row['status'] ?? 'active',
+            'status' => $this->normalizeStatus($row['status']),
             'hire_date' => $row['hire_date'] ? $this->parseFlexibleDate($row['hire_date']) : null,
             'address' => $row['address'] ?? null,
             'phone' => $row['phone'] ?? null,
@@ -118,13 +145,9 @@ class EmployeesImport implements ToModel, WithHeadingRow, WithValidation
     public function rules(): array
     {
         return [
-            'ndp' => 'required|unique:employees,ndp',
             'name' => 'required',
-            'department' => 'required',
             'position' => 'required',
             'monthly_salary' => 'required|numeric',
-            'hire_date' => 'required|date',
-            'status' => 'required',
         ];
     }
 }

@@ -86,8 +86,7 @@ class DebtsImport implements ToModel, WithHeadingRow, WithValidation
         return [
             'amount' => 'required|numeric',
             'creditor' => 'required',
-            'due_date' => 'required|date',
-            'description' => 'required',
+            'debt_type' => 'required',
         ];
     }
 }

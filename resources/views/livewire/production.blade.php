@@ -337,218 +337,299 @@
         </x-slot>
 
         <x-slot name="content">
+            <!-- Persistent Message inside modal -->
+            @if($persistentMessage)
+                <div class="mb-4">
+                    @switch($messageType)
+                        @case('success')
+                            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
 
+                        @case('error')
+                            <div class="bg-red-50 text-red-700 p-4 rounded-lg dark:bg-red-500/10 dark:text-red-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
 
-            <form wire:submit.prevent="saveProductionModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Transaction Number -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_number">
-                        Nomor Transaksi
-                    </label>
-                    <input
-                        id="transaction_number"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600"
-                        type="text"
-                        wire:model="transaction_number"
-                        placeholder="Auto-generated"
-                        @if(!$isEditing) readonly @endif
-                    />
-                    @if(!$isEditing)
-                        <small class="text-gray-500 dark:text-gray-400">Nomor transaksi akan di-generate otomatis</small>
-                    @endif
-                    @error('transaction_number')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
+                        @case('warning')
+                            <div class="bg-amber-50 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:text-amber-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
+
+                        @case('info')
+                            <div class="bg-blue-50 text-blue-700 p-4 rounded-lg dark:bg-blue-500/10 dark:text-blue-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
+
+                        @default
+                            <div class="bg-gray-50 text-gray-700 p-4 rounded-lg dark:bg-gray-500/10 dark:text-gray-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                    @endswitch
                 </div>
+            @endif
 
-                <!-- Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="date">
-                        Tanggal (DD-MM-YYYY)
-                    </label>
-                    <input 
-                        id="date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        placeholder="DD-MM-YYYY"
-                        wire:model="date"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let input = e.target.value.replace(/\D/g, '');
-                                let formatted = '';
-                                
-                                if (input.length > 0) {
-                                    formatted = input.substring(0, 2); // Day
-                                    if (input.length >= 3) {
-                                        formatted += '-' + input.substring(2, 4); // Month
-                                        if (input.length >= 5) {
-                                            formatted += '-' + input.substring(4, 8); // Year
-                                        }
-                                    }
-                                }
-                                
-                                $el.value = formatted;
-                            });
-                            
-                            $el.addEventListener('blur', function(e) {
-                                // Validate date format on blur
-                                let dateValue = e.target.value;
-                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-                                let match = dateValue.match(datePattern);
-                                
-                                if (match) {
-                                    let day = parseInt(match[1]);
-                                    let month = parseInt(match[2]);
-                                    let year = parseInt(match[3]);
-                                    
-                                    // Basic validation
-                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
-                                        // You can add custom validation here
-                                    }
-                                }
-                            });
-                        "
-                    />
-                    @error('date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- SP Number -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
-                        Nomor SP
-                    </label>
-                    <input 
-                        id="sp_number"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="sp_number"
-                        placeholder="Masukkan nomor SP"
-                    />
-                    @error('sp_number') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Vehicle Number -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_id">
-                        Nomor Kendaraan (No Polisi) <span class="text-gray-400 text-xs">(Opsional)</span>
-                    </label>
-                    <select
-                        id="vehicle_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model.lazy="vehicle_id"
-                    >
-                        <option value="">Pilih No Polisi</option>
-                        @foreach($vehicle_numbers as $vehicle_number_option)
-                            <option value="{{ $vehicle_number_option->id }}">{{ $vehicle_number_option->number }}</option>
-                        @endforeach
-                    </select>
-                    <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada kendaraan</small>
-                    @error('vehicle_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- TBS Quantity -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
-                        TBS Quantity (KG) <span class="text-gray-400 text-xs">(Opsional)</span>
-                    </label>
-                    <input
-                        id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="number"
-                        step="0.01"
-                        wire:model="tbs_quantity"
-                        placeholder="Kosongkan jika tidak ada TBS"
-                    />
-                    <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada data TBS</small>
-                    @error('tbs_quantity')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- KG Quantity -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
-                        KG Quantity
-                    </label>
-                    <input 
-                        id="kg_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model="kg_quantity"
-                        placeholder="Enter KG quantity"
-                    />
-                    @error('kg_quantity') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Division -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="division_id">
-                        Divisi (Afdeling)
-                    </label>
-                    <select 
-                        id="division_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="division_id"
-                    >
-                        <option value="">Pilih Afdeling</option>
-                        @foreach($divisions as $division_option)
-                            <option value="{{ $division_option->id }}">{{ $division_option->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('division_id') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- PKS -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="pks_id">
-                        Stasiun Pengolahan (PKS)
-                    </label>
-                    <select 
-                        id="pks_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="pks_id"
-                    >
-                        <option value="">Pilih PKS</option>
-                        @foreach($pks_list as $pks_option)
-                            <option value="{{ $pks_option->id }}">{{ $pks_option->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('pks_id') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- SP Photo -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_photo">
-                        Foto SP
-                    </label>
-                    <input
-                        id="sp_photo"
-                        type="file"
-                        wire:model.lazy="sp_photo"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                    />
-                    @if($isEditing && $sp_photo === null)
-                        <div class="mt-2">
-                            <small class="text-gray-500">Leave blank to keep existing photo</small>
+            <form wire:submit.prevent="saveProductionModal" class="space-y-6">
+                <!-- Required Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Wajib
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Transaction Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_number">
+                                Nomor Transaksi
+                            </label>
+                            <input
+                                id="transaction_number"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600"
+                                type="text"
+                                wire:model="transaction_number"
+                                placeholder="Auto-generated"
+                                @if(!$isEditing) readonly @endif
+                            />
+                            @if(!$isEditing)
+                                <small class="text-gray-500 dark:text-gray-400">Nomor transaksi akan di-generate otomatis</small>
+                            @endif
+                            @error('transaction_number')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
-                    @endif
-                    @error('sp_photo') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
+
+                        <!-- Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="date">
+                                Tanggal (DD-MM-YYYY)
+                            </label>
+                            <input 
+                                id="date"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                placeholder="DD-MM-YYYY"
+                                wire:model="date"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let input = e.target.value.replace(/\D/g, '');
+                                        let formatted = '';
+                                        
+                                        if (input.length > 0) {
+                                            formatted = input.substring(0, 2); // Day
+                                            if (input.length >= 3) {
+                                                formatted += '-' + input.substring(2, 4); // Month
+                                                if (input.length >= 5) {
+                                                    formatted += '-' + input.substring(4, 8); // Year
+                                                }
+                                            }
+                                        }
+                                        
+                                        $el.value = formatted;
+                                    });
+                                    
+                                    $el.addEventListener('blur', function(e) {
+                                        // Validate date format on blur
+                                        let dateValue = e.target.value;
+                                        let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                        let match = dateValue.match(datePattern);
+                                        
+                                        if (match) {
+                                            let day = parseInt(match[1]);
+                                            let month = parseInt(match[2]);
+                                            let year = parseInt(match[3]);
+                                            
+                                            // Basic validation
+                                            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                // You can add custom validation here
+                                            }
+                                        }
+                                    });
+                                "
+                            />
+                            @error('date') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- SP Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_number">
+                                Nomor SP
+                            </label>
+                            <input 
+                                id="sp_number"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="sp_number"
+                                placeholder="Masukkan nomor SP"
+                            />
+                            @error('sp_number') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- KG Quantity -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
+                                KG Quantity
+                            </label>
+                            <input 
+                                id="kg_quantity"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="number" 
+                                step="0.01"
+                                wire:model="kg_quantity"
+                                placeholder="Enter KG quantity"
+                            />
+                            @error('kg_quantity') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Division -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="division_id">
+                                Divisi (Afdeling)
+                            </label>
+                            <select 
+                                id="division_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model="division_id"
+                            >
+                                <option value="">Pilih Afdeling</option>
+                                @foreach($divisions as $division_option)
+                                    <option value="{{ $division_option->id }}">{{ $division_option->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('division_id') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- PKS -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="pks_id">
+                                Stasiun Pengolahan (PKS)
+                            </label>
+                            <select 
+                                id="pks_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model="pks_id"
+                            >
+                                <option value="">Pilih PKS</option>
+                                @foreach($pks_list as $pks_option)
+                                    <option value="{{ $pks_option->id }}">{{ $pks_option->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('pks_id') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optional Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Opsional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Vehicle Number -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="vehicle_id">
+                                Nomor Kendaraan (No Polisi)
+                            </label>
+                            <select
+                                id="vehicle_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model.lazy="vehicle_id"
+                            >
+                                <option value="">Pilih No Polisi</option>
+                                @foreach($vehicle_numbers as $vehicle_number_option)
+                                    <option value="{{ $vehicle_number_option->id }}">{{ $vehicle_number_option->number }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada kendaraan</small>
+                            @error('vehicle_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- TBS Quantity -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
+                                TBS Quantity (KG)
+                            </label>
+                            <input
+                                id="tbs_quantity"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                type="number"
+                                step="0.01"
+                                wire:model="tbs_quantity"
+                                placeholder="Kosongkan jika tidak ada TBS"
+                            />
+                            <small class="text-gray-500 dark:text-gray-400 text-xs">Dikosongkan jika tidak ada data TBS</small>
+                            @error('tbs_quantity')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- SP Photo -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_photo">
+                                Foto SP
+                            </label>
+                            <input
+                                id="sp_photo"
+                                type="file"
+                                wire:model.lazy="sp_photo"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                            />
+                            @if($isEditing && $sp_photo === null)
+                                <div class="mt-2">
+                                    <small class="text-gray-500">Leave blank to keep existing photo</small>
+                                </div>
+                            @endif
+                            @error('sp_photo') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
                 </div>
             </form>
         </x-slot>
