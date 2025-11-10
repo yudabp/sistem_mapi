@@ -142,13 +142,13 @@
                             Nama Susunan Keluarga <span class="text-red-500">*</span>
                         </label>
                         <input
-                            wire:model="number"
-                            type="number"
+                            wire:model="name"
+                            type="text"
                             required
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                             placeholder="Masukkan nama susunan keluarga"
                         />
-                        @error('number')
+                        @error('name')
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                         @enderror
                     </div>
