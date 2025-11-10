@@ -73,9 +73,9 @@ class Debts extends Component
     protected $rules = [
         'amount' => 'required|numeric|min:0',
         'creditor' => 'required|string|max:255',
-        'due_date' => 'required|date_format:d-m-Y',
-        'description' => 'required|string',
-        'debt_type_id' => 'nullable|exists:master_debt_types,id',
+        'debt_type_id' => 'required|exists:master_debt_types,id',
+        'due_date' => 'nullable|date_format:d-m-Y',
+        'description' => 'nullable|string',
         'employee_id' => 'nullable|exists:employees,id',
         'cicilan_per_bulan' => 'nullable|numeric|min:0',
         'proof_document' => 'nullable|file|max:10240', // Max 10MB
@@ -593,12 +593,12 @@ class Debts extends Component
     public function downloadSampleExcel()
     {
         // Create a sample CSV file and store it temporarily
-        // Updated to match current table structure with foreign keys
+        // Updated to reflect required fields: amount, creditor, debt_type
         $sampleData = [
             ['amount', 'sisa_hutang', 'cicilan_per_bulan', 'creditor', 'debt_type', 'due_date', 'description', 'status', 'paid_date'],
             ['50000000', '50000000', '10000000', 'Bank Mandiri', 'Hutang Bank', now()->addMonth()->format('Y-m-d'), 'Pembelian alat produksi', 'unpaid', ''],
             ['25000000', '15000000', '5000000', 'Supplier A', 'Hutang Supplier', now()->addDays(15)->format('Y-m-d'), 'Pembelian bahan baku', 'unpaid', ''],
-            ['15000000', '0', '0', 'PT. Karyawan Sejahtera', 'Hutang Karyawan', now()->addDays(7)->format('Y-m-d'), 'Bonus tahunan', 'paid', now()->format('Y-m-d')],
+            ['15000000', '0', '0', 'PT. Karyawan Sejahtera', 'Hutang Karyawan', '', 'Bonus tahunan', 'paid', now()->format('Y-m-d')],
         ];
         
         $csv = '';

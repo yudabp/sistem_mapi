@@ -336,309 +336,389 @@
         </x-slot>
 
         <x-slot name="content">
-
-
-            <form wire:submit.prevent="saveSalesModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- SP Number with Autocomplete -->
-                <div class="relative">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_search">
-                        Nomor SP
-                    </label>
-                    <div class="relative">
-                        <input 
-                            id="sp_search"
-                            type="text" 
-                            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                            wire:model.live="sp_search"
-                            placeholder="Ketik SP Number..."
-                            autocomplete="off"
-                        />
-                        @if($sp_search)
-                            <button 
-                                type="button"
-                                wire:click="clearSpSelection"
-                                class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
-                            >
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        @endif
-                    </div>
-                    
-                    <!-- Autocomplete Suggestions -->
-                    @if($showSpSuggestions && count($spSuggestions) > 0)
-                        <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                            @foreach($spSuggestions as $suggestion)
-                                <button 
-                                    type="button"
-                                    wire:click="selectSpSuggestion({{ json_encode($suggestion) }})"
-                                    class="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 transition-colors duration-150"
-                                >
-                                    <div class="font-medium text-gray-900 dark:text-gray-100">{{ $suggestion['sp_number'] }}</div>
-                                    <div class="text-xs text-gray-500 dark:text-gray-400">
-                                        TBS: {{ number_format($suggestion['tbs_quantity'], 2) }} KG | 
-                                        KG: {{ number_format($suggestion['kg_quantity'], 2) }}
-                                    </div>
+            <!-- Persistent Message inside modal -->
+            @if($persistentMessage)
+                <div class="mb-4">
+                    @switch($messageType)
+                        @case('success')
+                            <div class="bg-emerald-50 text-emerald-700 p-4 rounded-lg dark:bg-emerald-500/10 dark:text-emerald-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-emerald-700 dark:text-emerald-500 hover:text-emerald-900 dark:hover:text-emerald-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
                                 </button>
-                            @endforeach
-                        </div>
-                    @endif
-                    
-                    @error('sp_number') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
+                            </div>
+                            @break
+
+                        @case('error')
+                            <div class="bg-red-50 text-red-700 p-4 rounded-lg dark:bg-red-500/10 dark:text-red-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-red-700 dark:text-red-500 hover:text-red-900 dark:hover:text-red-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
+
+                        @case('warning')
+                            <div class="bg-amber-50 text-amber-700 p-4 rounded-lg dark:bg-amber-500/10 dark:text-amber-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-amber-700 dark:text-amber-500 hover:text-amber-900 dark:hover:text-amber-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
+
+                        @case('info')
+                            <div class="bg-blue-50 text-blue-700 p-4 rounded-lg dark:bg-blue-500/10 dark:text-blue-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-blue-700 dark:text-blue-500 hover:text-blue-900 dark:hover:text-blue-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                            @break
+
+                        @default
+                            <div class="bg-gray-50 text-gray-700 p-4 rounded-lg dark:bg-gray-500/10 dark:text-gray-500 flex justify-between items-center">
+                                <span>{{ $persistentMessage }}</span>
+                                <button wire:click="clearPersistentMessage" class="text-gray-700 dark:text-gray-500 hover:text-gray-900 dark:hover:text-gray-300">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                    @endswitch
                 </div>
+            @endif
 
-                <!-- Script for autocomplete -->
-                <script>
-                    document.addEventListener('click', function(event) {
-                        const spContainer = event.target.closest('.relative');
-                        if (!spContainer || !spContainer.querySelector('[wire\\:model\\.live="sp_search"]')) {
-                            @this.set('showSpSuggestions', false);
-                        }
-                    });
-                </script>
-
-                <!-- TBS Quantity -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
-                        TBS Quantity (KG)
-                        @if($production_id)
-                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
-                        @endif
-                    </label>
-                    <input 
-                        id="tbs_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model="tbs_quantity"
-                        placeholder="Masukkan jumlah TBS"
-                    />
-                    @error('tbs_quantity') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- KG Quantity -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
-                        KG Quantity
-                        @if($production_id)
-                            <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
-                        @endif
-                    </label>
-                    <input 
-                        id="kg_quantity"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model.live="kg_quantity"
-                        placeholder="Masukkan jumlah KG"
-                    />
-                    @error('kg_quantity') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Price per KG -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="price_per_kg">
-                        Harga per KG (Rp)
-                    </label>
-                    <input
-                        id="price_per_kg"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="text"
-                        wire:model.live="price_per_kg"
-                        placeholder="Masukkan harga per KG"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let value = e.target.value.replace(/\D/g, '');
-                                let formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-                                $el.value = formatted;
-                                $wire.set('price_per_kg', value.replace(/\./g, ''));
-                            });
-                        "
-                    />
-                    @error('price_per_kg')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Total Amount -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="total_amount">
-                        Jumlah Total (Rp)
-                    </label>
-                    <input
-                        id="total_amount"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600"
-                        type="text"
-                        wire:model="total_amount"
-                        readonly
-                        x-data
-                        x-init="
-                            $watch('$wire.total_amount', function(value) {
-                                if (value) {
-                                    let numValue = parseFloat(value);
-                                    if (!isNaN(numValue)) {
-                                        $el.value = numValue.toLocaleString('id-ID');
-                                    }
-                                } else {
-                                    $el.value = '';
-                                }
-                            });
-                        "
-                    />
-                </div>
-
-                <!-- Sale Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sale_date">
-                        Tanggal Penjualan (DD-MM-YYYY)
-                    </label>
-                    <input 
-                        id="sale_date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        placeholder="DD-MM-YYYY"
-                        wire:model="sale_date"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let input = e.target.value.replace(/\D/g, '');
-                                let formatted = '';
-                                
-                                if (input.length > 0) {
-                                    formatted = input.substring(0, 2); // Day
-                                    if (input.length >= 3) {
-                                        formatted += '-' + input.substring(2, 4); // Month
-                                        if (input.length >= 5) {
-                                            formatted += '-' + input.substring(4, 8); // Year
-                                        }
-                                    }
-                                }
-                                
-                                $el.value = formatted;
-                            });
+            <form wire:submit.prevent="saveSalesModal" class="space-y-6">
+                <!-- Required Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Wajib
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- SP Number with Autocomplete -->
+                        <div class="relative">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sp_search">
+                                Nomor SP
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    id="sp_search"
+                                    type="text" 
+                                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                    wire:model.live="sp_search"
+                                    placeholder="Ketik SP Number..."
+                                    autocomplete="off"
+                                />
+                                @if($sp_search)
+                                    <button 
+                                        type="button"
+                                        wire:click="clearSpSelection"
+                                        class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                                    >
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </button>
+                                @endif
+                            </div>
                             
-                            $el.addEventListener('blur', function(e) {
-                                // Validate date format on blur
-                                let dateValue = e.target.value;
-                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-                                let match = dateValue.match(datePattern);
-                                
-                                if (match) {
-                                    let day = parseInt(match[1]);
-                                    let month = parseInt(match[2]);
-                                    let year = parseInt(match[3]);
-                                    
-                                    // Basic validation
-                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
-                                        // You can add custom validation here
-                                    }
+                            <!-- Autocomplete Suggestions -->
+                            @if($showSpSuggestions && count($spSuggestions) > 0)
+                                <div class="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    @foreach($spSuggestions as $suggestion)
+                                        <button 
+                                            type="button"
+                                            wire:click="selectSpSuggestion({{ json_encode($suggestion) }})"
+                                            class="w-full px-3 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-600 last:border-b-0 transition-colors duration-150"
+                                        >
+                                            <div class="font-medium text-gray-900 dark:text-gray-100">{{ $suggestion['sp_number'] }}</div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                                TBS: {{ number_format($suggestion['tbs_quantity'], 2) }} KG | 
+                                                KG: {{ number_format($suggestion['kg_quantity'], 2) }}
+                                            </div>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endif
+                            
+                            @error('sp_number') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Script for autocomplete -->
+                        <script>
+                            document.addEventListener('click', function(event) {
+                                const spContainer = event.target.closest('.relative');
+                                if (!spContainer || !spContainer.querySelector('[wire\\:model\\.live="sp_search"]')) {
+                                    @this.set('showSpSuggestions', false);
                                 }
                             });
-                        "
-                    />
-                    @error('sale_date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
+                        </script>
 
-                
-                <!-- Tax Fields -->
-                <div class="md:col-span-2">
-                    <label class="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            wire:model.live="is_taxable"
-                            class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 focus:ring-opacity-50"
-                        />
-                        <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Kena Pajak</span>
-                    </label>
-                </div>
-
-                <!-- Tax fields that show/hide based on checkbox -->
-                @if($is_taxable)
-                <div class="md:col-span-2">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Tax Percentage -->
+                        <!-- KG Quantity -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_percentage">
-                                Total Pajak (%)
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="kg_quantity">
+                                KG Quantity
+                                @if($production_id)
+                                    <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                                @endif
                             </label>
                             <input 
-                                id="tax_percentage"
-                                type="number" 
-                                step="0.01"
-                                min="0"
-                                max="100"
+                                id="kg_quantity"
                                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                                wire:model.live="tax_percentage"
-                                placeholder="11.00"
+                                type="number" 
+                                step="0.01"
+                                wire:model.live="kg_quantity"
+                                placeholder="Masukkan jumlah KG"
                             />
-                            @error('tax_percentage') 
+                            @error('kg_quantity') 
                                 <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
                             @enderror
                         </div>
 
-                        <!-- Tax Amount -->
+                        <!-- Price per KG -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_amount">
-                                Total Nominal Pajak
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="price_per_kg">
+                                Harga per KG (Rp)
                             </label>
-                            <input 
-                                id="tax_amount"
-                                type="number" 
-                                step="0.01"
-                                min="0"
-                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600" 
-                                wire:model="tax_amount"
-                                placeholder="0"
-                                readonly
+                            <input
+                                id="price_per_kg"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                type="text"
+                                wire:model.live="price_per_kg"
+                                placeholder="Masukkan harga per KG"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let value = e.target.value.replace(/\D/g, '');
+                                        let formatted = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                                        $el.value = formatted;
+                                        $wire.set('price_per_kg', value.replace(/\./g, ''));
+                                    });
+                                "
                             />
-                            <small class="text-gray-500">Terhitung otomatis: Rp {{ number_format($tax_amount, 2, ',', '.') }}</small>
-                            @error('tax_amount') 
-                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @error('price_per_kg')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                             @enderror
                         </div>
-                    </div>
-                    
-                    <!-- Tax Summary -->
-                    <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <div class="text-sm text-blue-800 dark:text-blue-200">
-                            <strong>Ringkasan Pajak:</strong><br>
-                            Total Penjualan: Rp {{ number_format($total_amount, 2, ',', '.') }}<br>
-                            Pajak ({{ $tax_percentage }}%): Rp {{ number_format($tax_amount, 2, ',', '.') }}<br>
-                            <strong>Total + Pajak: Rp {{ number_format($total_amount + $tax_amount, 2, ',', '.') }}</strong>
+
+                        <!-- Total Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="total_amount">
+                                Jumlah Total (Rp)
+                            </label>
+                            <input
+                                id="total_amount"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600"
+                                type="text"
+                                wire:model="total_amount"
+                                readonly
+                                x-data
+                                x-init="
+                                    $watch('$wire.total_amount', function(value) {
+                                        if (value) {
+                                            let numValue = parseFloat(value);
+                                            if (!isNaN(numValue)) {
+                                                $el.value = numValue.toLocaleString('id-ID');
+                                            }
+                                        } else {
+                                            $el.value = '';
+                                        }
+                                    });
+                                "
+                            />
+                        </div>
+
+                        <!-- Sale Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sale_date">
+                                Tanggal Penjualan (DD-MM-YYYY)
+                            </label>
+                            <input 
+                                id="sale_date"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                placeholder="DD-MM-YYYY"
+                                wire:model="sale_date"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let input = e.target.value.replace(/\D/g, '');
+                                        let formatted = '';
+                                        
+                                        if (input.length > 0) {
+                                            formatted = input.substring(0, 2); // Day
+                                            if (input.length >= 3) {
+                                                formatted += '-' + input.substring(2, 4); // Month
+                                                if (input.length >= 5) {
+                                                    formatted += '-' + input.substring(4, 8); // Year
+                                                }
+                                            }
+                                        }
+                                        
+                                        $el.value = formatted;
+                                    });
+                                    
+                                    $el.addEventListener('blur', function(e) {
+                                        // Validate date format on blur
+                                        let dateValue = e.target.value;
+                                        let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                        let match = dateValue.match(datePattern);
+                                        
+                                        if (match) {
+                                            let day = parseInt(match[1]);
+                                            let month = parseInt(match[2]);
+                                            let year = parseInt(match[3]);
+                                            
+                                            // Basic validation
+                                            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                // You can add custom validation here
+                                            }
+                                        }
+                                    });
+                                "
+                            />
+                            @error('sale_date') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
                         </div>
                     </div>
                 </div>
-                @endif
 
-                <!-- Sales Proof -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
-                        Bukti Penjualan
-                    </label>
-                    <input
-                        id="sales_proof"
-                        type="file"
-                        wire:model.lazy="sales_proof"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                    />
-                    @if($isEditing && $sales_proof === null)
-                        <div class="mt-2">
-                            <small class="text-gray-500">Kosongkan untuk pertahankan bukti yang ada</small>
+                <!-- Optional Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Opsional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- TBS Quantity -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tbs_quantity">
+                                TBS Quantity (KG)
+                                @if($production_id)
+                                    <span class="text-xs text-gray-500 ml-1">(Auto-filled dari produksi)</span>
+                                @endif
+                            </label>
+                            <input 
+                                id="tbs_quantity"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="number" 
+                                step="0.01"
+                                wire:model="tbs_quantity"
+                                placeholder="Masukkan jumlah TBS"
+                            />
+                            @error('tbs_quantity') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
                         </div>
-                    @endif
-                    @error('sales_proof') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
+
+                        <!-- Tax Fields -->
+                        <div class="md:col-span-2">
+                            <label class="flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    wire:model.live="is_taxable"
+                                    class="rounded border-gray-300 text-violet-600 shadow-sm focus:border-violet-300 focus:ring focus:ring-violet-200 focus:ring-opacity-50"
+                                />
+                                <span class="ml-2 text-sm font-medium text-gray-700 dark:text-gray-300">Kena Pajak</span>
+                            </label>
+                        </div>
+
+                        <!-- Tax fields that show/hide based on checkbox -->
+                        @if($is_taxable)
+                        <div class="md:col-span-2">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Tax Percentage -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_percentage">
+                                        Total Pajak (%)
+                                    </label>
+                                    <input 
+                                        id="tax_percentage"
+                                        type="number" 
+                                        step="0.01"
+                                        min="0"
+                                        max="100"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                        wire:model.live="tax_percentage"
+                                        placeholder="11.00"
+                                    />
+                                    @error('tax_percentage') 
+                                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                                    @enderror
+                                </div>
+
+                                <!-- Tax Amount -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="tax_amount">
+                                        Total Nominal Pajak
+                                    </label>
+                                    <input 
+                                        id="tax_amount"
+                                        type="number" 
+                                        step="0.01"
+                                        min="0"
+                                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-600" 
+                                        wire:model="tax_amount"
+                                        placeholder="0"
+                                        readonly
+                                    />
+                                    <small class="text-gray-500">Terhitung otomatis: Rp {{ number_format($tax_amount, 2, ',', '.') }}</small>
+                                    @error('tax_amount') 
+                                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                                    @enderror
+                                </div>
+                            </div>
+                            
+                            <!-- Tax Summary -->
+                            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                <div class="text-sm text-blue-800 dark:text-blue-200">
+                                    <strong>Ringkasan Pajak:</strong><br>
+                                    Total Penjualan: Rp {{ number_format($total_amount, 2, ',', '.') }}<br>
+                                    Pajak ({{ $tax_percentage }}%): Rp {{ number_format($tax_amount, 2, ',', '.') }}<br>
+                                    <strong>Total + Pajak: Rp {{ number_format($total_amount + $tax_amount, 2, ',', '.') }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Sales Proof -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="sales_proof">
+                                Bukti Penjualan
+                            </label>
+                            <input
+                                id="sales_proof"
+                                type="file"
+                                wire:model.lazy="sales_proof"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                            />
+                            @if($isEditing && $sales_proof === null)
+                                <div class="mt-2">
+                                    <small class="text-gray-500">Kosongkan untuk pertahankan bukti yang ada</small>
+                                </div>
+                            @endif
+                            @error('sales_proof') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
                 </div>
             </form>
         </x-slot>

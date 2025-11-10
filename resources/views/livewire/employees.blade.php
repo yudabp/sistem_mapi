@@ -65,245 +65,267 @@
         <x-slot name="content">
 
 
-            <form wire:submit.prevent="saveEmployeeModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Employee ID (NDP) -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ndp">
-                        ID Karyawan (NDP)
-                    </label>
-                    <input 
-                        id="ndp"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="ndp"
-                        placeholder="Masukkan ID karyawan"
-                        {{ $isEditing ? 'readonly' : '' }}
-                    />
-                    @error('ndp') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
+            <form wire:submit.prevent="saveEmployeeModal" class="space-y-6">
+                <!-- Required Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Wajib
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="name">
+                                Nama
+                            </label>
+                            <input 
+                                id="name"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="name"
+                                placeholder="Masukkan nama karyawan"
+                            />
+                            @error('name') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Position -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="position_id">
+                                Position (Jabatan)
+                            </label>
+                            <select
+                                id="position_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="position_id"
+                            >
+                                <option value="">Pilih Jabatan</option>
+                                @foreach($positions as $pos)
+                                    <option value="{{ $pos->id }}" {{ $position_id == $pos->id ? 'selected' : '' }}>{{ $pos->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('position_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Monthly Salary -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="monthly_salary">
+                                Gaji Bulanan (Rp)
+                            </label>
+                            <input 
+                                id="monthly_salary"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="number" 
+                                step="0.01"
+                                wire:model="monthly_salary"
+                                placeholder="Masukkan gaji bulanan"
+                            />
+                            @error('monthly_salary') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Name -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="name">
-                        Nama
-                    </label>
-                    <input 
-                        id="name"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="name"
-                        placeholder="Masukkan nama karyawan"
-                    />
-                    @error('name') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
+                <!-- Optional Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Opsional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Employee ID (NDP) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="ndp">
+                                ID Karyawan (NDP)
+                            </label>
+                            <input 
+                                id="ndp"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="ndp"
+                                placeholder="Masukkan ID karyawan"
+                                {{ $isEditing ? 'readonly' : '' }}
+                            />
+                            @error('ndp') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                        
+                        <!-- Department -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="department_id">
+                                Department (Bagian)
+                            </label>
+                            <select
+                                id="department_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="department_id"
+                            >
+                                <option value="">Pilih Bagian</option>
+                                @foreach($departments as $dept)
+                                    <option value="{{ $dept->id }}" {{ $department_id == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('department_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                <!-- Department -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="department_id">
-                        Department (Bagian)
-                    </label>
-                    <select
-                        id="department_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="department_id"
-                    >
-                        <option value="">Pilih Bagian</option>
-                        @foreach($departments as $dept)
-                            <option value="{{ $dept->id }}" {{ $department_id == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('department_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
+                        <!-- Grade -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="grade">
+                                Golongan
+                            </label>
+                            <input 
+                                id="grade"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="grade"
+                                placeholder="Masukkan golongan"
+                            />
+                        </div>
 
-                <!-- Position -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="position_id">
-                        Position (Jabatan)
-                    </label>
-                    <select
-                        id="position_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="position_id"
-                    >
-                        <option value="">Pilih Jabatan</option>
-                        @foreach($positions as $pos)
-                            <option value="{{ $pos->id }}" {{ $position_id == $pos->id ? 'selected' : '' }}>{{ $pos->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('position_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
+                        <!-- Family Composition -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="family_composition_id">
+                                Family Composition (Susunan Keluarga)
+                            </label>
+                            <select
+                                id="family_composition_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="family_composition_id"
+                            >
+                                <option value="">Pilih Susunan Keluarga</option>
+                                @foreach($family_compositions as $fam_comp)
+                                    <option value="{{ $fam_comp->id }}" {{ $family_composition_id == $fam_comp->id ? 'selected' : '' }}>{{ $fam_comp->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
 
-                <!-- Grade -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="grade">
-                        Golongan
-                    </label>
-                    <input 
-                        id="grade"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="grade"
-                        placeholder="Masukkan golongan"
-                    />
-                </div>
+                        <!-- Status -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employment_status_id">
+                                Employment Status (Status Karyawan)
+                            </label>
+                            <select
+                                id="employment_status_id"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="employment_status_id"
+                            >
+                                <option value="">Pilih Status Karyawan</option>
+                                @foreach($employment_statuses as $emp_status)
+                                    <option value="{{ $emp_status->id }}" {{ $employment_status_id == $emp_status->id ? 'selected' : '' }}>{{ $emp_status->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('employment_status_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
 
-                <!-- Family Composition -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="family_composition_id">
-                        Family Composition (Susunan Keluarga)
-                    </label>
-                    <select
-                        id="family_composition_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="family_composition_id"
-                    >
-                        <option value="">Pilih Susunan Keluarga</option>
-                        @foreach($family_compositions as $fam_comp)
-                            <option value="{{ $fam_comp->id }}" {{ $family_composition_id == $fam_comp->id ? 'selected' : '' }}>{{ $fam_comp->number }}</option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Monthly Salary -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="monthly_salary">
-                        Gaji Bulanan (Rp)
-                    </label>
-                    <input 
-                        id="monthly_salary"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model="monthly_salary"
-                        placeholder="Masukkan gaji bulanan"
-                    />
-                    @error('monthly_salary') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Status -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employment_status_id">
-                        Employment Status (Status Karyawan)
-                    </label>
-                    <select
-                        id="employment_status_id"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="employment_status_id"
-                    >
-                        <option value="">Pilih Status Karyawan</option>
-                        @foreach($employment_statuses as $emp_status)
-                            <option value="{{ $emp_status->id }}" {{ $employment_status_id == $emp_status->id ? 'selected' : '' }}>{{ $emp_status->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('employment_status_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Hire Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="hire_date">
-                        Tanggal Masuk (DD-MM-YYYY)
-                    </label>
-                    <input 
-                        id="hire_date"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        placeholder="DD-MM-YYYY"
-                        wire:model="hire_date"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let input = e.target.value.replace(/\D/g, '');
-                                let formatted = '';
-                                
-                                if (input.length > 0) {
-                                    formatted = input.substring(0, 2); // Day
-                                    if (input.length >= 3) {
-                                        formatted += '-' + input.substring(2, 4); // Month
-                                        if (input.length >= 5) {
-                                            formatted += '-' + input.substring(4, 8); // Year
+                        <!-- Hire Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="hire_date">
+                                Tanggal Masuk (DD-MM-YYYY)
+                            </label>
+                            <input 
+                                id="hire_date"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                placeholder="DD-MM-YYYY"
+                                wire:model="hire_date"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let input = e.target.value.replace(/\D/g, '');
+                                        let formatted = '';
+                                        
+                                        if (input.length > 0) {
+                                            formatted = input.substring(0, 2); // Day
+                                            if (input.length >= 3) {
+                                                formatted += '-' + input.substring(2, 4); // Month
+                                                if (input.length >= 5) {
+                                                    formatted += '-' + input.substring(4, 8); // Year
+                                                }
+                                            }
                                         }
-                                    }
-                                }
-                                
-                                $el.value = formatted;
-                            });
-                            
-                            $el.addEventListener('blur', function(e) {
-                                // Validate date format on blur
-                                let dateValue = e.target.value;
-                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-                                let match = dateValue.match(datePattern);
-                                
-                                if (match) {
-                                    let day = parseInt(match[1]);
-                                    let month = parseInt(match[2]);
-                                    let year = parseInt(match[3]);
+                                        
+                                        $el.value = formatted;
+                                    });
                                     
-                                    // Basic validation
-                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
-                                        // You can add custom validation here
-                                    }
-                                }
-                            });
-                        "
-                    />
-                    @error('hire_date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
+                                    $el.addEventListener('blur', function(e) {
+                                        // Validate date format on blur
+                                        let dateValue = e.target.value;
+                                        let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                        let match = dateValue.match(datePattern);
+                                        
+                                        if (match) {
+                                            let day = parseInt(match[1]);
+                                            let month = parseInt(match[2]);
+                                            let year = parseInt(match[3]);
+                                            
+                                            // Basic validation
+                                            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                // You can add custom validation here
+                                            }
+                                        }
+                                    });
+                                "
+                            />
+                            @error('hire_date') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
 
-                <!-- Address -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="address">
-                        Alamat
-                    </label>
-                    <textarea 
-                        id="address"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="address"
-                        placeholder="Masukkan alamat karyawan"
-                        rows="2"
-                    ></textarea>
-                </div>
+                        <!-- Address -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="address">
+                                Alamat
+                            </label>
+                            <textarea 
+                                id="address"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model="address"
+                                placeholder="Masukkan alamat karyawan"
+                                rows="2"
+                            ></textarea>
+                        </div>
 
-                <!-- Phone -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="phone">
-                        Telepon
-                    </label>
-                    <input 
-                        id="phone"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="phone"
-                        placeholder="Masukkan nomor telepon"
-                    />
-                </div>
+                        <!-- Phone -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="phone">
+                                Telepon
+                            </label>
+                            <input 
+                                id="phone"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="phone"
+                                placeholder="Masukkan nomor telepon"
+                            />
+                        </div>
 
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="email">
-                        Email
-                    </label>
-                    <input 
-                        id="email"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="email" 
-                        wire:model="email"
-                        placeholder="Masukkan alamat email"
-                    />
+                        <!-- Email -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="email">
+                                Email
+                            </label>
+                            <input 
+                                id="email"
+                                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="email" 
+                                wire:model="email"
+                                placeholder="Masukkan alamat email"
+                            />
+                        </div>
+                    </div>
                 </div>
             </form>
         </x-slot>
@@ -676,7 +698,7 @@
                     <li><strong>department</strong> - Departemen</li>
                     <li><strong>position</strong> - Posisi</li>
                     <li><strong>grade</strong> - Golongan</li>
-                    <li><strong>family_composition</strong> - Susunan keluarga</li>
+                    <li><strong>family_composition</strong> - Nama susunan keluarga (misalnya: Kepala Keluarga, Istri, Anak)</li>
                     <li><strong>monthly_salary</strong> - Gaji bulanan</li>
                     <li><strong>status</strong> - Status: active (aktif) atau inactive (tidak aktif)</li>
                     <li><strong>hire_date</strong> - Tanggal masuk</li>

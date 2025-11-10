@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class FamilyComposition extends Model
 {
     protected $fillable = [
-        'number',
+        'name',
         'description',
         'is_active',
     ];
