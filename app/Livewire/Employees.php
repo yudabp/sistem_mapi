@@ -59,8 +59,10 @@ class Employees extends Component
     public $deletingEmployeeName = '';
 
     // Persistent message
-    public $persistentMessage = '';
-    public $messageType = 'success'; // success, error, warning, info
+    public $persistentMessage = '';       // For modal messages (form related)
+    public $messageType = 'success';      // For modal messages (form related)
+    public $pageMessage = '';             // For page messages (non-form related)
+    public $pageMessageType = 'success';  // For page messages (non-form related)
 
     protected $queryString = ['search', 'departmentFilter'];
 
@@ -116,8 +118,14 @@ class Employees extends Component
         $this->authorizeEdit();
         $validated = $this->validate($this->getValidationRules());
 
-        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
-        $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
+        // Safely convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $hireDateForDb = null;
+        if ($this->hire_date) {
+            $dateObj = \DateTime::createFromFormat('d-m-Y', $this->hire_date);
+            if ($dateObj !== false) {
+                $hireDateForDb = $dateObj->format('Y-m-d');
+            }
+        }
 
         // Get department, position, and employment status for backward compatibility
         $dept = Department::find($this->department_id);
@@ -267,7 +275,7 @@ class Employees extends Component
         $employee = EmployeeModel::find($this->deletingEmployeeId);
         if ($employee) {
             $employee->delete();
-            $this->setPersistentMessage('Employee record deleted successfully.', 'success');
+            $this->setPageMessage('Employee record deleted successfully.', 'success');
         }
         
         $this->closeDeleteConfirmation();
@@ -275,30 +283,20 @@ class Employees extends Component
 
     public function saveEmployeeModal()
     {
-        try {
-            if ($this->isEditing) {
-                $this->updateEmployee();
-            } else {
-                $this->saveEmployee();
-            }
-            
-            $this->closeCreateModal();
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Validation errors will be automatically handled by Livewire
-            // We just need to make sure the modal stays open so user can see errors
-            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
-        } catch (\Exception $e) {
-            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
-            // Keep modal open so user can see the error
+        if ($this->isEditing) {
+            $this->updateEmployee();
+        } else {
+            $this->saveEmployee();
         }
-
+        
+        $this->setPersistentMessage('Employee record saved successfully.', 'success');
         $this->closeCreateModal();
     }
 
     protected function getValidationRules()
     {
         $rules = [
-            'ndp' => 'required|unique:employees,ndp',
+            'ndp' => 'nullable|unique:employees,ndp',
             'name' => 'required',
             'department_id' => 'required|exists:departments,id',
             'position_id' => 'required|exists:positions,id',
@@ -310,7 +308,7 @@ class Employees extends Component
 
         // When editing, exclude current record from unique validation
         if ($this->isEditing && $this->editingId) {
-            $rules['ndp'] = 'required|unique:employees,ndp,' . $this->editingId;
+            $rules['ndp'] = 'nullable|unique:employees,ndp,' . $this->editingId;
         }
 
         return $rules;
@@ -321,8 +319,14 @@ class Employees extends Component
         $this->authorizeEdit();
         $validated = $this->validate($this->getValidationRules());
 
-        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
-        $hireDateForDb = \DateTime::createFromFormat('d-m-Y', $this->hire_date)->format('Y-m-d');
+        // Safely convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $hireDateForDb = null;
+        if ($this->hire_date) {
+            $dateObj = \DateTime::createFromFormat('d-m-Y', $this->hire_date);
+            if ($dateObj !== false) {
+                $hireDateForDb = $dateObj->format('Y-m-d');
+            }
+        }
 
         // Get department, position, and employment status for backward compatibility
         $dept = Department::find($this->department_id);
@@ -376,6 +380,24 @@ class Employees extends Component
     public function clearPersistentMessage()
     {
         $this->persistentMessage = '';
+    }
+    
+    public function setPageMessage($message, $type = 'success')
+    {
+        // Translate common messages to Indonesian
+        $translations = [
+            'Employee record deleted successfully.' => 'Data karyawan berhasil dihapus.',
+            'Error: ' => 'Terjadi kesalahan: ',
+        ];
+
+        $this->pageMessage = str_replace(array_keys($translations), array_values($translations), $message);
+        $this->pageMessageType = $type;
+    }
+
+    public function clearPageMessage()
+    {
+        $this->pageMessage = '';
+        $this->pageMessageType = '';
     }
     
     // Import methods
