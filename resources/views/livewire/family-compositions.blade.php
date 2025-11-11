@@ -32,7 +32,7 @@
                     <input
                         type="text"
                         wire:model.live="search"
-                        placeholder="Cari nomor atau deskripsi susunan keluarga"
+                        placeholder="Cari nama atau deskripsi susunan keluarga"
                         class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
                     />
                 </div>
@@ -60,7 +60,7 @@
                     <table class="table-auto w-full">
                         <thead>
                             <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
-                                <th class="p-2 whitespace-nowrap text-left">Nomor</th>
+                                <th class="p-2 whitespace-nowrap text-left">Nama</th>
                                 <th class="p-2 whitespace-nowrap text-left">Deskripsi</th>
                                 <th class="p-2 whitespace-nowrap text-left">Status</th>
                                 <th class="p-2 whitespace-nowrap text-center">Aksi</th>
@@ -70,7 +70,7 @@
                             @forelse($family_compositions as $familyComposition)
                                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                     <td class="p-2 whitespace-nowrap">
-                                        <div class="font-medium text-gray-800 dark:text-gray-100">{{ $familyComposition->number }}</div>
+                                        <div class="font-medium text-gray-800 dark:text-gray-100">{{ $familyComposition->name }}</div>
                                     </td>
                                     <td class="p-2 whitespace-nowrap">
                                         <div class="text-gray-600 dark:text-gray-400">{{ $familyComposition->description ?? '-' }}</div>
@@ -139,16 +139,16 @@
                     <!-- Number -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Nomor Susunan Keluarga <span class="text-red-500">*</span>
+                            Nama Susunan Keluarga <span class="text-red-500">*</span>
                         </label>
                         <input
-                            wire:model="number"
-                            type="number"
+                            wire:model="name"
+                            type="text"
                             required
                             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                            placeholder="Masukkan nomor susunan keluarga"
+                            placeholder="Masukkan nama susunan keluarga"
                         />
-                        @error('number')
+                        @error('name')
                             <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
                         @enderror
                     </div>

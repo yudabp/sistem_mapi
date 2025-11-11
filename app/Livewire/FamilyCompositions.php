@@ -13,7 +13,7 @@ class FamilyCompositions extends Component
     public $isEditing = false;
 
     // Form fields
-    public $number;
+    public $name;
     public $description;
     public $is_active = true;
     public $editing_id;
@@ -25,15 +25,16 @@ class FamilyCompositions extends Component
     public $family_compositions = [];
 
     protected $rules = [
-        'number' => 'required|integer|unique:family_compositions,number',
+        'name' => 'required|string|max:255|unique:family_compositions,name',
         'description' => 'nullable',
         'is_active' => 'boolean',
     ];
 
     protected $messages = [
-        'number.required' => 'Nomor susunan keluarga wajib diisi.',
-        'number.integer' => 'Nomor susunan keluarga harus berupa angka.',
-        'number.unique' => 'Nomor susunan keluarga sudah terdaftar.',
+        'name.required' => 'Nama susunan keluarga wajib diisi.',
+        'name.string' => 'Nama susunan keluarga harus berupa teks.',
+        'name.max' => 'Nama susunan keluarga tidak boleh lebih dari 255 karakter.',
+        'name.unique' => 'Nama susunan keluarga sudah terdaftar.',
     ];
 
     public function updatedSearch()
@@ -64,7 +65,7 @@ class FamilyCompositions extends Component
         $familyComposition = FamilyComposition::find($id);
         if ($familyComposition) {
             $this->editing_id = $familyComposition->id;
-            $this->number = $familyComposition->number;
+            $this->name = $familyComposition->name;
             $this->description = $familyComposition->description;
             $this->is_active = $familyComposition->is_active;
             $this->isEditing = true;
@@ -83,7 +84,7 @@ class FamilyCompositions extends Component
         $familyComposition = FamilyComposition::find($id);
         if ($familyComposition) {
             $this->delete_id = $id;
-            $this->deletingFamilyCompositionInfo = "Susunan Keluarga {$familyComposition->number}";
+            $this->deletingFamilyCompositionInfo = "Susunan Keluarga {$familyComposition->name}";
             $this->showDeleteConfirmation = true;
         }
     }
@@ -100,7 +101,7 @@ class FamilyCompositions extends Component
     {
         if ($this->isEditing) {
             $this->validate([
-                'number' => 'required|integer|unique:family_compositions,number,' . $this->editing_id,
+                'name' => 'required|string|max:255|unique:family_compositions,name,' . $this->editing_id,
                 'description' => 'nullable',
                 'is_active' => 'boolean',
             ]);
@@ -108,7 +109,7 @@ class FamilyCompositions extends Component
             $familyComposition = FamilyComposition::find($this->editing_id);
             if ($familyComposition) {
                 $familyComposition->update([
-                    'number' => $this->number,
+                    'name' => $this->name,
                     'description' => $this->description,
                     'is_active' => $this->is_active,
                 ]);
@@ -118,13 +119,13 @@ class FamilyCompositions extends Component
             }
         } else {
             $this->validate([
-                'number' => 'required|integer|unique:family_compositions,number',
+                'name' => 'required|string|max:255|unique:family_compositions,name',
                 'description' => 'nullable',
                 'is_active' => 'boolean',
             ]);
 
             FamilyComposition::create([
-                'number' => $this->number,
+                'name' => $this->name,
                 'description' => $this->description,
                 'is_active' => $this->is_active,
             ]);
@@ -153,7 +154,7 @@ class FamilyCompositions extends Component
     // Utility methods
     public function resetForm()
     {
-        $this->number = 0;
+        $this->name = '';
         $this->description = '';
         $this->is_active = true;
         $this->editing_id = null;
@@ -171,10 +172,10 @@ class FamilyCompositions extends Component
         $query = FamilyComposition::query();
 
         if ($this->search) {
-            $query->where('number', 'like', '%' . $this->search . '%')
+            $query->where('name', 'like', '%' . $this->search . '%')
                   ->orWhere('description', 'like', '%' . $this->search . '%');
         }
 
-        $this->family_compositions = $query->orderBy('number')->get();
+        $this->family_compositions = $query->orderBy('name')->get();
     }
 }

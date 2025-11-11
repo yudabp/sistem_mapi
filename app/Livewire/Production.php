@@ -66,7 +66,7 @@ class Production extends Component
 
     // Persistent message
     public $persistentMessage = '';
-    public $messageType = ''; // success, error, warning, info
+    public $messageType = 'success'; // success, error, warning, info
     
     // Import/Export properties
     public $importFile = null;

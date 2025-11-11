@@ -489,216 +489,238 @@
                 </div>
             @endif
             
-            <form wire:submit.prevent="saveDebtModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Amount -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
-                        Jumlah Hutang (Rp)
-                    </label>
-                    <input
-                        id="amount"
-                        class="w-full px-3 py-2 border {{ $errors->has('amount') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="number"
-                        step="0.01"
-                        wire:model="amount"
-                        placeholder="Masukkan jumlah hutang"
-                    />
-                    @error('amount')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Creditor -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
-                        Pemberi Hutang <span x-show="$wire.debt_type_id != 3" class="text-red-500">*</span>
-                    </label>
-                    <div x-data="{
-                        readOnly: false,
-                        init() {
-                            const updateReadOnly = (value) => {
-                                this.readOnly = String(value) === '3';
-                            };
-                            $watch('$wire.debt_type_id', updateReadOnly);
-                            updateReadOnly(@entangle('debt_type_id'));
-                        }
-                    }">
-                        <input
-                            id="creditor"
-                            class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $debt_type_id == 3 ? 'bg-gray-50 dark:bg-gray-600' : '' }}"
-                            type="text"
-                            wire:model="creditor"
-                            placeholder="{{ $debt_type_id == 3 ? 'Nama karyawan akan terisi otomatis' : 'Masukkan nama pemberi hutang' }}"
-                            :readonly="readOnly"
-                            :class="{ 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed': readOnly }"
-                        />
-                        <p x-show="readOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Nama karyawan akan terisi otomatis saat memilih karyawan
-                        </p>
-                    </div>
-                    @error('creditor')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Due Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="due_date">
-                        Tanggal Jatuh Tempo (DD-MM-YYYY)
-                    </label>
-                    <input
-                        id="due_date"
-                        class="w-full px-3 py-2 border {{ $errors->has('due_date') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="text"
-                        placeholder="DD-MM-YYYY"
-                        wire:model="due_date"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let input = e.target.value.replace(/\D/g, '');
-                                let formatted = '';
-
-                                if (input.length > 0) {
-                                    formatted = input.substring(0, 2); // Day
-                                    if (input.length >= 3) {
-                                        formatted += '-' + input.substring(2, 4); // Month
-                                        if (input.length >= 5) {
-                                            formatted += '-' + input.substring(4, 8); // Year
-                                        }
-                                    }
-                                }
-
-                                $el.value = formatted;
-                            });
-
-                            $el.addEventListener('blur', function(e) {
-                                // Validate date format on blur
-                                let dateValue = e.target.value;
-                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-                                let match = dateValue.match(datePattern);
-
-                                if (match) {
-                                    let day = parseInt(match[1]);
-                                    let month = parseInt(match[2]);
-                                    let year = parseInt(match[3]);
-
-                                    // Basic validation
-                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
-                                        // You can add custom validation here
-                                    }
-                                }
-                            });
-                        "
-                    />
-                    @error('due_date')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Debt Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="debt_type_id">
-                        Jenis Hutang
-                    </label>
-                    <select
-                        id="debt_type_id"
-                        class="w-full px-3 py-2 border {{ $errors->has('debt_type_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="debt_type_id"
-                        x-data
-                        x-on:change="$dispatch('debt-type-changed', { value: $el.value })"
-                    >
-                        <option value="">Pilih Jenis Hutang</option>
-                        @foreach($debtTypes as $debtType)
-                            <option value="{{ $debtType->id }}">{{ $debtType->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('debt_type_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Employee Selection - Only show for Hutang Gaji Karyawan -->
-                <div x-data="{
-                    showEmployee: false,
-                    init() {
-                        $watch('$wire.debt_type_id', (value) => {
-                            this.showEmployee = value == '3';
-                        });
-                        this.showEmployee = @entangle('debt_type_id') == '3';
-                    }
-                }" x-show="showEmployee" x-transition>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employee_id">
-                        Nama Karyawan <span class="text-red-500">*</span>
-                    </label>
-                    <select
-                        id="employee_id"
-                        class="w-full px-3 py-2 border {{ $errors->has('employee_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="employee_id"
-                    >
-                        <option value="">Pilih Karyawan</option>
-                        @foreach($employees as $employee)
-                            <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->ndp }})</option>
-                        @endforeach
-                    </select>
-                    @error('employee_id')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Cicilan per Bulan -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="cicilan_per_bulan">
-                        Cicilan per Bulan (Opsional)
-                    </label>
-                    <input
-                        id="cicilan_per_bulan"
-                        class="w-full px-3 py-2 border {{ $errors->has('cicilan_per_bulan') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        type="number"
-                        step="0.01"
-                        wire:model="cicilan_per_bulan"
-                        placeholder="Masukkan cicilan per bulan"
-                    />
-                    @error('cicilan_per_bulan')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Description -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
-                        Keterangan
-                    </label>
-                    <textarea
-                        id="description"
-                        class="w-full px-3 py-2 border {{ $errors->has('description') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                        wire:model="description"
-                        placeholder="Masukkan keterangan detail hutang"
-                        rows="2"
-                    ></textarea>
-                    @error('description')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <!-- Proof Document -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
-                        Bukti Dokumen
-                    </label>
-                    <input
-                        id="proof_document"
-                        type="file"
-                        wire:model.lazy="proof_document"
-                        class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                    />
-                    @if($isEditing && $proof_document === null)
-                        <div class="mt-2">
-                            <small class="text-gray-500">Biarkan kosong untuk menyimpan dokumen yang ada</small>
+            <form wire:submit.prevent="saveDebtModal" class="space-y-6">
+                <!-- Required Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Wajib
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
+                                Jumlah Hutang (Rp)
+                            </label>
+                            <input
+                                id="amount"
+                                class="w-full px-3 py-2 border {{ $errors->has('amount') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                type="number"
+                                step="0.01"
+                                wire:model="amount"
+                                placeholder="Masukkan jumlah hutang"
+                            />
+                            @error('amount')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
                         </div>
-                    @endif
-                    @error('proof_document')
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
-                    @enderror
+
+                        <!-- Creditor -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="creditor">
+                                Pemberi Hutang
+                            </label>
+                            <div x-data="{
+                                readOnly: false,
+                                init() {
+                                    const updateReadOnly = (value) => {
+                                        this.readOnly = String(value) === '3';
+                                    };
+                                    $watch('$wire.debt_type_id', updateReadOnly);
+                                    updateReadOnly(@entangle('debt_type_id'));
+                                }
+                            }">
+                                <input
+                                    id="creditor"
+                                    class="w-full px-3 py-2 border {{ $errors->has('creditor') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300 {{ $debt_type_id == 3 ? 'bg-gray-50 dark:bg-gray-600' : '' }}"
+                                    type="text"
+                                    wire:model="creditor"
+                                    placeholder="{{ $debt_type_id == 3 ? 'Nama karyawan akan terisi otomatis' : 'Masukkan nama pemberi hutang' }}"
+                                    :readonly="readOnly"
+                                    :class="{ 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed': readOnly }"
+                                />
+                                <p x-show="readOnly" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                    Nama karyawan akan terisi otomatis saat memilih karyawan
+                                </p>
+                            </div>
+                            @error('creditor')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Debt Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="debt_type_id">
+                                Jenis Hutang
+                            </label>
+                            <select
+                                id="debt_type_id"
+                                class="w-full px-3 py-2 border {{ $errors->has('debt_type_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="debt_type_id"
+                                x-data
+                                x-on:change="$dispatch('debt-type-changed', { value: $el.value })"
+                            >
+                                <option value="">Pilih Jenis Hutang</option>
+                                @foreach($debtTypes as $debtType)
+                                    <option value="{{ $debtType->id }}">{{ $debtType->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('debt_type_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optional Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Opsional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Due Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="due_date">
+                                Tanggal Jatuh Tempo (DD-MM-YYYY)
+                            </label>
+                            <input
+                                id="due_date"
+                                class="w-full px-3 py-2 border {{ $errors->has('due_date') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                type="text"
+                                placeholder="DD-MM-YYYY"
+                                wire:model="due_date"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let input = e.target.value.replace(/\D/g, '');
+                                        let formatted = '';
+
+                                        if (input.length > 0) {
+                                            formatted = input.substring(0, 2); // Day
+                                            if (input.length >= 3) {
+                                                formatted += '-' + input.substring(2, 4); // Month
+                                                if (input.length >= 5) {
+                                                    formatted += '-' + input.substring(4, 8); // Year
+                                                }
+                                            }
+                                        }
+
+                                        $el.value = formatted;
+                                    });
+
+                                    $el.addEventListener('blur', function(e) {
+                                        // Validate date format on blur
+                                        let dateValue = e.target.value;
+                                        let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                        let match = dateValue.match(datePattern);
+
+                                        if (match) {
+                                            let day = parseInt(match[1]);
+                                            let month = parseInt(match[2]);
+                                            let year = parseInt(match[3]);
+
+                                            // Basic validation
+                                            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                // You can add custom validation here
+                                            }
+                                        }
+                                    });
+                                "
+                            />
+                            @error('due_date')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Employee Selection - Only show for Hutang Gaji Karyawan -->
+                        <div x-data="{
+                            showEmployee: false,
+                            init() {
+                                $watch('$wire.debt_type_id', (value) => {
+                                    this.showEmployee = value == '3';
+                                });
+                                this.showEmployee = @entangle('debt_type_id') == '3';
+                            }
+                        }" x-show="showEmployee" x-transition>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="employee_id">
+                                Nama Karyawan <span class="text-red-500">*</span>
+                            </label>
+                            <select
+                                id="employee_id"
+                                class="w-full px-3 py-2 border {{ $errors->has('employee_id') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="employee_id"
+                            >
+                                <option value="">Pilih Karyawan</option>
+                                @foreach($employees as $employee)
+                                    <option value="{{ $employee->id }}">{{ $employee->name }} ({{ $employee->ndp }})</option>
+                                @endforeach
+                            </select>
+                            @error('employee_id')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Cicilan per Bulan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="cicilan_per_bulan">
+                                Cicilan per Bulan
+                            </label>
+                            <input
+                                id="cicilan_per_bulan"
+                                class="w-full px-3 py-2 border {{ $errors->has('cicilan_per_bulan') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                type="number"
+                                step="0.01"
+                                wire:model="cicilan_per_bulan"
+                                placeholder="Masukkan cicilan per bulan"
+                            />
+                            @error('cicilan_per_bulan')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Description -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="description">
+                                Keterangan
+                            </label>
+                            <textarea
+                                id="description"
+                                class="w-full px-3 py-2 border {{ $errors->has('description') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                                wire:model="description"
+                                placeholder="Masukkan keterangan detail hutang"
+                                rows="2"
+                            ></textarea>
+                            @error('description')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Proof Document -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
+                                Bukti Dokumen
+                            </label>
+                            <input
+                                id="proof_document"
+                                type="file"
+                                wire:model.lazy="proof_document"
+                                class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                            />
+                            @if($isEditing && $proof_document === null)
+                                <div class="mt-2">
+                                    <small class="text-gray-500">Biarkan kosong untuk menyimpan dokumen yang ada</small>
+                                </div>
+                            @endif
+                            @error('proof_document')
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
             </form>
         </x-slot>

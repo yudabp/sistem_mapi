@@ -28,7 +28,7 @@ class Employee extends Model
 
     protected $casts = [
         'monthly_salary' => 'decimal:2',
-        'family_composition' => 'integer',
+        'family_composition' => 'string', // Changed from integer to string since we're now storing text
         'family_composition_id' => 'integer',
         'hire_date' => 'date',
     ];
@@ -82,14 +82,14 @@ class Employee extends Model
     }
 
     /**
-     * Get the family composition number attribute (fallback to string field).
+     * Get the family composition name attribute (fallback to string field).
      */
-    public function getFamilyCompositionNumberAttribute(): int
+    public function getFamilyCompositionNameAttribute(): string
     {
         if (isset($this->attributes['family_composition']) && !is_null($this->attributes['family_composition'])) {
-            return (int) $this->attributes['family_composition'];
+            return (string) $this->attributes['family_composition'];
         }
         
-        return $this->familyComposition?->number ?? 0;
+        return $this->familyComposition?->name ?? '';
     }
 }

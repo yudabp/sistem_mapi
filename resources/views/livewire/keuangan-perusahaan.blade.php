@@ -833,184 +833,206 @@
                 </div>
             @endif
             
-            <form wire:submit.prevent="saveTransactionModal" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Transaction Date -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
-                        Tanggal Transaksi (DD-MM-YYYY)
-                    </label>
-                    <input 
-                        id="transaction_date"
-                        class="w-full px-3 py-2 border {{ $errors->has('transaction_date') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        placeholder="DD-MM-YYYY"
-                        wire:model="transaction_date"
-                        x-data
-                        x-init="
-                            $el.addEventListener('input', function(e) {
-                                let input = e.target.value.replace(/\D/g, '');
-                                let formatted = '';
-                                
-                                if (input.length > 0) {
-                                    formatted = input.substring(0, 2); // Day
-                                    if (input.length >= 3) {
-                                        formatted += '-' + input.substring(2, 4); // Month
-                                        if (input.length >= 5) {
-                                            formatted += '-' + input.substring(4, 8); // Year
+            <form wire:submit.prevent="saveTransactionModal" class="space-y-6">
+                <!-- Required Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Wajib
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Transaction Date -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_date">
+                                Tanggal Transaksi (DD-MM-YYYY)
+                            </label>
+                            <input 
+                                id="transaction_date"
+                                class="w-full px-3 py-2 border {{ $errors->has('transaction_date') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                placeholder="DD-MM-YYYY"
+                                wire:model="transaction_date"
+                                x-data
+                                x-init="
+                                    $el.addEventListener('input', function(e) {
+                                        let input = e.target.value.replace(/\D/g, '');
+                                        let formatted = '';
+                                        
+                                        if (input.length > 0) {
+                                            formatted = input.substring(0, 2); // Day
+                                            if (input.length >= 3) {
+                                                formatted += '-' + input.substring(2, 4); // Month
+                                                if (input.length >= 5) {
+                                                    formatted += '-' + input.substring(4, 8); // Year
+                                                }
+                                            }
                                         }
-                                    }
-                                }
-                                
-                                $el.value = formatted;
-                            });
-                            
-                            $el.addEventListener('blur', function(e) {
-                                // Validate date format on blur
-                                let dateValue = e.target.value;
-                                let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-                                let match = dateValue.match(datePattern);
-                                
-                                if (match) {
-                                    let day = parseInt(match[1]);
-                                    let month = parseInt(match[2]);
-                                    let year = parseInt(match[3]);
+                                        
+                                        $el.value = formatted;
+                                    });
                                     
-                                    // Basic validation
-                                    if (day < 1 || day > 31 || month < 1 || month > 12) {
-                                        // You can add custom validation here
-                                    }
-                                }
-                            });
-                        "
-                    />
-                    @error('transaction_date') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Transaction Type -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
-                        Jenis Transaksi
-                    </label>
-                    <select 
-                        id="transaction_type"
-                        class="w-full px-3 py-2 border {{ $errors->has('transaction_type') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="transaction_type"
-                    >
-                        <option value="income">Pemasukan</option>
-                        <option value="expense">Pengeluaran</option>
-                    </select>
-                    @error('transaction_type') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Amount -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
-                        Jumlah (Rp)
-                    </label>
-                    <input 
-                        id="amount"
-                        class="w-full px-3 py-2 border {{ $errors->has('amount') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="number" 
-                        step="0.01"
-                        wire:model="amount"
-                        placeholder="Masukkan jumlah"
-                    />
-                    @error('amount') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Sumber/Tujuan -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="source_destination">
-                        Sumber/Tujuan
-                    </label>
-                    <input 
-                        id="source_destination"
-                        class="w-full px-3 py-2 border {{ $errors->has('source_destination') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="source_destination"
-                        placeholder="Masukkan sumber atau tujuan"
-                    />
-                    @error('source_destination') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Diterima oleh -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="received_by">
-                        Diterima oleh
-                    </label>
-                    <input 
-                        id="received_by"
-                        class="w-full px-3 py-2 border {{ $errors->has('received_by') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="received_by"
-                        placeholder="Masukkan nama orang yang menerima"
-                    />
-                    @error('received_by') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Kategori -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category">
-                        Kategori
-                    </label>
-                    <input 
-                        id="category"
-                        class="w-full px-3 py-2 border {{ $errors->has('category') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        type="text" 
-                        wire:model="category"
-                        placeholder="Masukkan kategori transaksi"
-                    />
-                    @error('category') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Notes -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="notes">
-                        Catatan
-                    </label>
-                    <textarea 
-                        id="notes"
-                        class="w-full px-3 py-2 border {{ $errors->has('notes') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
-                        wire:model="notes"
-                        placeholder="Masukkan catatan tambahan"
-                        rows="2"
-                    ></textarea>
-                    @error('notes') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
-                </div>
-
-                <!-- Dokumen Bukti -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
-                        Dokumen Bukti
-                    </label>
-                    <input
-                        id="proof_document"
-                        type="file"
-                        wire:model.lazy="proof_document"
-                        class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
-                    />
-                    @if($isEditing && $proof_document === null)
-                        <div class="mt-2">
-                            <small class="text-gray-500">Leave blank to keep existing document</small>
+                                    $el.addEventListener('blur', function(e) {
+                                        // Validate date format on blur
+                                        let dateValue = e.target.value;
+                                        let datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+                                        let match = dateValue.match(datePattern);
+                                        
+                                        if (match) {
+                                            let day = parseInt(match[1]);
+                                            let month = parseInt(match[2]);
+                                            let year = parseInt(match[3]);
+                                            
+                                            // Basic validation
+                                            if (day < 1 || day > 31 || month < 1 || month > 12) {
+                                                // You can add custom validation here
+                                            }
+                                        }
+                                    });
+                                "
+                            />
+                            @error('transaction_date') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
                         </div>
-                    @endif
-                    @error('proof_document') 
-                        <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
-                    @enderror
+
+                        <!-- Transaction Type -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="transaction_type">
+                                Jenis Transaksi
+                            </label>
+                            <select 
+                                id="transaction_type"
+                                class="w-full px-3 py-2 border {{ $errors->has('transaction_type') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model="transaction_type"
+                            >
+                                <option value="income">Pemasukan</option>
+                                <option value="expense">Pengeluaran</option>
+                            </select>
+                            @error('transaction_type') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Amount -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="amount">
+                                Jumlah (Rp)
+                            </label>
+                            <input 
+                                id="amount"
+                                class="w-full px-3 py-2 border {{ $errors->has('amount') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="number" 
+                                step="0.01"
+                                wire:model="amount"
+                                placeholder="Masukkan jumlah"
+                            />
+                            @error('amount') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Sumber/Tujuan -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="source_destination">
+                                Sumber/Tujuan
+                            </label>
+                            <input 
+                                id="source_destination"
+                                class="w-full px-3 py-2 border {{ $errors->has('source_destination') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="source_destination"
+                                placeholder="Masukkan sumber atau tujuan"
+                            />
+                            @error('source_destination') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Kategori -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="category">
+                                Kategori
+                            </label>
+                            <input 
+                                id="category"
+                                class="w-full px-3 py-2 border {{ $errors->has('category') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="category"
+                                placeholder="Masukkan kategori transaksi"
+                            />
+                            @error('category') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Optional Data Section -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
+                        <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                        Data Opsional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Diterima oleh -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="received_by">
+                                Diterima oleh
+                            </label>
+                            <input 
+                                id="received_by"
+                                class="w-full px-3 py-2 border {{ $errors->has('received_by') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                type="text" 
+                                wire:model="received_by"
+                                placeholder="Masukkan nama orang yang menerima"
+                            />
+                            @error('received_by') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="notes">
+                                Catatan
+                            </label>
+                            <textarea 
+                                id="notes"
+                                class="w-full px-3 py-2 border {{ $errors->has('notes') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300" 
+                                wire:model="notes"
+                                placeholder="Masukkan catatan tambahan"
+                                rows="2"
+                            ></textarea>
+                            @error('notes') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+
+                        <!-- Dokumen Bukti -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" for="proof_document">
+                                Dokumen Bukti
+                            </label>
+                            <input
+                                id="proof_document"
+                                type="file"
+                                wire:model.lazy="proof_document"
+                                class="w-full px-3 py-2 border {{ $errors->has('proof_document') ? 'border-red-500' : 'border-gray-300' }} dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 dark:bg-gray-700 dark:text-gray-300"
+                            />
+                            @if($isEditing && $proof_document === null)
+                                <div class="mt-2">
+                                    <small class="text-gray-500">Leave blank to keep existing document</small>
+                                </div>
+                            @endif
+                            @error('proof_document') 
+                                <span class="text-red-500 text-sm mt-1">{{ $message }}</span> 
+                            @enderror
+                        </div>
+                    </div>
                 </div>
             </form>
         </x-slot>
