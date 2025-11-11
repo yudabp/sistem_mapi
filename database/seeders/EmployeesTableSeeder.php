@@ -40,12 +40,12 @@ class EmployeesTableSeeder extends Seeder
         $supervisorPos = Position::where('name', 'Supervisor')->first();
 
         // Get family composition records
-        $family1 = FamilyComposition::where('number', 1)->first();
-        $family2 = FamilyComposition::where('number', 2)->first();
-        $family3 = FamilyComposition::where('number', 3)->first();
-        $family4 = FamilyComposition::where('number', 4)->first();
-        $family5 = FamilyComposition::where('number', 5)->first();
-        $family6 = FamilyComposition::where('number', 6)->first();
+        $family1 = FamilyComposition::where('name', 'TK/1')->first();
+        $family2 = FamilyComposition::where('name', 'TK/2')->first();
+        $family3 = FamilyComposition::where('name', 'TK/3')->first();
+        $family4 = FamilyComposition::where('name', 'TK/4')->first();
+        $family5 = FamilyComposition::where('name', 'TK/5')->first();
+        $family6 = FamilyComposition::where('name', 'TK/2')->first();
 
         // Get employment status records
         $statusActive = EmploymentStatus::where('value', 'active')->first();
@@ -60,7 +60,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Foreman',
                 'position_id' => $foremanPos?->id,
                 'grade' => 'B2',
-                'family_composition' => 4,
+                'family_composition' => $family4?->name,
                 'family_composition_id' => $family4?->id,
                 'monthly_salary' => 7500000,
                 'status' => 'active',
@@ -81,7 +81,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Sales Manager',
                 'position_id' => $salesManagerPos?->id,
                 'grade' => 'A1',
-                'family_composition' => 3,
+                'family_composition' => $family3?->name,
                 'family_composition_id' => $family3?->id,
                 'monthly_salary' => 12000000,
                 'status' => 'active',
@@ -102,7 +102,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Finance Officer',
                 'position_id' => $financeOfficerPos?->id,
                 'grade' => 'C1',
-                'family_composition' => 5,
+                'family_composition' => $family5?->name,
                 'family_composition_id' => $family5?->id,
                 'monthly_salary' => 8500000,
                 'status' => 'active',
@@ -122,7 +122,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Operator',
                 'position_id' => $operatorPos?->id,
                 'grade' => 'C2',
-                'family_composition' => 2,
+                'family_composition' => $family2?->name,
                 'family_composition_id' => $family2?->id,
                 'monthly_salary' => 5500000,
                 'status' => 'active',
@@ -142,7 +142,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'HR Manager',
                 'position_id' => $hrManagerPos?->id,
                 'grade' => 'A2',
-                'family_composition' => 3,
+                'family_composition' => $family3?->name,
                 'family_composition_id' => $family3?->id,
                 'monthly_salary' => 10000000,
                 'status' => 'active',
@@ -162,7 +162,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'IT Support',
                 'position_id' => $itSupportPos?->id,
                 'grade' => 'B1',
-                'family_composition' => 2,
+                'family_composition' => $family2?->name,
                 'family_composition_id' => $family2?->id,
                 'monthly_salary' => 7000000,
                 'status' => 'active',
@@ -182,7 +182,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Sales Manager',
                 'position_id' => $salesManagerPos?->id,
                 'grade' => 'A1',
-                'family_composition' => 4,
+                'family_composition' => $family4?->name,
                 'family_composition_id' => $family4?->id,
                 'monthly_salary' => 11500000,
                 'status' => 'active',
@@ -202,7 +202,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Finance Officer',
                 'position_id' => $financeOfficerPos?->id,
                 'grade' => 'C1',
-                'family_composition' => 1,
+                'family_composition' => $family1?->name,
                 'family_composition_id' => $family1?->id,
                 'monthly_salary' => 8000000,
                 'status' => 'active',
@@ -222,7 +222,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Supervisor',
                 'position_id' => $supervisorPos?->id,
                 'grade' => 'B3',
-                'family_composition' => 6,
+                'family_composition' => $family6?->name,
                 'family_composition_id' => $family6?->id,
                 'monthly_salary' => 9000000,
                 'status' => 'active',
@@ -242,7 +242,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Operator',
                 'position_id' => $operatorPos?->id,
                 'grade' => 'C2',
-                'family_composition' => 1,
+                'family_composition' => $family1?->name,
                 'family_composition_id' => $family1?->id,
                 'monthly_salary' => 5200000,
                 'status' => 'active',
@@ -262,7 +262,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Operator',
                 'position_id' => $operatorPos?->id,
                 'grade' => 'C2',
-                'family_composition' => 3,
+                'family_composition' => $family3?->name,
                 'family_composition_id' => $family3?->id,
                 'monthly_salary' => 5400000,
                 'status' => 'inactive',
@@ -282,7 +282,7 @@ class EmployeesTableSeeder extends Seeder
                 'position' => 'Director',
                 'position_id' => $directorPos?->id,
                 'grade' => 'A1',
-                'family_composition' => 4,
+                'family_composition' => $family4?->name,
                 'family_composition_id' => $family4?->id,
                 'monthly_salary' => 25000000,
                 'status' => 'active',

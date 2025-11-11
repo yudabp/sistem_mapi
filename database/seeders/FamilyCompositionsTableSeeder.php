@@ -14,11 +14,11 @@ class FamilyCompositionsTableSeeder extends Seeder
     public function run(): void
     {
         $familyCompositions = [
-            ['number' => 1, 'description' => 'Satu Kepala Keluarga', 'is_active' => true],
-            ['number' => 2, 'description' => 'Dua Orang Anak', 'is_active' => true],
-            ['number' => 3, 'description' => 'Tiga Orang Anak', 'is_active' => true],
-            ['number' => 4, 'description' => 'Empat Orang Anak', 'is_active' => true],
-            ['number' => 5, 'description' => 'Lima Orang Anak', 'is_active' => true],
+            ['name' => 'TK/1', 'description' => 'Satu Kepala Keluarga', 'is_active' => true],
+            ['name' => 'TK/2', 'description' => 'Dua Orang Anak', 'is_active' => true],
+            ['name' => 'TK/3', 'description' => 'Tiga Orang Anak', 'is_active' => true],
+            ['name' => 'TK/4', 'description' => 'Empat Orang Anak', 'is_active' => true],
+            ['name' => 'TK/5', 'description' => 'Lima Orang Anak', 'is_active' => true],
         ];
 
         foreach ($familyCompositions as $familyComposition) {

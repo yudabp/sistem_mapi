@@ -234,7 +234,7 @@ class Employees extends Component
             $this->monthly_salary = $employee->monthly_salary;
             $this->status = $employee->status; // Keep for backward compatibility
             $this->employment_status_id = $employee->employment_status_id;
-            $this->hire_date = $employee->hire_date->format('d-m-Y'); // Format for DD-MM-YYYY display
+            $this->hire_date = $employee->hire_date ? $employee->hire_date->format('d-m-Y') : null; // Format for DD-MM-YYYY display, handle null
             $this->address = $employee->address;
             $this->phone = $employee->phone;
             $this->email = $employee->email;
