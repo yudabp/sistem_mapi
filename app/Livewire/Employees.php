@@ -66,6 +66,29 @@ class Employees extends Component
 
     protected $queryString = ['search', 'departmentFilter'];
 
+    /**
+     * Intercept property updates to handle empty values
+     */
+    public function updatedFamilyCompositionId($value)
+    {
+        $this->family_composition_id = $value === '' ? null : $value;
+    }
+
+    public function updatedDepartmentId($value)
+    {
+        $this->department_id = $value === '' ? null : $value;
+    }
+
+    public function updatedPositionId($value)
+    {
+        $this->position_id = $value === '' ? null : $value;
+    }
+
+    public function updatedEmploymentStatusId($value)
+    {
+        $this->employment_status_id = $value === '' ? null : $value;
+    }
+
     public $importFile = null;
     public $exportStartDate = null;
     public $exportEndDate = null;

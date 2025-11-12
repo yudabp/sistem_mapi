@@ -936,4 +936,17 @@ class BukuKasKebunComponent extends Component
             'end_date' => $this->exportEndDate,
         ]);
     }
+
+    /**
+     * Intercept property updates to handle empty values
+     */
+    public function updatedKpId($value)
+    {
+        $this->kp_id = $value === '' ? null : $value;
+    }
+
+    public function updatedDebtId($value)
+    {
+        $this->debt_id = $value === '' ? null : $value;
+    }
 }

@@ -640,4 +640,17 @@ class Debts extends Component
             'end_date' => $this->exportEndDate,
         ]);
     }
+
+    /**
+     * Intercept property updates to handle empty values
+     */
+    public function updatedDebtTypeId($value)
+    {
+        $this->debt_type_id = $value === '' ? null : $value;
+    }
+
+    public function updatedEmployeeId($value)
+    {
+        $this->employee_id = $value === '' ? null : $value;
+    }
 }

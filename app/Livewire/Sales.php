@@ -658,4 +658,12 @@ class Sales extends Component
             'end_date' => $this->exportEndDate,
         ]);
     }
+
+    /**
+     * Intercept property updates to handle empty values
+     */
+    public function updatedProductionId($value)
+    {
+        $this->production_id = $value === '' ? null : $value;
+    }
 }
