@@ -1,6 +1,0 @@
-sp_number,tbs_quantity,kg_quantity,price_per_kg,total_amount,sale_date,customer_name,customer_address
-SP010,1000.5,950.2,2500,2375500,10/25/2025,PT Sawit Makmur,Jl. Raya Sawit No. 123, Medan
-SP011,1200.75,1140.8,2500,2852000,10/25/2025,CV Minyak Nabati,Jl. Kemiri Raya No. 45, Jakarta
-SP012,950.25,902.75,2500,2256875,10/25/2025,PT Kelapa Sawit Indonesia,Jl. Tanjung Morawa No. 78, Sumatera Utara
-SP013,1025.75,975.3,2600,2535780,10/26/2025,CV Sawit Sejahtera,Jl. Binjai No. 101, Sumatera Utara
-SP014,1150.5,1090.25,2450,2670612.5,10/26/2025,PT Minyak Sawit Makmur,Jl. Stabat No. 202, Sumatera Utara
