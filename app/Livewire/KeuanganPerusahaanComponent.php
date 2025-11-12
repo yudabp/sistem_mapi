@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\KeuanganPerusahaan;
 use App\Models\BukuKasKebun;
 use App\Services\FinancialTransactionService;
@@ -19,6 +20,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class KeuanganPerusahaanComponent extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $transaction_date; // This will hold the DD-MM-YYYY format from the view
@@ -31,10 +33,10 @@ class KeuanganPerusahaanComponent extends Component
     public $notes;
     public $category;
     
-    public $transactions = [];
     public $search = '';
     public $dateFilter = '';
     public $typeFilter = '';
+    public $perPage = 10;
 
     // Metric filter
     public $metricFilter = 'all'; // Default to all time
@@ -73,6 +75,11 @@ class KeuanganPerusahaanComponent extends Component
     public $exportEndDate = null;
     public $showImportModal = false;
     
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'typeFilter', 'metricFilter', 'perPage', 'page'];
+
     protected $rules = [
         'transaction_date' => 'required|date_format:d-m-Y',
         'transaction_type' => 'required|in:income,expense',
@@ -85,9 +92,8 @@ class KeuanganPerusahaanComponent extends Component
     public function mount()
     {
         $this->mountWithRoleCheck();
-        $this->loadTransactions();
         $this->relatedBkkTransactions = collect();
-        
+
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
             $this->exportStartDate = now()->subMonth()->format('d-m-Y');
@@ -108,6 +114,11 @@ class KeuanganPerusahaanComponent extends Component
     public function render()
     {
         $filteredTransactions = $this->filterTransactions();
+        
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredTransactions) {
+            $filteredTransactions->withPath('/keuangan-perusahaan');
+        }
         
         return view('livewire.keuangan-perusahaan', [
             'transactions' => $filteredTransactions,
@@ -146,7 +157,7 @@ class KeuanganPerusahaanComponent extends Component
         if ($result['success']) {
             // Reset form
             $this->resetForm();
-            $this->loadTransactions();
+            // Transactions are loaded in render() method
             
             $message = $result['message'];
             if ($result['bkk_transaction']) {
@@ -173,91 +184,86 @@ class KeuanganPerusahaanComponent extends Component
 
     public function loadTransactions()
     {
-        $this->transactions = KeuanganPerusahaan::orderBy('transaction_date', 'desc')->get();
+        // This method is no longer needed since we're using query builder directly
+        // Kept for compatibility if referenced elsewhere
+        $this->transactions = collect();
     }
 
     public function filterTransactions()
     {
-        $transactions = $this->transactions;
+        $query = KeuanganPerusahaan::orderBy('transaction_date', 'desc');
 
         if ($this->search) {
-            $transactions = $transactions->filter(function ($item) {
-                return stripos($item->transaction_number, $this->search) !== false ||
-                       stripos($item->source_destination, $this->search) !== false ||
-                       stripos($item->received_by, $this->search) !== false ||
-                       stripos($item->category, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('transaction_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('source_destination', 'like', '%' . $this->search . '%')
+                  ->orWhere('received_by', 'like', '%' . $this->search . '%')
+                  ->orWhere('category', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('transaction_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('transaction_date', '=', substr($this->dateFilter, 5, 2));
         }
 
         if ($this->typeFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_type === $this->typeFilter;
-            });
+            $query->where('transaction_type', '=', $this->typeFilter);
         }
 
         // Apply metric filter
-        $transactions = $this->applyMetricFilter($transactions);
+        $query = $this->applyMetricFilter($query);
 
-        return $transactions;
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/keuangan-perusahaan');
+        
+        return $paginator;
     }
 
-    public function applyMetricFilter($transactions)
+    public function applyMetricFilter($query)
     {
         $now = now();
-        
+
         switch ($this->metricFilter) {
             case 'today':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->toDateString() === $now->toDateString();
-                });
+                $query->whereDate('transaction_date', $now->toDateString());
                 break;
             case 'yesterday':
-                $yesterday = $now->copy()->subDay();
-                $transactions = $transactions->filter(function ($item) use ($yesterday) {
-                    return $item->transaction_date->toDateString() === $yesterday->toDateString();
-                });
+                $yesterday = $now->subDay();
+                $query->whereDate('transaction_date', $yesterday->toDateString());
                 break;
             case 'this_week':
-                $startOfWeek = $now->copy()->startOfWeek();
-                $endOfWeek = $now->copy()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($startOfWeek, $endOfWeek) {
-                    return $item->transaction_date->between($startOfWeek, $endOfWeek);
-                });
+                $query->whereBetween('transaction_date', [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString()
+                ]);
                 break;
             case 'last_week':
-                $lastWeekStart = $now->copy()->subWeek()->startOfWeek();
-                $lastWeekEnd = $now->copy()->subWeek()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($lastWeekStart, $lastWeekEnd) {
-                    return $item->transaction_date->between($lastWeekStart, $lastWeekEnd);
-                });
+                $lastWeekStart = $now->subWeek()->startOfWeek();
+                $lastWeekEnd = $now->subWeek()->endOfWeek();
+                $query->whereBetween('transaction_date', [
+                    $lastWeekStart->toDateString(),
+                    $lastWeekEnd->toDateString()
+                ]);
                 break;
             case 'this_month':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->year === $now->year && 
-                           $item->transaction_date->month === $now->month;
-                });
+                $query->whereYear('transaction_date', $now->year)
+                      ->whereMonth('transaction_date', $now->month);
                 break;
             case 'last_month':
-                $lastMonth = $now->copy()->subMonth();
-                $transactions = $transactions->filter(function ($item) use ($lastMonth) {
-                    return $item->transaction_date->year === $lastMonth->year && 
-                           $item->transaction_date->month === $lastMonth->month;
-                });
+                $lastMonth = $now->subMonth();
+                $query->whereYear('transaction_date', $lastMonth->year)
+                      ->whereMonth('transaction_date', $lastMonth->month);
                 break;
             case 'custom':
                 if ($this->startDate && $this->endDate) {
-                    $transactions = $transactions->filter(function ($item) {
-                        return $item->transaction_date->between(
-                            \Carbon\Carbon::parse($this->startDate),
-                            \Carbon\Carbon::parse($this->endDate)
-                        );
-                    });
+                    $query->whereBetween('transaction_date', [
+                        \Carbon\Carbon::parse($this->startDate),
+                        \Carbon\Carbon::parse($this->endDate)
+                    ]);
                 }
                 break;
             case 'all':
@@ -265,20 +271,22 @@ class KeuanganPerusahaanComponent extends Component
                 // No additional filtering for 'all' option
                 break;
         }
-        
-        return $transactions;
+
+        return $query;
     }
 
     public function getTotalIncome()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'income')->sum('amount');
+        $query = KeuanganPerusahaan::where('transaction_type', 'income');
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('amount');
     }
 
     public function getTotalExpenses()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'expense')->sum('amount');
+        $query = KeuanganPerusahaan::where('transaction_type', 'expense');
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('amount');
     }
 
     public function getBalance()
@@ -295,13 +303,16 @@ class KeuanganPerusahaanComponent extends Component
                 Storage::disk('public')->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
+            // No need to loadTransactions anymore as we don't use it in the filter
         }
     }
 
     // Modal methods
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         
@@ -311,6 +322,9 @@ class KeuanganPerusahaanComponent extends Component
         } else {
             $this->showModal = true;
         }
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -333,10 +347,16 @@ class KeuanganPerusahaanComponent extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
     
     public function closeExpenseConfirmation()
@@ -359,13 +379,22 @@ class KeuanganPerusahaanComponent extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingTransactionId = null;
         $this->deletingTransactionName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteTransactionConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $transaction = KeuanganPerusahaan::find($this->deletingTransactionId);
         if ($transaction) {
@@ -374,15 +403,21 @@ class KeuanganPerusahaanComponent extends Component
                 Storage::disk('public')->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
+            // Transactions are loaded in render() method
             $this->setPersistentMessage('Keuangan Perusahaan transaction deleted successfully.', 'success');
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveTransactionModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             if ($this->isEditing) {
                 $this->updateTransaction();
@@ -391,13 +426,22 @@ class KeuanganPerusahaanComponent extends Component
             }
             
             $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Re-throw the ValidationException so Livewire can automatically display errors
             // This will keep the modal open and show validation errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
             throw $e;
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 
@@ -433,7 +477,6 @@ class KeuanganPerusahaanComponent extends Component
             ]);
 
             $this->setPersistentMessage('Keuangan Perusahaan transaction updated successfully.', 'success');
-            $this->loadTransactions();
         }
     }
 
@@ -523,7 +566,7 @@ class KeuanganPerusahaanComponent extends Component
             
             $this->setPersistentMessage('Keuangan Perusahaan transaction data imported successfully.', 'success');
             $this->closeImportModal();
-            $this->loadTransactions(); // Refresh the transaction list after import
+            // Transactions are loaded in render() method // Refresh the transaction list after import
         } catch (ExcelValidationException $e) {
             $failureMessages = [];
             $failures = $e->failures();
@@ -587,7 +630,7 @@ class KeuanganPerusahaanComponent extends Component
         
         return Excel::download($export, $filename);
     }
-    
+  
     public function exportToPdf()
     {
         $this->authorizeView();
@@ -596,5 +639,30 @@ class KeuanganPerusahaanComponent extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTransactionTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

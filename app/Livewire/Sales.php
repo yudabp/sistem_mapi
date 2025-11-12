@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Sale as SaleModel;
 use App\Models\Production as ProductionModel;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\SalesImport;
 use App\Exports\SalesExportWithHeaders;
@@ -19,6 +20,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Sales extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $sp_number; // Keep for backward compatibility
@@ -40,6 +42,7 @@ class Sales extends Component
     
     public $search = '';
     public $dateFilter = '';
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -67,7 +70,11 @@ class Sales extends Component
     // Export filter
     public $exportFilter = 'all'; // all, taxable, non_taxable
 
-    protected $queryString = ['search', 'dateFilter', 'metricFilter'];
+    public $perPage = 20;
+
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'metricFilter', 'perPage', 'page'];
 
     public $importFile = null;
     public $exportStartDate = null;
@@ -114,6 +121,11 @@ class Sales extends Component
     public function render()
     {
         $filteredSales = $this->filterSales();
+
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredSales) {
+            $filteredSales->withPath('/data-penjualan');
+        }
 
         return view('livewire.sales', [
             'sales' => $filteredSales,
@@ -314,7 +326,13 @@ class Sales extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->get();
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/data-penjualan');
+        
+        return $paginator;
     }
 
     public function applyMetricFilter($query)
@@ -396,9 +414,15 @@ class Sales extends Component
 
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         $this->showModal = true;
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -430,10 +454,16 @@ class Sales extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function confirmDelete($id, $sp_number)
@@ -445,13 +475,22 @@ class Sales extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingSaleId = null;
         $this->deletingSaleName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteSalesConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $sale = SaleModel::find($this->deletingSaleId);
         if ($sale) {
@@ -464,10 +503,16 @@ class Sales extends Component
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveSalesModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             if ($this->isEditing) {
                 $this->updateSale();
@@ -476,13 +521,21 @@ class Sales extends Component
             }
             
             $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Validation errors will be automatically handled by Livewire
             // We just need to make sure the modal stays open so user can see errors
             $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 
@@ -657,6 +710,26 @@ class Sales extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 
     /**

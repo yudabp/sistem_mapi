@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\FamilyComposition;
 
 class FamilyCompositions extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,9 +22,7 @@ class FamilyCompositions extends Component
     public $delete_id;
     public $search = '';
     public $deletingFamilyCompositionInfo = '';
-
-    // Data
-    public $family_compositions = [];
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|string|max:255|unique:family_compositions,name',
@@ -37,19 +37,25 @@ class FamilyCompositions extends Component
         'name.unique' => 'Nama susunan keluarga sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadFamilyCompositions();
-    }
-
     public function mount()
     {
-        $this->loadFamilyCompositions();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.family-compositions');
+        $query = FamilyComposition::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $family_compositions = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.family-compositions', [
+            'family_compositions' => $family_compositions,
+        ]);
     }
 
     // Modal methods
@@ -134,8 +140,7 @@ class FamilyCompositions extends Component
             $this->closeModal();
         }
 
-        $this->loadFamilyCompositions();
-    }
+        }
 
     public function deleteFamilyComposition()
     {
@@ -148,7 +153,6 @@ class FamilyCompositions extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadFamilyCompositions();
     }
 
     // Utility methods
@@ -164,18 +168,21 @@ class FamilyCompositions extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadFamilyCompositions();
+        $this->resetPage();
     }
-
-    public function loadFamilyCompositions()
+    public function gotoPage($page)
     {
-        $query = FamilyComposition::query();
-
-        if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
-
-        $this->family_compositions = $query->orderBy('name')->get();
+        $this->setPage($page);
     }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
 }

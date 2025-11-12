@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\VehicleNumber;
 
 class VehicleNumbers extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,10 +22,9 @@ class VehicleNumbers extends Component
     public $delete_id;
     public $search = '';
     public $deletingVehicleNumber = '';
+    public $perPage = 10;
 
-    // Data
-    public $vehicle_numbers;
-
+    
     protected $rules = [
         'number' => 'required|unique:vehicle_numbers,number',
         'description' => 'nullable',
@@ -35,19 +36,25 @@ class VehicleNumbers extends Component
         'number.unique' => 'Nomor polisi sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadVehicleNumbers();
-    }
-
     public function mount()
     {
-        $this->loadVehicleNumbers();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.vehicle-numbers');
+        $query = VehicleNumber::query();
+
+        if ($this->search) {
+            $query->where('number', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $vehicle_numbers = $query->orderBy('number')->paginate($this->perPage);
+
+        return view('livewire.vehicle-numbers', [
+            'vehicle_numbers' => $vehicle_numbers,
+        ]);
     }
 
     // Modal methods
@@ -131,8 +138,6 @@ class VehicleNumbers extends Component
             session()->flash('message', 'No Polisi berhasil ditambahkan.');
             $this->closeModal();
         }
-
-        $this->loadVehicleNumbers();
     }
 
     public function deleteVehicle()
@@ -146,7 +151,7 @@ class VehicleNumbers extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadVehicleNumbers();
+        // Transactions are loaded in render() method
     }
 
     // Utility methods
@@ -162,18 +167,21 @@ class VehicleNumbers extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadVehicleNumbers();
+        $this->resetPage();
     }
 
-    public function loadVehicleNumbers()
+    public function gotoPage($page)
     {
-        $query = VehicleNumber::query();
+        $this->setPage($page);
+    }
 
-        if ($this->search) {
-            $query->where('number', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
-        $this->vehicle_numbers = $query->orderBy('number')->get();
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

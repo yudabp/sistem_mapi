@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\EmploymentStatus;
 
 class EmploymentStatuses extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -21,9 +23,7 @@ class EmploymentStatuses extends Component
     public $delete_id;
     public $search = '';
     public $deletingEmploymentStatusName = '';
-
-    // Data
-    public $employment_statuses = [];
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|unique:employment_statuses,name',
@@ -39,19 +39,26 @@ class EmploymentStatuses extends Component
         'value.unique' => 'Nilai status karyawan sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadEmploymentStatuses();
-    }
-
     public function mount()
     {
-        $this->loadEmploymentStatuses();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.employment-statuses');
+        $query = EmploymentStatus::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('value', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $employment_statuses = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.employment-statuses', [
+            'employment_statuses' => $employment_statuses,
+        ]);
     }
 
     // Modal methods
@@ -141,8 +148,7 @@ class EmploymentStatuses extends Component
             $this->closeModal();
         }
 
-        $this->loadEmploymentStatuses();
-    }
+        }
 
     public function deleteEmploymentStatus()
     {
@@ -155,7 +161,6 @@ class EmploymentStatuses extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadEmploymentStatuses();
     }
 
     // Utility methods
@@ -172,19 +177,21 @@ class EmploymentStatuses extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadEmploymentStatuses();
+        $this->resetPage();
     }
-
-    public function loadEmploymentStatuses()
+    public function gotoPage($page)
     {
-        $query = EmploymentStatus::query();
-
-        if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('value', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
-
-        $this->employment_statuses = $query->orderBy('name')->get();
+        $this->setPage($page);
     }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
 }

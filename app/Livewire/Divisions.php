@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Division;
 
 class Divisions extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,9 +22,7 @@ class Divisions extends Component
     public $delete_id;
     public $search = '';
     public $deletingDivisionName = '';
-
-    // Data
-    public $divisions;
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|unique:divisions,name',
@@ -35,19 +35,25 @@ class Divisions extends Component
         'name.unique' => 'Nama afdeling sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadDivisions();
-    }
-
     public function mount()
     {
-        $this->loadDivisions();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.divisions');
+        $query = Division::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $divisions = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.divisions', [
+            'divisions' => $divisions,
+        ]);
     }
 
     // Modal methods
@@ -132,7 +138,6 @@ class Divisions extends Component
             $this->closeModal();
         }
 
-        $this->loadDivisions();
     }
 
     public function deleteDivision()
@@ -146,7 +151,6 @@ class Divisions extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadDivisions();
     }
 
     // Utility methods
@@ -162,18 +166,21 @@ class Divisions extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadDivisions();
+        $this->resetPage();
     }
 
-    public function loadDivisions()
+    public function gotoPage($page)
     {
-        $query = Division::query();
+        $this->setPage($page);
+    }
 
-        if ($this->search) {
-            $query->where('name', 'like', "%{$this->search}%")
-                  ->orWhere('description', 'like', "%{$this->search}%");
-        }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
-        $this->divisions = $query->orderBy('name')->get();
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

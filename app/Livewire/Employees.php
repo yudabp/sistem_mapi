@@ -9,6 +9,7 @@ use App\Models\Position;
 use App\Models\FamilyComposition;
 use App\Models\EmploymentStatus;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\EmployeesImport;
 use App\Exports\EmployeesExportWithHeaders;
@@ -22,6 +23,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Employees extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
     public $ndp; // Employee ID
     public $name;
@@ -47,6 +49,7 @@ class Employees extends Component
     
     public $search = '';
     public $departmentFilter = null;
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -64,7 +67,16 @@ class Employees extends Component
     public $pageMessage = '';             // For page messages (non-form related)
     public $pageMessageType = 'success';  // For page messages (non-form related)
 
-    protected $queryString = ['search', 'departmentFilter'];
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $rules = [
+        'name' => 'required',
+        'position_id' => 'required|exists:positions,id',
+        'monthly_salary' => 'required|numeric',
+    ];
+
+    protected $queryString = ['search', 'departmentFilter', 'perPage', 'page'];
 
     /**
      * Intercept property updates to handle empty values
@@ -94,12 +106,6 @@ class Employees extends Component
     public $exportEndDate = null;
     public $showImportModal = false;
 
-    protected $rules = [
-        'name' => 'required',
-        'position_id' => 'required|exists:positions,id',
-        'monthly_salary' => 'required|numeric',
-    ];
-
     public function mount()
     {
         $this->mountWithRoleCheck();
@@ -116,11 +122,39 @@ class Employees extends Component
     public function render()
     {
         $filteredEmployees = $this->filterEmployees();
+        
+        // Calculate totals separately for all matching records
+        $query = EmployeeModel::orderBy('name', 'asc');
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('ndp', 'like', '%' . $this->search . '%')
+                  ->orWhere('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('department', 'like', '%' . $this->search . '%')
+                  ->orWhere('position', 'like', '%' . $this->search . '%')
+                  ->orWhereHas('department', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  })
+                  ->orWhereHas('position', function($subQ) {
+                      $subQ->where('name', 'like', '%' . $this->search . '%');
+                  });
+            });
+        }
+
+        if ($this->departmentFilter) {
+            $query->where('department_id', $this->departmentFilter);
+        }
+
+        $total_employees = $query->count();
+        $total_salary = $query->sum('monthly_salary');
+
+        // Get total counts for metrics (global statistics, not affected by search/filter)
+        $total_employees = EmployeeModel::count();
+        $total_salary = EmployeeModel::sum('monthly_salary');
 
         return view('livewire.employees', [
             'employees' => $filteredEmployees,
-            'total_employees' => $filteredEmployees->count(),
-            'total_salary' => $filteredEmployees->sum('monthly_salary'),
+            'total_employees' => $total_employees,
+            'total_salary' => $total_salary,
         ]);
     }
     
@@ -147,24 +181,30 @@ class Employees extends Component
         }
 
         // Get department, position, and employment status for backward compatibility
-        $dept = Department::find($this->department_id);
-        $pos = Position::find($this->position_id);
-        $famComp = FamilyComposition::find($this->family_composition_id);
-        $empStatus = EmploymentStatus::find($this->employment_status_id);
+        $dept = $this->department_id ? Department::find($this->department_id) : null;
+        $pos = $this->position_id ? Position::find($this->position_id) : null;
+        $famComp = $this->family_composition_id ? FamilyComposition::find($this->family_composition_id) : null;
+        $empStatus = $this->employment_status_id ? EmploymentStatus::find($this->employment_status_id) : null;
+
+        // Handle empty strings by converting to null
+        $departmentId = $this->department_id ?: null;
+        $positionId = $this->position_id ?: null;
+        $familyCompositionId = $this->family_composition_id ?: null;
+        $employmentStatusId = $this->employment_status_id ?: null;
 
         EmployeeModel::create([
             'ndp' => $this->ndp,
             'name' => $this->name,
             'department' => $dept?->name, // Keep for backward compatibility
-            'department_id' => $this->department_id,
+            'department_id' => $departmentId,
             'position' => $pos?->name, // Keep for backward compatibility
-            'position_id' => $this->position_id,
+            'position_id' => $positionId,
             'grade' => $this->grade,
             'family_composition' => $famComp?->name, // Keep for backward compatibility
-            'family_composition_id' => $this->family_composition_id,
+            'family_composition_id' => $familyCompositionId,
             'monthly_salary' => $this->monthly_salary,
             'status' => $empStatus?->value, // Keep for backward compatibility
-            'employment_status_id' => $this->employment_status_id,
+            'employment_status_id' => $employmentStatusId,
             'hire_date' => $hireDateForDb,
             'address' => $this->address,
             'phone' => $this->phone,
@@ -222,7 +262,13 @@ class Employees extends Component
             $query->where('department_id', $this->departmentFilter);
         }
 
-        return $query->get();
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/data-karyawan');
+        
+        return $paginator;
     }
 
     public function deleteEmployee($id)
@@ -235,9 +281,15 @@ class Employees extends Component
 
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         $this->showModal = true;
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -268,10 +320,16 @@ class Employees extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function confirmDelete($id, $name)
@@ -283,13 +341,22 @@ class Employees extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingEmployeeId = null;
         $this->deletingEmployeeName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteEmployeeConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $employee = EmployeeModel::find($this->deletingEmployeeId);
         if ($employee) {
@@ -298,18 +365,27 @@ class Employees extends Component
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveEmployeeModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         if ($this->isEditing) {
             $this->updateEmployee();
         } else {
             $this->saveEmployee();
         }
-        
+
         $this->setPersistentMessage('Employee record saved successfully.', 'success');
         $this->closeCreateModal();
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     protected function getValidationRules()
@@ -348,10 +424,16 @@ class Employees extends Component
         }
 
         // Get department, position, and employment status for backward compatibility
-        $dept = Department::find($this->department_id);
-        $pos = Position::find($this->position_id);
-        $famComp = FamilyComposition::find($this->family_composition_id);
-        $empStatus = EmploymentStatus::find($this->employment_status_id);
+        $dept = $this->department_id ? Department::find($this->department_id) : null;
+        $pos = $this->position_id ? Position::find($this->position_id) : null;
+        $famComp = $this->family_composition_id ? FamilyComposition::find($this->family_composition_id) : null;
+        $empStatus = $this->employment_status_id ? EmploymentStatus::find($this->employment_status_id) : null;
+
+        // Handle empty strings by converting to null
+        $departmentId = $this->department_id ?: null;
+        $positionId = $this->position_id ?: null;
+        $familyCompositionId = $this->family_composition_id ?: null;
+        $employmentStatusId = $this->employment_status_id ?: null;
 
         $employee = EmployeeModel::find($this->editingId);
         if ($employee) {
@@ -359,15 +441,15 @@ class Employees extends Component
                 'ndp' => $this->ndp,
                 'name' => $this->name,
                 'department' => $dept?->name, // Keep for backward compatibility
-                'department_id' => $this->department_id,
+                'department_id' => $departmentId,
                 'position' => $pos?->name, // Keep for backward compatibility
-                'position_id' => $this->position_id,
+                'position_id' => $positionId,
                 'grade' => $this->grade,
                 'family_composition' => $famComp?->name, // Keep for backward compatibility
-                'family_composition_id' => $this->family_composition_id,
+                'family_composition_id' => $familyCompositionId,
                 'monthly_salary' => $this->monthly_salary,
                 'status' => $empStatus?->value, // Keep for backward compatibility
-                'employment_status_id' => $this->employment_status_id,
+                'employment_status_id' => $employmentStatusId,
                 'hire_date' => $hireDateForDb,
                 'address' => $this->address,
                 'phone' => $this->phone,
@@ -520,5 +602,30 @@ class Employees extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDepartmentFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }
