@@ -401,7 +401,8 @@
                 <!-- Required Data Section -->
                 <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-5">
                     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center">
-                        <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="w-5 h-5 text-blue
+                        -500 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                         Data Wajib
@@ -1027,7 +1028,7 @@
                     </thead>
                     <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
                         @forelse($sales as $sale)
-                            <tr>
+                            <tr class="{{ $loop->index % 2 == 0 ? 'bg-white dark:bg-gray-800' : 'bg-green-50 dark:bg-gray-800' }}">
                                 <td class="p-2 whitespace-nowrap">
                                     <div class="text-left font-medium text-gray-800 dark:text-gray-100">{{ $sale->sp_number }}</div>
                                 </td>
@@ -1105,7 +1106,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr>
+                            <tr class="bg-white dark:bg-gray-800">
                                 <td colspan="7" class="p-2 text-center text-gray-500 dark:text-gray-400">
                                     Tidak ada data penjualan ditemukan
                                 </td>
@@ -1113,6 +1114,27 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-4 py-3 border-t border-gray-100 dark:border-gray-700/60">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                @if(method_exists($sales, 'firstItem'))
+                <div class="text-sm text-gray-500 dark:text-gray-400">
+                    Showing <span class="font-medium">{{ $sales->firstItem() }}</span> 
+                    to <span class="font-medium">{{ $sales->lastItem() }}</span> 
+                    of <span class="font-medium">{{ $sales->total() }}</span> results
+                </div>
+                @endif
+                
+                <div class="flex items-center justify-center sm:justify-end">
+                    @if(method_exists($sales, 'links'))
+                        {{ $sales->links() }}
+                    @else
+                        <!-- Fallback when not using pagination -->
+                    @endif
+                </div>
             </div>
         </div>
     </div>

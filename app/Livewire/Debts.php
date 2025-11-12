@@ -63,7 +63,10 @@ class Debts extends Component
     public $persistentMessage = '';
     public $messageType = 'success'; // success, error, warning, info
     
-    protected $queryString = ['search', 'statusFilter'];
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $queryString = ['search', 'statusFilter', 'metricFilter', 'perPage', 'page'];
 
     public $importFile = null;
     public $exportStartDate = null;
@@ -264,7 +267,7 @@ class Debts extends Component
             $query->where('status', '=', $this->statusFilter);
         }
 
-        return $query->get();
+        return $query->paginate($this->perPage);
     }
 
     public function markAsPaid($id)

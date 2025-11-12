@@ -87,6 +87,9 @@ class BukuKasKebunComponent extends Component
     public $exportStartDate = null;
     public $exportEndDate = null;
     public $showImportModal = false;
+    protected $queryString = ['search', 'dateFilter', 'typeFilter', 'metricFilter', 'perPage', 'page'];
+    public $perPage = 20;
+    public $page = 1;
     
     /**
      * Get the validation rules that apply to the request.
@@ -490,112 +493,101 @@ class BukuKasKebunComponent extends Component
 
     public function loadTransactions()
     {
-        $this->transactions = BukuKasKebun::orderBy('transaction_date', 'desc')->get();
+        // This method is no longer needed since we're using query builder directly
+        // Kept for compatibility if referenced elsewhere
+        $this->transactions = collect();
     }
 
     public function filterTransactions()
     {
-        $transactions = $this->transactions;
+        $query = BukuKasKebun::orderBy('transaction_date', 'desc');
 
         if ($this->search) {
-            $transactions = $transactions->filter(function ($item) {
-                return stripos($item->transaction_number, $this->search) !== false ||
-                       stripos($item->source_destination, $this->search) !== false ||
-                       stripos($item->received_by, $this->search) !== false ||
-                       stripos($item->category, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('transaction_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('source_destination', 'like', '%' . $this->search . '%')
+                  ->orWhere('received_by', 'like', '%' . $this->search . '%')
+                  ->orWhere('category', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('transaction_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('transaction_date', '=', substr($this->dateFilter, 5, 2));
         }
 
         if ($this->typeFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_type === $this->typeFilter;
-            });
+            $query->where('transaction_type', '=', $this->typeFilter);
         }
 
         // Apply metric filter
-        $transactions = $this->applyMetricFilter($transactions);
+        $query = $this->applyMetricFilter($query);
 
-        return $transactions;
+        return $query->paginate($this->perPage);
     }
 
-    public function applyMetricFilter($transactions)
+    public function applyMetricFilter($query)
+
     {
         $now = now();
-        
+
         switch ($this->metricFilter) {
-            case 'today':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->toDateString() === $now->toDateString();
-                });
+            case "today":
+                $query->whereDate("transaction_date", $now->toDateString());
                 break;
-            case 'yesterday':
-                $yesterday = $now->copy()->subDay();
-                $transactions = $transactions->filter(function ($item) use ($yesterday) {
-                    return $item->transaction_date->toDateString() === $yesterday->toDateString();
-                });
+            case "yesterday":
+                $yesterday = $now->subDay();
+                $query->whereDate("transaction_date", $yesterday->toDateString());
                 break;
-            case 'this_week':
-                $startOfWeek = $now->copy()->startOfWeek();
-                $endOfWeek = $now->copy()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($startOfWeek, $endOfWeek) {
-                    return $item->transaction_date->between($startOfWeek, $endOfWeek);
-                });
+            case "this_week":
+                $query->whereBetween("transaction_date", [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString()
+                ]);
                 break;
-            case 'last_week':
-                $lastWeekStart = $now->copy()->subWeek()->startOfWeek();
-                $lastWeekEnd = $now->copy()->subWeek()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($lastWeekStart, $lastWeekEnd) {
-                    return $item->transaction_date->between($lastWeekStart, $lastWeekEnd);
-                });
+            case "last_week":
+                $lastWeekStart = $now->subWeek()->startOfWeek();
+                $lastWeekEnd = $now->subWeek()->endOfWeek();
+                $query->whereBetween("transaction_date", [
+                    $lastWeekStart->toDateString(),
+                    $lastWeekEnd->toDateString()
+                ]);
                 break;
-            case 'this_month':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->year === $now->year && 
-                           $item->transaction_date->month === $now->month;
-                });
+            case "this_month":
+                $query->whereYear("transaction_date", $now->year)
+                      ->whereMonth("transaction_date", $now->month);
                 break;
-            case 'last_month':
-                $lastMonth = $now->copy()->subMonth();
-                $transactions = $transactions->filter(function ($item) use ($lastMonth) {
-                    return $item->transaction_date->year === $lastMonth->year && 
-                           $item->transaction_date->month === $lastMonth->month;
-                });
+            case "last_month":
+                $lastMonth = $now->subMonth();
+                $query->whereYear("transaction_date", $lastMonth->year)
+                      ->whereMonth("transaction_date", $lastMonth->month);
                 break;
-            case 'custom':
+            case "custom":
                 if ($this->startDate && $this->endDate) {
-                    $transactions = $transactions->filter(function ($item) {
-                        return $item->transaction_date->between(
-                            \Carbon\Carbon::parse($this->startDate),
-                            \Carbon\Carbon::parse($this->endDate)
-                        );
-                    });
+                    $query->whereBetween("transaction_date", [$this->startDate, $this->endDate]);
                 }
                 break;
-            case 'all':
+            case "all":
             default:
-                // No additional filtering for 'all' option
+                // No additional filtering for "all" option
                 break;
         }
-        
-        return $transactions;
+
+        return $query;
     }
 
     public function getTotalIncome()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'income')->sum('amount');
+        $query = BukuKasKebun::where("transaction_type", "income");
+        $query = $this->applyMetricFilter($query);
+        return $query->sum("amount");
     }
 
     public function getTotalExpenses()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'expense')->sum('amount');
+        $query = BukuKasKebun::where("transaction_type", "expense");
+        $query = $this->applyMetricFilter($query);
+        return $query->sum("amount");
     }
 
     public function getBalance()
@@ -609,10 +601,10 @@ class BukuKasKebunComponent extends Component
         if ($transaction) {
             // Delete the proof if it exists
             if ($transaction->proof_document_path) {
-                Storage::disk('public')->delete($transaction->proof_document_path);
+                \Illuminate\Support\Facades\Storage::disk("public")->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
+            // No need to loadTransactions anymore as we don"t use it in the filter
         }
     }
 
@@ -629,7 +621,7 @@ class BukuKasKebunComponent extends Component
         $transaction = BukuKasKebun::find($id);
         if ($transaction) {
             $this->editingId = $transaction->id;
-            $this->transaction_date = $transaction->transaction_date->format('d-m-Y'); // Format for DD-MM-YYYY display
+            $this->transaction_date = $transaction->transaction_date->format("d-m-Y"); // Format for DD-MM-YYYY display
             $this->transaction_type = $transaction->transaction_type;
             $this->amount = $transaction->amount;
             $this->source_destination = $transaction->source_destination;
@@ -637,7 +629,7 @@ class BukuKasKebunComponent extends Component
             $this->notes = $transaction->notes;
             $this->category = $transaction->category;
             $this->kp_id = $transaction->kp_id;
-            $this->proof_document = null; // We don't load the file, just keep path reference
+            $this->proof_document = null; // We don"t load the file, just keep path reference
             $this->isEditing = true;
             $this->showModal = true;
         }
@@ -662,7 +654,7 @@ class BukuKasKebunComponent extends Component
     {
         $this->showDeleteConfirmation = false;
         $this->deletingTransactionId = null;
-        $this->deletingTransactionName = '';
+        $this->deletingTransactionName = "";
     }
 
     public function deleteTransactionConfirmed()
@@ -672,13 +664,12 @@ class BukuKasKebunComponent extends Component
         if ($transaction) {
             // Delete the proof if it exists
             if ($transaction->proof_document_path) {
-                Storage::disk('public')->delete($transaction->proof_document_path);
+                \Illuminate\Support\Facades\Storage::disk("public")->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
-            $this->setPersistentMessage('Buku Kas Kebun transaction deleted successfully.', 'success');
+            $this->setPersistentMessage("Buku Kas Kebun transaction deleted successfully.", "success");
         }
-        
+
         $this->closeDeleteConfirmation();
     }
 
@@ -699,7 +690,7 @@ class BukuKasKebunComponent extends Component
             // This will keep the modal open and show validation errors
             throw $e;
         } catch (\Exception $e) {
-            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            $this->setPersistentMessage("Error: " . $e->getMessage(), "error");
             // Keep modal open so user can see the error
         }
     }
@@ -708,36 +699,35 @@ class BukuKasKebunComponent extends Component
     {
         $this->authorizeEdit();
         $validated = $this->validate();
-        
+
         $transaction = BukuKasKebun::find($this->editingId);
         if ($transaction) {
             // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
-            $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->transaction_date)->format('Y-m-d');
-            
+            $dateForDb = \DateTime::createFromFormat("d-m-Y", $this->transaction_date)->format("Y-m-d");
+
             // Handle file upload
             $proofPath = $transaction->proof_document_path; // Keep existing path if no new file
             if ($this->proof_document) {
                 // Delete old proof if exists
                 if ($transaction->proof_document_path) {
-                    Storage::disk('public')->delete($transaction->proof_document_path);
+                    \Illuminate\Support\Facades\Storage::disk("public")->delete($transaction->proof_document_path);
                 }
-                $proofPath = $this->proof_document->store('financial_proofs', 'public');
+                $proofPath = $this->proof_document->store("financial_proofs", "public");
             }
 
             $transaction->update([
-                'transaction_date' => $dateForDb,
-                'transaction_type' => $this->transaction_type,
-                'amount' => $this->amount,
-                'source_destination' => $this->source_destination,
-                'received_by' => $this->received_by,
-                'proof_document_path' => $proofPath,
-                'notes' => $this->notes,
-                'category' => $this->category,
-                'kp_id' => $this->kp_id,
+                "transaction_date" => $dateForDb,
+                "transaction_type" => $this->transaction_type,
+                "amount" => $this->amount,
+                "source_destination" => $this->source_destination,
+                "received_by" => $this->received_by,
+                "proof_document_path" => $proofPath,
+                "notes" => $this->notes,
+                "category" => $this->category,
+                "kp_id" => $this->kp_id,
             ]);
 
-            $this->setPersistentMessage('Buku Kas Kebun transaction updated successfully.', 'success');
-            $this->loadTransactions();
+            $this->setPersistentMessage("Buku Kas Kebun transaction updated successfully.", "success");
         }
     }
 
@@ -753,39 +743,43 @@ class BukuKasKebunComponent extends Component
         $this->photoToView = null;
     }
 
-    public function setPersistentMessage($message, $type = 'success')
+    public function setPersistentMessage($message, $type = "success")
     {
+        // Ensure message is UTF-8 clean
+        $cleanMessage = mb_convert_encoding($message, "UTF-8", "UTF-8");
+
         // Translate common messages to Indonesian
         $translations = [
-            'Pembayaran hutang berhasil diproses!' => 'Pembayaran hutang berhasil diproses!',
-            'Buku Kas Kebun transaction created successfully.' => 'Transaksi buku kas kebun berhasil ditambahkan.',
-            'Buku Kas Kebun transaction deleted successfully.' => 'Transaksi buku kas kebun berhasil dihapus.',
-            'Buku Kas Kebun transaction updated successfully.' => 'Transaksi buku kas kebun berhasil diperbarui.',
-            'Buku Kas Kebun transaction data imported successfully.' => 'Data buku kas kebun berhasil diimpor.',
-            'Error: ' => 'Terjadi kesalahan: ',
-            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
-            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+            "Buku Kas Kebun transaction deleted successfully." => "Transaksi buku kas kebun berhasil dihapus.",
+            "Buku Kas Kebun transaction updated successfully." => "Transaksi buku kas kebun berhasil diperbarui.",
+            "Buku Kas Kebun transaction data imported successfully." => "Data transaksi buku kas kebun berhasil diimpor.",
+            "Error: " => "Terjadi kesalahan: ",
+            "Error importing data: " => "Terjadi kesalahan saat mengimpor data: ",
+            "Import failed with validation errors: " => "Impor gagal dengan kesalahan validasi: ",
         ];
 
-        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $message);
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $cleanMessage);
         $this->messageType = $type;
     }
 
     public function clearPersistentMessage()
     {
-        $this->persistentMessage = '';
+        $this->persistentMessage = "";
     }
-    
+
     /**
-     * Show related KP transaction for a BKK transaction
+     * Show related KP transaction
      */
     public function showRelatedKpTransaction($bkkId)
     {
         $this->selectedBkkId = $bkkId;
-        $this->relatedKpTransaction = $this->getFinancialService()->getRelatedKpTransaction($bkkId);
+        $bkkTransaction = BukuKasKebun::with("keuanganPerusahaan")->find($bkkId);
+        if ($bkkTransaction && $bkkTransaction->keuanganPerusahaan) {
+            $this->relatedKpTransaction = $bkkTransaction->keuanganPerusahaan;
+        }
         $this->showRelatedKp = true;
     }
-    
+
     /**
      * Hide related KP transaction
      */
@@ -795,30 +789,52 @@ class BukuKasKebunComponent extends Component
         $this->relatedKpTransaction = null;
         $this->selectedBkkId = null;
     }
-    
+
     /**
-     * Check if a BKK transaction was auto-generated
+     * Check if a transaction is auto-generated from BKK
      */
     public function isAutoGeneratedBkk($bkkTransaction)
     {
-        return $this->getFinancialService()->isAutoGeneratedBkk($bkkTransaction->id);
+        return app(\App\Services\FinancialTransactionService::class)->isAutoGeneratedBkk($bkkTransaction->id);
     }
 
     /**
-     * Check if a BKK transaction is a debt payment
+     * Check if a transaction is a debt payment
      */
     public function isDebtPayment($transaction)
     {
-        return $transaction->debt_id !== null ||
-               ($transaction->expenseCategory && $transaction->expenseCategory->is_debt_payment);
+        // Check if the category matches debt payment categories
+        if (!$transaction->category) {
+            return false;
+        }
+
+        $debtPaymentKeywords = ["hutang", "debt", "pembayaran", "payment"];
+        $category = strtolower($transaction->category);
+
+        foreach ($debtPaymentKeywords as $keyword) {
+            if (stripos($category, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
-     * Get the related debt for a transaction
+     * Get related debt for a transaction
      */
     public function getRelatedDebt($transaction)
     {
-        return $transaction->debt;
+        if ($this->isDebtPayment($transaction) && $transaction->kp_id) {
+            $kpTransaction = $transaction->keuanganPerusahaan;
+            if ($kpTransaction) {
+                // Try to find related debt by source/destination or other indicators
+                $debt = \App\Models\Debt::where("creditor", $kpTransaction->source_destination)->first();
+                return $debt;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -827,43 +843,44 @@ class BukuKasKebunComponent extends Component
     public function showDebtPaymentDetails($transactionId)
     {
         $transaction = BukuKasKebun::find($transactionId);
-        if ($transaction && $transaction->debt_id) {
-            // This will be used in the frontend to show payment details
-            $this->dispatch('showDebtPaymentDetails', [
-                'transaction' => $transaction,
-                'debt' => $transaction->debt,
-                'payments' => $transaction->debt->payments ?? []
-            ]);
+        if ($transaction && $this->isDebtPayment($transaction)) {
+            // Navigate to the debts page filtered by the creditor
+            $debt = $this->getRelatedDebt($transaction);
+            if ($debt) {
+                return redirect()->route("debts.index")->with("highlighted_debt", $debt->id);
+            } else {
+                return redirect()->route("debts.index")->with("search", $transaction->source_destination);
+            }
         }
     }
-    
+
     // Import methods
     public function openImportModal()
     {
         $this->showImportModal = true;
         $this->importFile = null;
     }
-    
+
     public function closeImportModal()
     {
         $this->showImportModal = false;
         $this->importFile = null;
     }
-    
+
     public function importTransaction()
     {
+        $this->authorizeEdit();
         $this->validate([
-            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+            "importFile" => "required|file|mimes:xlsx,xls,csv",
         ]);
-        
+
         try {
-            $import = new BukuKasKebunImport();
-            Excel::import($import, $this->importFile);
-            
-            $this->setPersistentMessage('Buku Kas Kebun transaction data imported successfully.', 'success');
+            $import = new \App\Imports\BukuKasKebunImport();
+            \Maatwebsite\Excel\Facades\Excel::import($import, $this->importFile);
+
+            $this->setPersistentMessage("Buku Kas Kebun transaction data imported successfully.", "success");
             $this->closeImportModal();
-            $this->loadTransactions(); // Refresh the transaction list after import
-        } catch (ExcelValidationException $e) {
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
             $failureMessages = [];
             $failures = $e->failures();
 
@@ -872,68 +889,69 @@ class BukuKasKebunComponent extends Component
                 $row = $failure->row();
                 $errors = $failure->errors();
                 $cleanErrors = array_map(function($error) {
-                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                    return mb_convert_encoding($error, "UTF-8", "UTF-8");
                 }, $errors);
-                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
+                $failureMessages[] = "Row " . $row . ": " . implode(", ", $cleanErrors);
             }
 
-            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            $errorMessage = "Import failed with validation errors: " . implode(" | ", $failureMessages);
             // Ensure the error message is UTF-8 clean
-            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
-            $this->setPersistentMessage($cleanErrorMessage, 'error');
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, "UTF-8", "UTF-8");
+            $this->setPersistentMessage($cleanErrorMessage, "error");
         } catch (\Exception $e) {
             // Ensure exception message is UTF-8 clean
-            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
-            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
+            $cleanMessage = mb_convert_encoding($e->getMessage(), "UTF-8", "UTF-8");
+            $this->setPersistentMessage("Error importing data: " . $cleanMessage, "error");
         }
     }
-    
+
     public function downloadSampleExcel()
     {
         // Create a sample CSV file and store it temporarily
         $sampleData = [
-            ['transaction_date', 'transaction_type', 'amount', 'source_destination', 'received_by', 'notes', 'category', 'kp_id'],
-            [now()->format('d-m-Y'), 'income', '15000000', 'Customer Payment', 'Budi Santoso', 'Pembayaran penjualan bulan ini', 'Sales Revenue', ''],
-            [now()->format('d-m-Y'), 'expense', '5000000', 'Supplier', 'Siti Aminah', 'Pembelian bahan baku', 'Operational Cost', ''],
-            [now()->format('d-m-Y'), 'income', '8000000', 'Sales', 'Ahmad Fauzi', 'Penjualan produk', 'Sales Income', ''],
+            ["transaction_number", "transaction_date", "transaction_type", "amount", "source_destination", "received_by", "notes", "category"],
+            ["BKK001", now()->format("Y-m-d"), "income", "15000000", "Customer Payment", "Budi Santoso", "Pembayaran penjualan bulan ini", "Sales Revenue"],
+            ["BKK002", now()->format("Y-m-d"), "expense", "5000000", "Supplier", "Siti Aminah", "Pembelian bahan baku", "Operational Cost"],
+            ["BKK003", now()->format("Y-m-d"), "expense", "3000000", "Transport Company", "Ahmad Fauzi", "Biaya transportasi", "Logistics Cost"],
         ];
-        
-        $csv = '';
+
+        $csv = "";
         foreach ($sampleData as $row) {
-            $csv .= '"' . implode('","', $row) . "\"\n";
+            $csv .= '"' . implode('","', $row) . '"' . "\n";
         }
-        
+
         // Save to a temporary file
-        $filename = 'sample_buku_kas_kebun_data.csv';
-        $path = storage_path('app/temp/' . $filename);
-        
+        $filename = "sample_buku_kas_kebun_data.csv";
+        $path = storage_path("app/temp/" . $filename);
+
         // Ensure the temp directory exists
         if (!is_dir(dirname($path))) {
             mkdir(dirname($path), 0755, true);
         }
-        
+
         file_put_contents($path, $csv);
 
         return response()->download($path)->deleteFileAfterSend(true);
     }
-    
+
     // Export methods
     public function exportToExcel()
     {
-        $export = new BukuKasKebunExportWithHeaders($this->exportStartDate, $this->exportEndDate);
-        
-        $filename = 'buku_kas_kebun_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
-        
-        return Excel::download($export, $filename);
+        $export = new \App\Exports\BukuKasKebunExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+
+        $filename = "buku_kas_kebun_data_export_" . now()->format("Y-m-d_H-i-s") . ".xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download($export, $filename);
     }
-    
+
     public function exportToPdf()
     {
         $this->authorizeView();
         // Redirect to the dedicated PDF export controller route
-        return redirect()->route('cashbook.export.pdf', [
-            'start_date' => $this->exportStartDate,
-            'end_date' => $this->exportEndDate,
+        return redirect()->route("bkk.export.pdf", [
+            "start_date" => $this->exportStartDate,
+            "end_date" => $this->exportEndDate,
         ]);
     }
 }
+

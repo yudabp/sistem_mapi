@@ -73,6 +73,11 @@ class KeuanganPerusahaanComponent extends Component
     public $exportEndDate = null;
     public $showImportModal = false;
     
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'typeFilter', 'metricFilter', 'perPage', 'page'];
+
     protected $rules = [
         'transaction_date' => 'required|date_format:d-m-Y',
         'transaction_type' => 'required|in:income,expense',
@@ -173,41 +178,40 @@ class KeuanganPerusahaanComponent extends Component
 
     public function loadTransactions()
     {
-        $this->transactions = KeuanganPerusahaan::orderBy('transaction_date', 'desc')->get();
+        // This method is no longer needed since we're using query builder directly
+        // Kept for compatibility if referenced elsewhere
+        $this->transactions = collect();
     }
 
     public function filterTransactions()
     {
-        $transactions = $this->transactions;
+        $query = KeuanganPerusahaan::orderBy('transaction_date', 'desc');
 
         if ($this->search) {
-            $transactions = $transactions->filter(function ($item) {
-                return stripos($item->transaction_number, $this->search) !== false ||
-                       stripos($item->source_destination, $this->search) !== false ||
-                       stripos($item->received_by, $this->search) !== false ||
-                       stripos($item->category, $this->search) !== false;
+            $query->where(function($q) {
+                $q->where('transaction_number', 'like', '%' . $this->search . '%')
+                  ->orWhere('source_destination', 'like', '%' . $this->search . '%')
+                  ->orWhere('received_by', 'like', '%' . $this->search . '%')
+                  ->orWhere('category', 'like', '%' . $this->search . '%');
             });
         }
 
         if ($this->dateFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_date->format('Y-m') === $this->dateFilter;
-            });
+            $query->whereYear('transaction_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('transaction_date', '=', substr($this->dateFilter, 5, 2));
         }
 
         if ($this->typeFilter) {
-            $transactions = $transactions->filter(function ($item) {
-                return $item->transaction_type === $this->typeFilter;
-            });
+            $query->where('transaction_type', '=', $this->typeFilter);
         }
 
         // Apply metric filter
-        $transactions = $this->applyMetricFilter($transactions);
+        $query = $this->applyMetricFilter($query);
 
-        return $transactions;
+        return $query->paginate($this->perPage);
     }
 
-    public function applyMetricFilter($transactions)
+    public function applyMetricFilter($query)
     {
         $now = now();
         
@@ -266,19 +270,21 @@ class KeuanganPerusahaanComponent extends Component
                 break;
         }
         
-        return $transactions;
+        return $query;
     }
 
     public function getTotalIncome()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'income')->sum('amount');
+        $query = KeuanganPerusahaan::where('transaction_type', 'income');
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('amount');
     }
 
     public function getTotalExpenses()
     {
-        $transactions = $this->applyMetricFilter($this->transactions);
-        return $transactions->where('transaction_type', 'expense')->sum('amount');
+        $query = KeuanganPerusahaan::where('transaction_type', 'expense');
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('amount');
     }
 
     public function getBalance()
@@ -295,7 +301,7 @@ class KeuanganPerusahaanComponent extends Component
                 Storage::disk('public')->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
+            // No need to loadTransactions anymore as we don't use it in the filter
         }
     }
 
@@ -433,7 +439,6 @@ class KeuanganPerusahaanComponent extends Component
             ]);
 
             $this->setPersistentMessage('Keuangan Perusahaan transaction updated successfully.', 'success');
-            $this->loadTransactions();
         }
     }
 

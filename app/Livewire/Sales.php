@@ -67,7 +67,11 @@ class Sales extends Component
     // Export filter
     public $exportFilter = 'all'; // all, taxable, non_taxable
 
-    protected $queryString = ['search', 'dateFilter', 'metricFilter'];
+    public $perPage = 20;
+
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'metricFilter', 'perPage', 'page'];
 
     public $importFile = null;
     public $exportStartDate = null;
@@ -314,7 +318,7 @@ class Sales extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->get();
+        return $query->paginate($this->perPage);
     }
 
     public function applyMetricFilter($query)

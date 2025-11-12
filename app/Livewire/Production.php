@@ -74,7 +74,10 @@ class Production extends Component
     public $exportEndDate = null;
     public $showImportModal = false;
 
-    protected $queryString = ['search', 'dateFilter', 'divisionFilter', 'metricFilter'];
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'divisionFilter', 'metricFilter', 'perPage', 'page'];
 
     protected function rules()
     {
@@ -247,7 +250,7 @@ class Production extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->get();
+        return $query->paginate($this->perPage);
     }
 
     public function applyMetricFilter($query)
