@@ -20,31 +20,60 @@
                 @endif
             </div>
 
-            {{-- Pagination Elements --}}
+            {{-- Pagination Elements with limited range for better UX --}}
             <ul class="inline-flex text-sm font-medium -space-x-px rounded-lg shadow-xs">
-                @foreach ($elements as $element)
-                    {{-- "Three Dots" Separator --}}
-                    @if (is_string($element))
-                        <li aria-disabled="true">
-                            <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 text-gray-400 dark:text-gray-500">{{ $element }}</span>
+                @php
+                    $currentPage = $paginator->currentPage();
+                    $lastPage = $paginator->lastPage();
+                    $onEachSide = 2; // Show 2 pages on each side of current page
+                    
+                    $start = max(1, $currentPage - $onEachSide);
+                    $end = min($lastPage, $currentPage + $onEachSide);
+                    
+                    $hasStartEllipsis = $start > 1;
+                    $hasEndEllipsis = $end < $lastPage;
+                @endphp
+                
+                {{-- First page (if needed) --}}
+                @if($start > 1)
+                    <li>
+                        <a href="{{ $paginator->url(1) }}" class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-700/60 text-gray-600 dark:text-gray-300 rounded-l-lg">{{ 1 }}</a>
+                    </li>
+                @endif
+                
+                {{-- Start ellipsis (if needed) --}}
+                @if($hasStartEllipsis && $start > 2)
+                    <li aria-disabled="true">
+                        <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 text-gray-400 dark:text-gray-500">...</span>
+                    </li>
+                @endif
+                
+                {{-- Page links --}}
+                @for($page = $start; $page <= $end; $page++)
+                    @if($page == $currentPage)
+                        <li aria-current="page">
+                            <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-violet-600 text-white border border-violet-600">{{ $page }}</span>
+                        </li>
+                    @else
+                        <li>
+                            <a href="{{ $paginator->url($page) }}" class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-700/60 text-gray-600 dark:text-gray-300 @if($page === $start && $start === 1){{ 'rounded-l-lg' }}@elseif($page === $end && $end === $lastPage && !$hasEndEllipsis){{ 'rounded-r-lg' }}@endif">{{ $page }}</a>
                         </li>
                     @endif
-
-                    {{-- Array Of Links --}}
-                    @if (is_array($element))
-                    @foreach ($element as $page => $url)
-                            @if ($page == $paginator->currentPage())
-                                <li aria-current="page">
-                                    <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-violet-600 text-white border border-violet-600 @if($page === 1){{ 'rounded-l-lg' }}@elseif($page === $paginator->lastPage()){{ 'rounded-r-lg' }}@endif">{{ $page }}</span>
-                                </li>
-                            @else
-                                <li>
-                                    <a href="{{ $url }}" class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-700/60 text-gray-600 dark:text-gray-300 @if($page === 1){{ 'rounded-l-lg' }}@elseif($page === $paginator->lastPage()){{ 'rounded-r-lg' }}@endif">{{ $page }}</a>
-                                </li>
-                            @endif
-                        @endforeach
-                    @endif
-                @endforeach
+                @endfor
+                
+                {{-- End ellipsis (if needed) --}}
+                @if($hasEndEllipsis && $end < $lastPage - 1)
+                    <li aria-disabled="true">
+                        <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 text-gray-400 dark:text-gray-500">...</span>
+                    </li>
+                @endif
+                
+                {{-- Last page (if needed) --}}
+                @if($hasEndEllipsis)
+                    <li>
+                        <a href="{{ $paginator->url($lastPage) }}" class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 border border-gray-200 dark:border-gray-700/60 text-gray-600 dark:text-gray-300 rounded-r-lg">{{ $lastPage }}</a>
+                    </li>
+                @endif
             </ul>
 
             {{-- Next Page Link --}}
