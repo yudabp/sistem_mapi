@@ -1,0 +1,11 @@
+ndp,name,department,position,grade,family_composition,monthly_salary,status,hire_date,address,phone,email
+NDP010,Andi Prasetyo,Afdeling 1,Mandor,B,3,3500000,active,2023-01-15,Jl. Merdeka No. 10,081234567890,andi.p@example.com
+NDP011,Budi Santoso,Afdeling 2,Kepala Kebun,A,4,5000000,active,2022-03-20,Jl. Sudirman No. 20,081234567891,budi.s@example.com
+NDP012,Cinta Dewi,Administrasi,Staff Administrasi,C,2,2500000,active,2023-05-10,Jl. Thamrin No. 30,081234567892,cinta.d@example.com
+NDP013,Dodi Firmansyah,Afdeling 3,Asisten Mandor,D,1,2000000,active,2023-07-25,Jl. Gatot Subroto No. 40,081234567893,dodi.f@example.com
+NDP014,Eka Putri,Afdeling 1,Koordinator Lapangan,C,4,3000000,active,2022-11-30,Jl. Diponegoro No. 50,081234567894,eka.p@example.com
+NDP015,Fajar Nugroho,Afdeling 2,Mandor,B,3,3500000,active,2023-02-14,Jl. Hayam Wuruk No. 60,081234567895,fajar.n@example.com
+NDP016,Gina Kartika,Administrasi,Kepala Administrasi,A,2,4500000,active,2022-06-18,Jl. Imam Bonjol No. 70,081234567896,gina.k@example.com
+NDP017,Hendra Wijaya,Afdeling 3,Kepala Kebun,A,5,5000000,active,2022-09-22,Jl. Cut Mutia No. 80,081234567897,hendra.w@example.com
+NDP018,Intan Permata,Afdeling 1,Staff Administrasi,C,1,2500000,active,2023-04-30,Jl. Pattimura No. 90,081234567898,intan.p@example.com
+NDP019,Joko Susilo,Afdeling 2,Asisten Mandor,D,3,2000000,active,2023-08-15,Jl. Ahmad Yani No. 100,081234567899,joko.s@example.com

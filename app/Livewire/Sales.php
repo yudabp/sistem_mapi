@@ -1,0 +1,711 @@
+<?php
+
+namespace App\Livewire;
+
+use Livewire\Component;
+use App\Models\Sale as SaleModel;
+use App\Models\Production as ProductionModel;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
+use App\Imports\SalesImport;
+use App\Exports\SalesExportWithHeaders;
+use App\Exports\SalesPdfExporter;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Validators\ValidationException as ExcelValidationException;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\View;
+use App\Livewire\Concerns\WithRoleCheck;
+
+class Sales extends Component
+{
+    use WithFileUploads;
+    use WithRoleCheck;
+
+    public $sp_number; // Keep for backward compatibility
+    public $production_id;
+    public $tbs_quantity;
+    public $kg_quantity;
+    public $price_per_kg;
+    public $total_amount;
+    public $sales_proof;
+    public $sale_date;
+    public $is_taxable = false;
+    public $tax_percentage = 11.00;
+    public $tax_amount = 0;
+    
+    // Autocomplete properties
+    public $sp_search = '';
+    public $spSuggestions = [];
+    public $showSpSuggestions = false;
+    
+    public $search = '';
+    public $dateFilter = '';
+
+    // Modal control
+    public $showModal = false;
+    public $isEditing = false;
+    public $editingId = null;
+
+    // Delete confirmation
+    public $showDeleteConfirmation = false;
+    public $deletingSaleId = null;
+    public $deletingSaleName = '';
+
+    // Photo viewing
+    public $showPhotoModal = false;
+    public $photoToView = null;
+
+    // Metric filter
+    public $metricFilter = 'all'; // Default to all time
+    public $startDate = null;
+    public $endDate = null;
+
+    // Persistent message
+    public $persistentMessage = '';
+    public $messageType = 'success'; // success, error, warning, info
+
+    // Export filter
+    public $exportFilter = 'all'; // all, taxable, non_taxable
+
+    public $perPage = 20;
+
+    public $page = 1;
+
+    protected $queryString = ['search', 'dateFilter', 'metricFilter', 'perPage', 'page'];
+
+    public $importFile = null;
+    public $exportStartDate = null;
+    public $exportEndDate = null;
+    public $showImportModal = false;
+
+    protected $rules = [
+        'sp_number' => 'required|string|max:255',
+        'production_id' => 'nullable|exists:production,id',
+        'kg_quantity' => 'required|numeric',
+        'price_per_kg' => 'required|numeric',
+        'sale_date' => 'required|date_format:d-m-Y',
+        'sales_proof' => 'nullable|image|max:10240', // Max 10MB
+        'is_taxable' => 'boolean',
+        'tax_percentage' => 'required|numeric|min:0|max:100',
+        'tax_amount' => 'required|numeric|min:0',
+    ];
+
+    protected function rules()
+    {
+        $rules = $this->rules;
+        
+        // If not taxable, make tax fields optional
+        if (!$this->is_taxable) {
+            $rules['tax_percentage'] = 'nullable|numeric|min:0|max:100';
+            $rules['tax_amount'] = 'nullable|numeric|min:0';
+        }
+        
+        return $rules;
+    }
+
+    public function mount()
+    {
+        $this->mountWithRoleCheck();
+        // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
+        if (!$this->exportStartDate) {
+            $this->exportStartDate = now()->subMonth()->format('d-m-Y');
+        }
+        if (!$this->exportEndDate) {
+            $this->exportEndDate = now()->format('d-m-Y');
+        }
+    }
+
+    public function render()
+    {
+        $filteredSales = $this->filterSales();
+
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredSales) {
+            $filteredSales->withPath('/data-penjualan');
+        }
+
+        return view('livewire.sales', [
+            'sales' => $filteredSales,
+            'total_kg' => $this->getTotalKg(),
+            'total_sales' => $this->getTotalSales(),
+        ]);
+    }
+
+    public function updatedPricePerKg()
+    {
+        $this->calculateTotal();
+        $this->calculateTax();
+    }
+
+    public function updatedKgQuantity()
+    {
+        $this->calculateTotal();
+        $this->calculateTax();
+    }
+
+    public function updatedSpNumber()
+    {
+        // Keep for backward compatibility
+        if ($this->sp_number) {
+            $production = ProductionModel::where('sp_number', $this->sp_number)->first();
+            if ($production) {
+                $this->production_id = $production->id;
+                $this->tbs_quantity = $production->tbs_quantity;
+                $this->kg_quantity = $production->kg_quantity;
+                
+                // Auto-calculate total amount if price per kg is already set
+                $this->calculateTotal();
+            } else {
+                // Reset if production not found
+                $this->production_id = '';
+                $this->tbs_quantity = '';
+                $this->kg_quantity = '';
+                $this->total_amount = 0;
+            }
+        } else {
+            $this->production_id = '';
+            $this->tbs_quantity = '';
+            $this->kg_quantity = '';
+            $this->total_amount = 0;
+        }
+        $this->calculateTax();
+    }
+
+
+
+    public function updatedIsTaxable()
+    {
+        $this->calculateTax();
+    }
+
+    public function updatedTaxPercentage()
+    {
+        $this->calculateTax();
+    }
+
+    public function updatedTotalAmount()
+    {
+        $this->calculateTax();
+    }
+
+    public function updatedSpSearch()
+    {
+        if (strlen($this->sp_search) >= 2) {
+            $this->spSuggestions = ProductionModel::where('sp_number', 'like', '%' . $this->sp_search . '%')
+                ->select('id', 'sp_number', 'tbs_quantity', 'kg_quantity')
+                ->orderBy('sp_number')
+                ->limit(10)
+                ->get()
+                ->toArray();
+            $this->showSpSuggestions = true;
+        } else {
+            $this->spSuggestions = [];
+            $this->showSpSuggestions = false;
+        }
+    }
+
+    public function selectSpSuggestion($spData)
+    {
+        $production = ProductionModel::find($spData['id']);
+        if ($production) {
+            $this->sp_number = $production->sp_number;
+            $this->production_id = $production->id;
+            $this->tbs_quantity = $production->tbs_quantity;
+            $this->kg_quantity = $production->kg_quantity;
+            $this->calculateTotal();
+        }
+        $this->sp_search = $production->sp_number;
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
+        $this->calculateTax();
+    }
+
+    public function clearSpSelection()
+    {
+        $this->sp_number = $this->sp_search;
+        $this->production_id = null;
+        $this->tbs_quantity = '';
+        $this->kg_quantity = '';
+        $this->total_amount = 0;
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
+        $this->calculateTax();
+    }
+
+    public function calculateTotal()
+    {
+        if ($this->kg_quantity && $this->price_per_kg) {
+            $this->total_amount = $this->kg_quantity * $this->price_per_kg;
+        } else {
+            $this->total_amount = 0;
+        }
+    }
+
+    public function calculateTax()
+    {
+        if ($this->is_taxable && $this->total_amount > 0 && $this->tax_percentage > 0) {
+            $this->tax_amount = ($this->total_amount * $this->tax_percentage) / 100;
+        } else {
+            $this->tax_amount = 0;
+        }
+    }
+
+    public function saveSales()
+    {
+        $this->authorizeEdit();
+
+        $validated = $this->validate();
+        
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->sale_date)->format('Y-m-d');
+        
+        // Handle file upload
+        $proofPath = null;
+        if ($this->sales_proof) {
+            $proofPath = $this->sales_proof->store('sales_proofs', 'public');
+        }
+
+        SaleModel::create([
+            'sp_number' => $this->sp_number, // Keep for backward compatibility
+            'production_id' => $this->production_id,
+            'tbs_quantity' => $this->tbs_quantity,
+            'kg_quantity' => $this->kg_quantity,
+            'price_per_kg' => $this->price_per_kg,
+            'total_amount' => $this->total_amount,
+            'sales_proof_path' => $proofPath,
+            'sale_date' => $dateForDb,
+            'is_taxable' => $this->is_taxable,
+            'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
+            'tax_amount' => $this->tax_amount,
+        ]);
+
+        // Reset form
+        $this->resetForm();
+        
+        $this->setPersistentMessage('Sales record created successfully.', 'success');
+    }
+
+    public function resetForm()
+    {
+        $this->sp_number = ''; // Keep for backward compatibility
+        $this->production_id = '';
+        $this->tbs_quantity = '';
+        $this->kg_quantity = '';
+        $this->price_per_kg = '';
+        $this->total_amount = 0;
+        $this->sales_proof = null;
+        $this->sale_date = '';
+        $this->is_taxable = false;
+        $this->tax_percentage = 11.00;
+        $this->tax_amount = 0;
+        
+        // Reset autocomplete properties
+        $this->sp_search = '';
+        $this->spSuggestions = [];
+        $this->showSpSuggestions = false;
+    }
+
+    public function filterSales()
+    {
+        $query = SaleModel::orderBy('sale_date', 'desc');
+
+        if ($this->search) {
+            $query->where(function($q) {
+                $q->where('sp_number', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        if ($this->dateFilter) {
+            $query->whereYear('sale_date', '=', substr($this->dateFilter, 0, 4))
+                  ->whereMonth('sale_date', '=', substr($this->dateFilter, 5, 2));
+        }
+
+        // Apply metric filter
+        $query = $this->applyMetricFilter($query);
+
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/data-penjualan');
+        
+        return $paginator;
+    }
+
+    public function applyMetricFilter($query)
+    {
+        $now = now();
+        
+        switch ($this->metricFilter) {
+            case 'today':
+                $query->whereDate('sale_date', $now->toDateString());
+                break;
+            case 'yesterday':
+                $yesterday = $now->subDay();
+                $query->whereDate('sale_date', $yesterday->toDateString());
+                break;
+            case 'this_week':
+                $query->whereBetween('sale_date', [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString()
+                ]);
+                break;
+            case 'last_week':
+                $lastWeekStart = $now->subWeek()->startOfWeek();
+                $lastWeekEnd = $now->subWeek()->endOfWeek();
+                $query->whereBetween('sale_date', [
+                    $lastWeekStart->toDateString(),
+                    $lastWeekEnd->toDateString()
+                ]);
+                break;
+            case 'this_month':
+                $query->whereYear('sale_date', $now->year)
+                      ->whereMonth('sale_date', $now->month);
+                break;
+            case 'last_month':
+                $lastMonth = $now->subMonth();
+                $query->whereYear('sale_date', $lastMonth->year)
+                      ->whereMonth('sale_date', $lastMonth->month);
+                break;
+            case 'custom':
+                if ($this->startDate && $this->endDate) {
+                    $query->whereBetween('sale_date', [$this->startDate, $this->endDate]);
+                }
+                break;
+            case 'all':
+            default:
+                // No additional filtering for 'all' option
+                break;
+        }
+        
+        return $query;
+    }
+
+    public function getTotalKg()
+    {
+        $query = SaleModel::query();
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('kg_quantity');
+    }
+
+    public function getTotalSales()
+    {
+        $query = SaleModel::query();
+        $query = $this->applyMetricFilter($query);
+        return $query->sum('total_amount');
+    }
+
+    public function deleteSales($id)
+    {
+        $this->authorizeDelete();
+
+        $sale = SaleModel::find($id);
+        if ($sale) {
+            // Delete the proof if it exists
+            if ($sale->sales_proof_path) {
+                Storage::disk('public')->delete($sale->sales_proof_path);
+            }
+            $sale->delete();
+        }
+    }
+
+    public function openCreateModal()
+    {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->showModal = true;
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
+    }
+
+    public function openEditModal($id)
+    {
+        $sale = SaleModel::find($id);
+        if ($sale) {
+            $this->editingId = $sale->id;
+            $this->sp_number = $sale->sp_number;
+            $this->production_id = $sale->production_id;
+            $this->tbs_quantity = $sale->tbs_quantity;
+            $this->kg_quantity = $sale->kg_quantity;
+            $this->price_per_kg = $sale->price_per_kg;
+            $this->total_amount = $sale->total_amount;
+            $this->sale_date = $sale->sale_date->format('d-m-Y'); // Format for DD-MM-YYYY display
+            $this->is_taxable = $sale->is_taxable ?? false;
+            $this->tax_percentage = $sale->tax_percentage ?? 11.00;
+            $this->tax_amount = $sale->tax_amount ?? 0;
+            $this->sales_proof = null; // We don't load the file, just the path
+            
+            // Set autocomplete search value
+            $this->sp_search = $sale->sp_number;
+            $this->spSuggestions = [];
+            $this->showSpSuggestions = false;
+            
+            $this->isEditing = true;
+            $this->showModal = true;
+        }
+    }
+
+    public function closeCreateModal()
+    {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
+        $this->showModal = false;
+        $this->resetForm();
+        $this->isEditing = false;
+        $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
+    }
+
+    public function confirmDelete($id, $sp_number)
+    {
+        $this->deletingSaleId = $id;
+        $this->deletingSaleName = $sp_number;
+        $this->showDeleteConfirmation = true;
+    }
+
+    public function closeDeleteConfirmation()
+    {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
+        $this->showDeleteConfirmation = false;
+        $this->deletingSaleId = null;
+        $this->deletingSaleName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
+    }
+
+    public function deleteSalesConfirmed()
+    {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
+        $this->authorizeDelete();
+        $sale = SaleModel::find($this->deletingSaleId);
+        if ($sale) {
+            // Delete the proof if it exists
+            if ($sale->sales_proof_path) {
+                Storage::disk('public')->delete($sale->sales_proof_path);
+            }
+            $sale->delete();
+            $this->setPersistentMessage('Sales record deleted successfully.', 'success');
+        }
+        
+        $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
+    }
+
+    public function saveSalesModal()
+    {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
+        try {
+            if ($this->isEditing) {
+                $this->updateSale();
+            } else {
+                $this->saveSales();
+            }
+            
+            $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Validation errors will be automatically handled by Livewire
+            // We just need to make sure the modal stays open so user can see errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
+        } catch (\Exception $e) {
+            $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
+        }
+    }
+
+    public function updateSale()
+    {
+        $this->authorizeEdit();
+
+        $validated = $this->validate();
+
+        // Convert date from DD-MM-YYYY to YYYY-MM-DD format for database storage
+        $dateForDb = \DateTime::createFromFormat('d-m-Y', $this->sale_date)->format('Y-m-d');
+        
+        $sale = SaleModel::find($this->editingId);
+        if ($sale) {
+            // Handle file upload
+            $proofPath = $sale->sales_proof_path; // Keep existing path if no new file
+            if ($this->sales_proof) {
+                // Delete old proof if exists
+                if ($sale->sales_proof_path) {
+                    Storage::disk('public')->delete($sale->sales_proof_path);
+                }
+                $proofPath = $this->sales_proof->store('sales_proofs', 'public');
+            }
+
+            $sale->update([
+                'sp_number' => $this->sp_number,
+                'tbs_quantity' => $this->tbs_quantity,
+                'kg_quantity' => $this->kg_quantity,
+                'price_per_kg' => $this->price_per_kg,
+                'total_amount' => $this->total_amount,
+                'sale_date' => $dateForDb,
+                'sales_proof_path' => $proofPath,
+                'is_taxable' => $this->is_taxable,
+                'tax_percentage' => $this->is_taxable ? $this->tax_percentage : 0,
+                'tax_amount' => $this->tax_amount,
+            ]);
+
+            $this->setPersistentMessage('Sales record updated successfully.', 'success');
+        }
+    }
+
+    public function showPhoto($path)
+    {
+        $this->photoToView = $path;
+        $this->showPhotoModal = true;
+    }
+
+    public function setPersistentMessage($message, $type = 'success')
+    {
+        // Ensure message is UTF-8 clean
+        $cleanMessage = mb_convert_encoding($message, 'UTF-8', 'UTF-8');
+
+        // Translate common messages to Indonesian
+        $translations = [
+            'Sales record created successfully.' => 'Data penjualan berhasil ditambahkan.',
+            'Sales record updated successfully.' => 'Data penjualan berhasil diperbarui.',
+            'Sales record deleted successfully.' => 'Data penjualan berhasil dihapus.',
+            'Please check the form for validation errors.' => 'Silakan periksa formulir untuk kesalahan validasi.',
+            'Error: ' => 'Terjadi kesalahan: ',
+            'Sales data imported successfully.' => 'Data penjualan berhasil diimpor.',
+            'Error importing data: ' => 'Terjadi kesalahan saat mengimpor data: ',
+            'Import failed with validation errors: ' => 'Impor gagal dengan kesalahan validasi: ',
+        ];
+
+        $this->persistentMessage = str_replace(array_keys($translations), array_values($translations), $cleanMessage);
+        $this->messageType = $type;
+    }
+
+    public function clearPersistentMessage()
+    {
+        $this->persistentMessage = '';
+    }
+    
+    // Import methods
+    public function openImportModal()
+    {
+        $this->showImportModal = true;
+        $this->importFile = null;
+    }
+    
+    public function closeImportModal()
+    {
+        $this->showImportModal = false;
+        $this->importFile = null;
+    }
+    
+    public function importSales()
+    {
+        $this->authorizeEdit();
+        $this->validate([
+            'importFile' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+        
+        try {
+            $import = new SalesImport();
+            Excel::import($import, $this->importFile);
+            
+            $this->setPersistentMessage('Sales data imported successfully.', 'success');
+            $this->closeImportModal();
+        } catch (ExcelValidationException $e) {
+            $failureMessages = [];
+            $failures = $e->failures();
+
+            foreach ($failures as $failure) {
+                // Ensure all error messages are UTF-8 clean
+                $row = $failure->row();
+                $errors = $failure->errors();
+                $cleanErrors = array_map(function($error) {
+                    return mb_convert_encoding($error, 'UTF-8', 'UTF-8');
+                }, $errors);
+                $failureMessages[] = 'Row ' . $row . ': ' . implode(', ', $cleanErrors);
+            }
+
+            $errorMessage = 'Import failed with validation errors: ' . implode(' | ', $failureMessages);
+            // Ensure the error message is UTF-8 clean
+            $cleanErrorMessage = mb_convert_encoding($errorMessage, 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage($cleanErrorMessage, 'error');
+        } catch (\Exception $e) {
+            // Ensure exception message is UTF-8 clean
+            $cleanMessage = mb_convert_encoding($e->getMessage(), 'UTF-8', 'UTF-8');
+            $this->setPersistentMessage('Error importing data: ' . $cleanMessage, 'error');
+        }
+    }
+    
+    public function downloadSampleExcel()
+    {
+        // Create a sample CSV file and store it temporarily
+        // Updated to match current table structure without customer fields
+        $sampleData = [
+            ['sp_number', 'tbs_quantity', 'kg_quantity', 'price_per_kg', 'total_amount', 'sale_date'],
+            ['SP001', '1000.50', '950.20', '2500.00', '2375475.00', now()->format('Y-m-d')],
+            ['SP002', '1200.75', '1140.80', '2600.00', '2966080.00', now()->format('Y-m-d')],
+            ['SP003', '950.25', '902.75', '2450.00', '2211737.50', now()->format('Y-m-d')],
+        ];
+        
+        $csv = '';
+        foreach ($sampleData as $row) {
+            $csv .= '"' . implode('","', $row) . "\"\n";
+        }
+        
+        // Save to a temporary file
+        $filename = 'sample_sales_data.csv';
+        $path = storage_path('app/temp/' . $filename);
+        
+        // Ensure the temp directory exists
+        if (!is_dir(dirname($path))) {
+            mkdir(dirname($path), 0755, true);
+        }
+        
+        file_put_contents($path, $csv);
+        
+        return response()->download($path)->deleteFileAfterSend(true);
+    }
+    
+    // Export methods
+    public function exportToExcel()
+    {
+        $this->authorizeView();
+
+        $export = new SalesExportWithHeaders($this->exportStartDate, $this->exportEndDate);
+        
+        $filename = 'sales_data_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return Excel::download($export, $filename);
+    }
+    
+    public function exportToPdf()
+    {
+        $this->authorizeView();
+        // Redirect to the dedicated PDF export controller route
+        return redirect()->route('sales.export.pdf', [
+            'start_date' => $this->exportStartDate,
+            'end_date' => $this->exportEndDate,
+        ]);
+    }
+}

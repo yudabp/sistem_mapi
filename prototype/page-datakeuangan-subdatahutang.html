@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Hutang - PT API APPS</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+    header { background: #2c3e50; color: #fff; padding: 15px; text-align: center; }
+    .container { padding: 20px; max-width: 1100px; margin: auto; }
+    h2 { color: #2c3e50; margin-bottom: 15px; }
+    form, .summary, .table-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    button { margin-top: 15px; padding: 10px 20px; border: none; background: #27ae60; color: #fff; font-weight: bold; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #219150; }
+    .btn-danger { background: #e74c3c; }
+    .btn-danger:hover { background: #c0392b; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 10px; text-align: left; border: 1px solid #ddd; }
+    th { background: #34495e; color: white; }
+    tr:nth-child(even) { background: #f9f9f9; }
+    .summary h3 { margin-bottom: 10px; }
+    .filter-box { margin-bottom: 15px; }
+    .status-belum { color: #e67e22; font-weight: bold; }
+    .status-lunas { color: #27ae60; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📑 Data Hutang - PT API APPS</h1>
+  </header>
+
+  <div class="container">
+    <!-- Form Input -->
+    <h2>Input Data Hutang</h2>
+    <form id="hutangForm">
+      <label>Jumlah Hutang (Rp):</label>
+      <input type="number" id="jumlah" required>
+
+      <label>Pemberi Hutang:</label>
+      <input type="text" id="pemberi" placeholder="Nama pihak pemberi hutang" required>
+
+      <label>Tanggal Jatuh Tempo:</label>
+      <input type="date" id="jatuhTempo" required>
+
+      <label>Keterangan:</label>
+      <textarea id="keterangan" placeholder="Opsional..."></textarea>
+
+      <label>Upload Bukti:</label>
+      <input type="file" id="bukti">
+
+      <button type="button" onclick="tambahHutang()">➕ Simpan Data</button>
+      <button type="reset" class="btn-danger">Clear</button>
+    </form>
+
+    <!-- Filter -->
+    <div class="filter-box">
+      <h2>🔍 Filter Data</h2>
+      <label>Cari Pemberi Hutang:</label>
+      <input type="text" id="filterPemberi" onkeyup="filterData()">
+    </div>
+
+    <!-- Tabel Hutang -->
+    <div class="table-container">
+      <h2>📋 Daftar Hutang</h2>
+      <table id="hutangTable">
+        <thead>
+          <tr>
+            <th>Pemberi Hutang</th>
+            <th>Jumlah (Rp)</th>
+            <th>Tanggal Jatuh Tempo</th>
+            <th>Keterangan</th>
+            <th>Status</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Ringkasan -->
+    <div class="summary">
+      <h3>📊 Ringkasan</h3>
+      <p>Total Hutang: <span id="totalHutang">0</span></p>
+      <p>Total Terbayar: <span id="totalBayar">0</span></p>
+      <p>Sisa Hutang: <span id="sisaHutang">0</span></p>
+    </div>
+  </div>
+
+  <script>
+    let totalHutang = 0, totalBayar = 0;
+
+    function tambahHutang() {
+      const jumlah = parseFloat(document.getElementById("jumlah").value);
+      const pemberi = document.getElementById("pemberi").value;
+      const jatuhTempo = document.getElementById("jatuhTempo").value;
+      const keterangan = document.getElementById("keterangan").value;
+
+      if (!jumlah || !pemberi || !jatuhTempo) {
+        alert("Lengkapi semua data!");
+        return;
+      }
+
+      const table = document.getElementById("hutangTable").getElementsByTagName("tbody")[0];
+      const row = table.insertRow();
+      row.insertCell(0).innerHTML = pemberi;
+      row.insertCell(1).innerHTML = jumlah.toLocaleString("id-ID");
+      row.insertCell(2).innerHTML = jatuhTempo;
+      row.insertCell(3).innerHTML = keterangan || "-";
+      row.insertCell(4).innerHTML = "<span class='status-belum'>Belum Lunas</span>";
+      row.insertCell(5).innerHTML = "<button onclick='bayarHutang(this, "+jumlah+")'>✔ Tandai Lunas</button>";
+
+      totalHutang += jumlah;
+      updateSummary();
+
+      document.getElementById("hutangForm").reset();
+    }
+
+    function bayarHutang(btn, jumlah) {
+      const row = btn.parentNode.parentNode;
+      row.cells[4].innerHTML = "<span class='status-lunas'>Lunas</span>";
+      btn.remove();
+
+      totalBayar += jumlah;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      document.getElementById("totalHutang").textContent = totalHutang.toLocaleString("id-ID");
+      document.getElementById("totalBayar").textContent = totalBayar.toLocaleString("id-ID");
+      document.getElementById("sisaHutang").textContent = (totalHutang - totalBayar).toLocaleString("id-ID");
+    }
+
+    function filterData() {
+      const filter = document.getElementById("filterPemberi").value.toLowerCase();
+      const rows = document.getElementById("hutangTable").getElementsByTagName("tbody")[0].rows;
+
+      for (let i = 0; i < rows.length; i++) {
+        const pemberi = rows[i].cells[0].innerText.toLowerCase();
+        rows[i].style.display = pemberi.includes(filter) ? "" : "none";
+      }
+    }
+  </script>
+</body>
+</html>
