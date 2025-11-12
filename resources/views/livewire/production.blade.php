@@ -988,13 +988,8 @@
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
-                <!-- Loading indicator -->
-                <div wire:loading class="p-4 text-center text-gray-500">
-                    Memuat data produksi...
-                </div>
                 <!-- Table -->
-                <div wire:loading.remove>
-                    <table class="table-auto w-full">
+                <table class="table-auto w-full">
                         <thead>
                             <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
                                 <th class="p-2 whitespace-nowrap">No. Transaksi</th>

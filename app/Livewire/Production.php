@@ -137,6 +137,11 @@ class Production extends Component
     {
         $filteredProductions = $this->filterProductions();
 
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredProductions) {
+            $filteredProductions->withPath('/data-produksi');
+        }
+
         return view('livewire.production', [
             'productions' => $filteredProductions,
             'total_tbs' => $this->getTotalTbs(),
@@ -250,7 +255,13 @@ class Production extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->paginate($this->perPage);
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/data-produksi');
+        
+        return $paginator;
     }
 
     public function applyMetricFilter($query)
@@ -332,11 +343,17 @@ class Production extends Component
 
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         // Auto-generate transaction number for new entries
         $this->transaction_number = ProductionModel::generateTransactionNumber();
         $this->isEditing = false;
         $this->showModal = true;
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -363,10 +380,16 @@ class Production extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function confirmDelete($id, $transaction_number)
@@ -378,13 +401,22 @@ class Production extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingProductionId = null;
         $this->deletingProductionName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteProductionConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $production = ProductionModel::find($this->deletingProductionId);
         if ($production) {
@@ -397,10 +429,16 @@ class Production extends Component
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveProductionModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             if ($this->isEditing) {
                 $this->updateProduction();
@@ -409,13 +447,21 @@ class Production extends Component
             }
             
             $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Validation errors will be automatically handled by Livewire
             // We just need to make sure the modal stays open so user can see errors
             $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 

@@ -189,6 +189,11 @@ class BukuKasKebunComponent extends Component
     {
         $filteredTransactions = $this->filterTransactions();
         
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredTransactions) {
+            $filteredTransactions->withPath('/buku-kas-kebun');
+        }
+        
         return view('livewire.buku-kas-kebun', [
             'transactions' => $filteredTransactions,
             'total_income' => $this->getTotalIncome(),
@@ -523,7 +528,13 @@ class BukuKasKebunComponent extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->paginate($this->perPage);
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/buku-kas-kebun');
+        
+        return $paginator;
     }
 
     public function applyMetricFilter($query)
@@ -611,9 +622,15 @@ class BukuKasKebunComponent extends Component
     // Modal methods
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         $this->showModal = true;
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -637,10 +654,16 @@ class BukuKasKebunComponent extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function confirmDelete($id, $transaction_number)
@@ -652,13 +675,22 @@ class BukuKasKebunComponent extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingTransactionId = null;
         $this->deletingTransactionName = "";
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteTransactionConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $transaction = BukuKasKebun::find($this->deletingTransactionId);
         if ($transaction) {
@@ -671,10 +703,16 @@ class BukuKasKebunComponent extends Component
         }
 
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveTransactionModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             if ($this->isEditing) {
                 $this->updateTransaction();
@@ -685,13 +723,22 @@ class BukuKasKebunComponent extends Component
             }
 
             $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Re-throw the ValidationException so Livewire can automatically display errors
             // This will keep the modal open and show validation errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
             throw $e;
         } catch (\Exception $e) {
             $this->setPersistentMessage("Error: " . $e->getMessage(), "error");
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 

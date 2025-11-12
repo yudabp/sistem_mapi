@@ -114,6 +114,11 @@ class KeuanganPerusahaanComponent extends Component
     {
         $filteredTransactions = $this->filterTransactions();
         
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredTransactions) {
+            $filteredTransactions->withPath('/keuangan-perusahaan');
+        }
+        
         return view('livewire.keuangan-perusahaan', [
             'transactions' => $filteredTransactions,
             'total_income' => $this->getTotalIncome(),
@@ -208,60 +213,53 @@ class KeuanganPerusahaanComponent extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->paginate($this->perPage);
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/keuangan-perusahaan');
+        
+        return $paginator;
     }
 
     public function applyMetricFilter($query)
     {
         $now = now();
-        
+
         switch ($this->metricFilter) {
             case 'today':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->toDateString() === $now->toDateString();
-                });
+                $query->whereDate('transaction_date', $now->toDateString());
                 break;
             case 'yesterday':
-                $yesterday = $now->copy()->subDay();
-                $transactions = $transactions->filter(function ($item) use ($yesterday) {
-                    return $item->transaction_date->toDateString() === $yesterday->toDateString();
-                });
+                $yesterday = $now->subDay();
+                $query->whereDate('transaction_date', $yesterday->toDateString());
                 break;
             case 'this_week':
-                $startOfWeek = $now->copy()->startOfWeek();
-                $endOfWeek = $now->copy()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($startOfWeek, $endOfWeek) {
-                    return $item->transaction_date->between($startOfWeek, $endOfWeek);
-                });
+                $query->whereBetween('transaction_date', [
+                    $now->startOfWeek()->toDateString(),
+                    $now->endOfWeek()->toDateString()
+                ]);
                 break;
             case 'last_week':
-                $lastWeekStart = $now->copy()->subWeek()->startOfWeek();
-                $lastWeekEnd = $now->copy()->subWeek()->endOfWeek();
-                $transactions = $transactions->filter(function ($item) use ($lastWeekStart, $lastWeekEnd) {
-                    return $item->transaction_date->between($lastWeekStart, $lastWeekEnd);
-                });
+                $lastWeekStart = $now->subWeek()->startOfWeek();
+                $lastWeekEnd = $now->subWeek()->endOfWeek();
+                $query->whereBetween('transaction_date', [
+                    $lastWeekStart->toDateString(),
+                    $lastWeekEnd->toDateString()
+                ]);
                 break;
             case 'this_month':
-                $transactions = $transactions->filter(function ($item) use ($now) {
-                    return $item->transaction_date->year === $now->year && 
-                           $item->transaction_date->month === $now->month;
-                });
+                $query->whereYear('transaction_date', $now->year)
+                      ->whereMonth('transaction_date', $now->month);
                 break;
             case 'last_month':
-                $lastMonth = $now->copy()->subMonth();
-                $transactions = $transactions->filter(function ($item) use ($lastMonth) {
-                    return $item->transaction_date->year === $lastMonth->year && 
-                           $item->transaction_date->month === $lastMonth->month;
-                });
+                $lastMonth = $now->subMonth();
+                $query->whereYear('transaction_date', $lastMonth->year)
+                      ->whereMonth('transaction_date', $lastMonth->month);
                 break;
             case 'custom':
                 if ($this->startDate && $this->endDate) {
-                    $transactions = $transactions->filter(function ($item) {
-                        return $item->transaction_date->between(
-                            \Carbon\Carbon::parse($this->startDate),
-                            \Carbon\Carbon::parse($this->endDate)
-                        );
-                    });
+                    $query->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
                 }
                 break;
             case 'all':
@@ -269,7 +267,7 @@ class KeuanganPerusahaanComponent extends Component
                 // No additional filtering for 'all' option
                 break;
         }
-        
+
         return $query;
     }
 
@@ -308,6 +306,9 @@ class KeuanganPerusahaanComponent extends Component
     // Modal methods
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         
@@ -317,6 +318,9 @@ class KeuanganPerusahaanComponent extends Component
         } else {
             $this->showModal = true;
         }
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -339,10 +343,16 @@ class KeuanganPerusahaanComponent extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
     
     public function closeExpenseConfirmation()
@@ -365,13 +375,22 @@ class KeuanganPerusahaanComponent extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingTransactionId = null;
         $this->deletingTransactionName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteTransactionConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $transaction = KeuanganPerusahaan::find($this->deletingTransactionId);
         if ($transaction) {
@@ -385,10 +404,16 @@ class KeuanganPerusahaanComponent extends Component
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveTransactionModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             if ($this->isEditing) {
                 $this->updateTransaction();
@@ -397,13 +422,22 @@ class KeuanganPerusahaanComponent extends Component
             }
             
             $this->closeCreateModal();
+            
+            // Restore page after modal closes to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Re-throw the ValidationException so Livewire can automatically display errors
             // This will keep the modal open and show validation errors
+            $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
             throw $e;
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 
