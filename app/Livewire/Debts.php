@@ -41,7 +41,7 @@ class Debts extends Component
     public $showPaymentHistory = false;
     public $selectedDebtId = null;
     public $selectedDebtPayments = [];
-    
+
     public $search = '';
     public $statusFilter = '';
 
@@ -62,7 +62,7 @@ class Debts extends Component
     // Persistent message
     public $persistentMessage = '';
     public $messageType = 'success'; // success, error, warning, info
-    
+
     public $perPage = 20;
     public $page = 1;
 
@@ -126,12 +126,7 @@ class Debts extends Component
 
     public function render()
     {
-        $filteredDebts = $this->filterDebts()->load(['debtType', 'payments', 'employee']);
-
-        // Set the pagination path to maintain the correct URL structure
-        if ($filteredDebts) {
-            $filteredDebts->withPath('/data-hutang');
-        }
+        $filteredDebts = $this->filterDebts();
 
         return view('livewire.debts', [
             'debts' => $filteredDebts,
@@ -259,7 +254,7 @@ class Debts extends Component
 
     public function filterDebts()
     {
-        $query = DebtModel::orderBy('due_date', 'desc');
+        $query = DebtModel::with(['debtType', 'payments', 'employee'])->orderBy('due_date', 'desc');
 
         if ($this->search) {
             $query->where(function($q) {

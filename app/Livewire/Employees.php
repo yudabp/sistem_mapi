@@ -64,7 +64,7 @@ class Employees extends Component
     public $pageMessage = '';             // For page messages (non-form related)
     public $pageMessageType = 'success';  // For page messages (non-form related)
 
-    public $perPage = 20;
+    public $perPage = 5;
     public $page = 1;
     
     protected $rules = [
