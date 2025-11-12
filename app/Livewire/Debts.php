@@ -66,7 +66,10 @@ class Debts extends Component
     public $persistentMessage = '';
     public $messageType = 'success'; // success, error, warning, info
     
-    protected $queryString = ['search', 'statusFilter'];
+    public $perPage = 20;
+    public $page = 1;
+
+    protected $queryString = ['search', 'statusFilter', 'metricFilter', 'perPage', 'page'];
 
     public $importFile = null;
     public $exportStartDate = null;
@@ -133,6 +136,11 @@ class Debts extends Component
 
         // Get all items for calculations (global statistics, not affected by search/filter)
         $allDebts = DebtModel::orderBy('due_date', 'desc')->get();
+
+        // Set the pagination path to maintain the correct URL structure
+        if ($filteredDebts) {
+            $filteredDebts->withPath('/data-hutang');
+        }
 
         return view('livewire.debts', [
             'debts' => $filteredDebts,
@@ -273,7 +281,13 @@ class Debts extends Component
             $query->where('status', '=', $this->statusFilter);
         }
 
-        return $query->paginate($this->perPage);
+        // Use the component's page value to ensure correct pagination
+        $paginator = $query->paginate($this->perPage, ['*'], 'page', $this->page ?: request()->get('page', 1));
+        
+        // Maintain the current page in the pagination links
+        $paginator->withPath('/data-hutang');
+        
+        return $paginator;
     }
 
     public function markAsPaid($id)
@@ -371,6 +385,9 @@ class Debts extends Component
     // Modal methods
     public function openCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->resetForm();
         $this->isEditing = false;
         $this->showModal = true;
@@ -380,6 +397,9 @@ class Debts extends Component
         $this->deletingDebtName = '';
         // Clear any persistent messages
         $this->clearPersistentMessage();
+        
+        // Restore page to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function openEditModal($id)
@@ -411,10 +431,16 @@ class Debts extends Component
 
     public function closeCreateModal()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showModal = false;
         $this->resetForm();
         $this->isEditing = false;
         $this->editingId = null;
+        
+        // Restore page after modal closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function confirmDelete($id, $creditor)
@@ -426,13 +452,22 @@ class Debts extends Component
 
     public function closeDeleteConfirmation()
     {
+        // Store current page to maintain pagination state
+        $currentPage = $this->page;
+        
         $this->showDeleteConfirmation = false;
         $this->deletingDebtId = null;
         $this->deletingDebtName = '';
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function deleteDebtConfirmed()
     {
+        // Store current page before deletion to maintain pagination state after confirmation closes
+        $currentPage = $this->page;
+        
         $this->authorizeDelete();
         $debt = DebtModel::find($this->deletingDebtId);
         if ($debt) {
@@ -445,10 +480,16 @@ class Debts extends Component
         }
         
         $this->closeDeleteConfirmation();
+        
+        // Restore page after confirmation closes to maintain pagination state
+        $this->page = $currentPage;
     }
 
     public function saveDebtModal()
     {
+        // Store current page before saving to maintain pagination state after modal closes
+        $currentPage = $this->page;
+        
         try {
             // Check which branch we're taking
             if ($this->isEditing) {
@@ -462,14 +503,22 @@ class Debts extends Component
             // Only close modal if operation was successful
             if ($result) {
                 $this->closeCreateModal();
+                
+                // Restore page after modal closes to maintain pagination state
+                $this->page = $currentPage;
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Validation errors will be automatically handled by Livewire
             // We just need to make sure the modal stays open so user can see errors
             $this->setPersistentMessage('Please check the form for validation errors.', 'error');
+            // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         } catch (\Exception $e) {
             $this->setPersistentMessage('Error: ' . $e->getMessage(), 'error');
             // Keep modal open so user can see the error
+            // Restore page even if there's an error to maintain pagination state
+            $this->page = $currentPage;
         }
     }
 
