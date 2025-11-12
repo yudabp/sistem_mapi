@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Position;
 
 class Positions extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,9 +22,7 @@ class Positions extends Component
     public $delete_id;
     public $search = '';
     public $deletingPositionName = '';
-
-    // Data
-    public $positions = [];
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|unique:positions,name',
@@ -35,19 +35,25 @@ class Positions extends Component
         'name.unique' => 'Nama jabatan sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadPositions();
-    }
-
     public function mount()
     {
-        $this->loadPositions();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.positions');
+        $query = Position::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $positions = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.positions', [
+            'positions' => $positions,
+        ]);
     }
 
     // Modal methods
@@ -132,8 +138,7 @@ class Positions extends Component
             $this->closeModal();
         }
 
-        $this->loadPositions();
-    }
+        }
 
     public function deletePosition()
     {
@@ -146,7 +151,6 @@ class Positions extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadPositions();
     }
 
     // Utility methods
@@ -162,18 +166,21 @@ class Positions extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadPositions();
+        $this->resetPage();
     }
-
-    public function loadPositions()
+    public function gotoPage($page)
     {
-        $query = Position::query();
-
-        if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
-
-        $this->positions = $query->orderBy('name')->get();
+        $this->setPage($page);
     }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
 }

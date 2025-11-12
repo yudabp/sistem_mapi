@@ -9,6 +9,7 @@ use App\Models\Position;
 use App\Models\FamilyComposition;
 use App\Models\EmploymentStatus;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\EmployeesImport;
 use App\Exports\EmployeesExportWithHeaders;
@@ -22,6 +23,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Employees extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
     public $ndp; // Employee ID
     public $name;
@@ -47,6 +49,7 @@ class Employees extends Component
     
     public $search = '';
     public $departmentFilter = null;
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -120,6 +123,10 @@ class Employees extends Component
 
         $total_employees = $query->count();
         $total_salary = $query->sum('monthly_salary');
+
+        // Get total counts for metrics (global statistics, not affected by search/filter)
+        $total_employees = EmployeeModel::count();
+        $total_salary = EmployeeModel::sum('monthly_salary');
 
         return view('livewire.employees', [
             'employees' => $filteredEmployees,
@@ -572,5 +579,30 @@ class Employees extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDepartmentFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

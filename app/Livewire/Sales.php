@@ -6,6 +6,7 @@ use Livewire\Component;
 use App\Models\Sale as SaleModel;
 use App\Models\Production as ProductionModel;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\SalesImport;
 use App\Exports\SalesExportWithHeaders;
@@ -19,6 +20,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Sales extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $sp_number; // Keep for backward compatibility
@@ -40,6 +42,7 @@ class Sales extends Component
     
     public $search = '';
     public $dateFilter = '';
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -707,5 +710,25 @@ class Sales extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

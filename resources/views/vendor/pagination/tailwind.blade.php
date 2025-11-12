@@ -20,15 +20,33 @@
                 @endif
             </div>
 
-            {{-- Pagination Elements --}}
-            <ul class="inline-flex text-sm font-medium -space-x-px rounded-lg shadow-xs">
-                @foreach ($elements as $element)
-                    {{-- "Three Dots" Separator --}}
-                    @if (is_string($element))
-                        <li aria-disabled="true">
-                            <span class="inline-flex items-center justify-center leading-5 px-3.5 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 text-gray-400 dark:text-gray-500">{{ $element }}</span>
-                        </li>
+            @if ($paginator->hasMorePages())
+                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-300 leading-5 rounded-md hover:text-gray-500 focus:outline-none focus:ring ring-gray-300 focus:border-blue-300 active:bg-gray-100 active:text-gray-700 transition ease-in-out duration-150 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:focus:border-blue-700 dark:active:bg-gray-700 dark:active:text-gray-300">
+                    {!! __('pagination.next') !!}
+                </a>
+            @else
+                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default leading-5 rounded-md dark:text-gray-600 dark:bg-gray-800 dark:border-gray-600">
+                    {!! __('pagination.next') !!}
+                </span>
+            @endif
+        </div>
+
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700 leading-5 dark:text-gray-400">
+                    {!! __('Showing') !!}
+                    @if ($paginator->firstItem())
+                        <span class="font-medium">{{ $paginator->firstItem() }}</span>
+                        {!! __('to') !!}
+                        <span class="font-medium">{{ $paginator->lastItem() }}</span>
+                    @else
+                        {{ $paginator->count() }}
                     @endif
+                    {!! __('of') !!}
+                    <span class="font-medium">{{ $paginator->total() }}</span>
+                    {!! __('results') !!}
+                </p>
+            </div>
 
                     {{-- Array Of Links --}}
                     @if (is_array($element))
@@ -44,8 +62,6 @@
                             @endif
                         @endforeach
                     @endif
-                @endforeach
-            </ul>
 
             {{-- Next Page Link --}}
             <div class="ml-2">

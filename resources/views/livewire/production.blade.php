@@ -978,10 +978,21 @@
         <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-gray-800 dark:text-gray-100">Data Produksi</h2>
-                <div class="text-sm text-gray-500">
-                    Menampilkan {{ $productions->count() }} data
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-700 dark:text-gray-400">Tampilkan per halaman:</span>
+                        <select
+                            wire:model.live="perPage"
+                            class="text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300"
+                        >
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                     @if($search || $dateFilter || $divisionFilter)
-                        <span class="text-violet-600">- Difilter</span>
+                        <span class="text-sm text-violet-600">- Difilter</span>
                     @endif
                 </div>
             </div>
@@ -1091,6 +1102,13 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- Pagination Links -->
+                @if($productions->hasPages())
+                    <div class="mt-4 px-3">
+                        {{ $productions->links('pagination::livewire-tailwind') }}
+                    </div>
+                @endif
             </div>
         </div>
         

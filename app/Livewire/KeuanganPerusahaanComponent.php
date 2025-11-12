@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\KeuanganPerusahaan;
 use App\Models\BukuKasKebun;
 use App\Services\FinancialTransactionService;
@@ -19,6 +20,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class KeuanganPerusahaanComponent extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $transaction_date; // This will hold the DD-MM-YYYY format from the view
@@ -31,10 +33,10 @@ class KeuanganPerusahaanComponent extends Component
     public $notes;
     public $category;
     
-    public $transactions = [];
     public $search = '';
     public $dateFilter = '';
     public $typeFilter = '';
+    public $perPage = 10;
 
     // Metric filter
     public $metricFilter = 'all'; // Default to all time
@@ -90,9 +92,8 @@ class KeuanganPerusahaanComponent extends Component
     public function mount()
     {
         $this->mountWithRoleCheck();
-        $this->loadTransactions();
         $this->relatedBkkTransactions = collect();
-        
+
         // Set default export dates: start date 1 month ago, end date today in DD-MM-YYYY format
         if (!$this->exportStartDate) {
             $this->exportStartDate = now()->subMonth()->format('d-m-Y');
@@ -156,7 +157,7 @@ class KeuanganPerusahaanComponent extends Component
         if ($result['success']) {
             // Reset form
             $this->resetForm();
-            $this->loadTransactions();
+            // Transactions are loaded in render() method
             
             $message = $result['message'];
             if ($result['bkk_transaction']) {
@@ -259,7 +260,10 @@ class KeuanganPerusahaanComponent extends Component
                 break;
             case 'custom':
                 if ($this->startDate && $this->endDate) {
-                    $query->whereBetween('transaction_date', [$this->startDate, $this->endDate]);
+                    $query->whereBetween('transaction_date', [
+                        \Carbon\Carbon::parse($this->startDate),
+                        \Carbon\Carbon::parse($this->endDate)
+                    ]);
                 }
                 break;
             case 'all':
@@ -399,7 +403,7 @@ class KeuanganPerusahaanComponent extends Component
                 Storage::disk('public')->delete($transaction->proof_document_path);
             }
             $transaction->delete();
-            $this->loadTransactions();
+            // Transactions are loaded in render() method
             $this->setPersistentMessage('Keuangan Perusahaan transaction deleted successfully.', 'success');
         }
         
@@ -562,7 +566,7 @@ class KeuanganPerusahaanComponent extends Component
             
             $this->setPersistentMessage('Keuangan Perusahaan transaction data imported successfully.', 'success');
             $this->closeImportModal();
-            $this->loadTransactions(); // Refresh the transaction list after import
+            // Transactions are loaded in render() method // Refresh the transaction list after import
         } catch (ExcelValidationException $e) {
             $failureMessages = [];
             $failures = $e->failures();
@@ -626,7 +630,7 @@ class KeuanganPerusahaanComponent extends Component
         
         return Excel::download($export, $filename);
     }
-    
+  
     public function exportToPdf()
     {
         $this->authorizeView();
@@ -635,5 +639,30 @@ class KeuanganPerusahaanComponent extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedTransactionTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

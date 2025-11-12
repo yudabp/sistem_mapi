@@ -8,6 +8,7 @@ use App\Models\HutangPembayaran;
 use App\Models\MasterDebtType;
 use App\Services\DebtPaymentService;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\DebtsImport;
 use App\Exports\DebtsExportWithHeaders;
@@ -21,6 +22,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Debts extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $amount;
@@ -44,6 +46,7 @@ class Debts extends Component
     
     public $search = '';
     public $statusFilter = '';
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -126,7 +129,13 @@ class Debts extends Component
 
     public function render()
     {
-        $filteredDebts = $this->filterDebts()->load(['debtType', 'payments', 'employee']);
+        $filteredDebts = $this->filterDebts();
+
+        // Load relationships for paginated results
+        $filteredDebts->load(['debtType', 'payments', 'employee']);
+
+        // Get all items for calculations (global statistics, not affected by search/filter)
+        $allDebts = DebtModel::orderBy('due_date', 'desc')->get();
 
         // Set the pagination path to maintain the correct URL structure
         if ($filteredDebts) {
@@ -137,11 +146,11 @@ class Debts extends Component
             'debts' => $filteredDebts,
             'debtTypes' => $this->debtTypes,
             'employees' => $this->employees,
-            'total_debt' => $filteredDebts->sum('amount'),
-            'total_paid_amount' => $filteredDebts->sum(function($debt) { return $debt->total_paid; }),
-            'total_remaining_amount' => $filteredDebts->sum(function($debt) { return $debt->remaining_debt; }),
-            'unpaid_debts' => $filteredDebts->where('status', 'unpaid')->count(),
-            'paid_debts' => $filteredDebts->where('status', 'paid')->count(),
+            'total_debt' => $allDebts->sum('amount'),
+            'total_paid_amount' => $allDebts->sum(function($debt) { return $debt->total_paid; }),
+            'total_remaining_amount' => $allDebts->sum(function($debt) { return $debt->remaining_debt; }),
+            'unpaid_debts' => $allDebts->where('status', 'unpaid')->count(),
+            'paid_debts' => $allDebts->where('status', 'paid')->count(),
         ]);
     }
 
@@ -679,7 +688,7 @@ class Debts extends Component
         
         return Excel::download($export, $filename);
     }
-    
+  
     public function exportToPdf()
     {
         $this->authorizeView();
@@ -688,5 +697,30 @@ class Debts extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDebtTypeFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }
