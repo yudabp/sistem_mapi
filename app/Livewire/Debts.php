@@ -46,7 +46,6 @@ class Debts extends Component
     
     public $search = '';
     public $statusFilter = '';
-    public $perPage = 10;
 
     // Modal control
     public $showModal = false;

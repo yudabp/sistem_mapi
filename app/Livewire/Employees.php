@@ -49,7 +49,8 @@ class Employees extends Component
     
     public $search = '';
     public $departmentFilter = null;
-    public $perPage = 10;
+    public $perPage = 20;
+    public $page = 1;
 
     // Modal control
     public $showModal = false;
@@ -66,9 +67,6 @@ class Employees extends Component
     public $messageType = 'success';      // For modal messages (form related)
     public $pageMessage = '';             // For page messages (non-form related)
     public $pageMessageType = 'success';  // For page messages (non-form related)
-
-    public $perPage = 20;
-    public $page = 1;
 
     protected $rules = [
         'name' => 'required',

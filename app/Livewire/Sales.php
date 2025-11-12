@@ -42,7 +42,6 @@ class Sales extends Component
     
     public $search = '';
     public $dateFilter = '';
-    public $perPage = 10;
 
     // Modal control
     public $showModal = false;

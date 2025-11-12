@@ -54,7 +54,6 @@ class BukuKasKebunComponent extends Component
     public $search = '';
     public $dateFilter = '';
     public $typeFilter = '';
-    public $perPage = 10;
 
     // Metric filter
     public $metricFilter = 'all'; // Default to all time

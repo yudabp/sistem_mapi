@@ -46,7 +46,6 @@ class Production extends Component
     public $search = '';
     public $dateFilter = '';
     public $divisionFilter = '';
-    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
