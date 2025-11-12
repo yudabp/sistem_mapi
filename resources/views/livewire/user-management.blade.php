@@ -51,7 +51,7 @@
                     <div>
                         <div class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 mb-1">Aktif Saat Ini</div>
                         <div class="flex items-baseline">
-                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $users->count() }}</div>
+                            <div class="text-2xl font-bold text-gray-800 dark:text-gray-100">{{ $totalActiveUsers }}</div>
                         </div>
                     </div>
                 </div>
@@ -218,8 +218,19 @@
 
     <!-- Data Table -->
     <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
-        <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
+        <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex justify-between items-center">
             <h2 class="font-semibold text-gray-800 dark:text-gray-100">Daftar User</h2>
+
+            <!-- Per page selector -->
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500 dark:text-gray-400">Tampilkan per halaman:</span>
+                <select wire:model.live="perPage" class="text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
         </header>
         <div class="p-3">
             <div class="overflow-x-auto">
@@ -288,31 +299,8 @@
             </div>
             
             <!-- Pagination -->
-            <div class="mt-4 flex justify-between items-center">
-                <div class="text-sm text-gray-700 dark:text-gray-400">
-                    Menampilkan {{ $users->firstItem() }} hingga {{ $users->lastItem() }} dari {{ $users->total() }} hasil
-                </div>
-                <div class="flex space-x-1">
-                    @if($users->onFirstPage())
-                        <button class="px-3 py-1 text-sm bg-gray-100 text-gray-400 rounded cursor-not-allowed" disabled>
-                            Sebelumnya
-                        </button>
-                    @else
-                        <button wire:click="setPage('{{ $users->previousPageUrl() }}')" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                            Sebelumnya
-                        </button>
-                    @endif
-
-                    @if($users->hasMorePages())
-                        <button wire:click="setPage('{{ $users->nextPageUrl() }}')" class="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300">
-                            Selanjutnya
-                        </button>
-                    @else
-                        <button class="px-3 py-1 text-sm bg-gray-100 text-gray-400 rounded cursor-not-allowed" disabled>
-                            Selanjutnya
-                        </button>
-                    @endif
-                </div>
+            <div class="mt-4">
+                {{ $users->links('pagination::livewire-tailwind') }}
             </div>
         </div>
     </div>

@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Pks as PksModel;
 
 class Pks extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,9 +22,7 @@ class Pks extends Component
     public $delete_id;
     public $search = '';
     public $deletingPksName = '';
-
-    // Data
-    public $pks_list = [];
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|unique:pks,name',
@@ -35,19 +35,25 @@ class Pks extends Component
         'name.unique' => 'Nama PKS sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadPks();
-    }
-
     public function mount()
     {
-        $this->loadPks();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.pks');
+        $query = PksModel::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $pks_list = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.pks', [
+            'pks_list' => $pks_list,
+        ]);
     }
 
     // Modal methods
@@ -132,8 +138,7 @@ class Pks extends Component
             $this->closeModal();
         }
 
-        $this->loadPks();
-    }
+        }
 
     public function deletePks()
     {
@@ -146,7 +151,6 @@ class Pks extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadPks();
     }
 
     // Utility methods
@@ -162,18 +166,21 @@ class Pks extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadPks();
+        $this->resetPage();
     }
 
-    public function loadPks()
+    public function gotoPage($page)
     {
-        $query = PksModel::query();
+        $this->setPage($page);
+    }
 
-        if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
-        $this->pks_list = $query->orderBy('name')->get();
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

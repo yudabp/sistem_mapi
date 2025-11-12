@@ -8,6 +8,7 @@ use App\Models\VehicleNumber;
 use App\Models\Division;
 use App\Models\Pks as PksModel;
 use Livewire\WithFileUploads;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Storage;
 use App\Imports\ProductionImport;
 use App\Exports\ProductionExportWithHeaders;
@@ -21,6 +22,7 @@ use App\Livewire\Concerns\WithRoleCheck;
 class Production extends Component
 {
     use WithFileUploads;
+    use WithPagination;
     use WithRoleCheck;
 
     public $transaction_number;
@@ -44,6 +46,7 @@ class Production extends Component
     public $search = '';
     public $dateFilter = '';
     public $divisionFilter = '';
+    public $perPage = 10;
 
     // Modal control
     public $showModal = false;
@@ -247,7 +250,7 @@ class Production extends Component
         // Apply metric filter
         $query = $this->applyMetricFilter($query);
 
-        return $query->get();
+        return $query->paginate($this->perPage);
     }
 
     public function applyMetricFilter($query)
@@ -606,5 +609,35 @@ class Production extends Component
             'start_date' => $this->exportStartDate,
             'end_date' => $this->exportEndDate,
         ]);
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDivisionFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedMetricFilter()
+    {
+        $this->resetPage();
     }
 }
