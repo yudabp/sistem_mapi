@@ -3,10 +3,12 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\WithPagination;
 use App\Models\Department;
 
 class Departments extends Component
 {
+    use WithPagination;
     // Modal states
     public $showModal = false;
     public $showDeleteConfirmation = false;
@@ -20,9 +22,7 @@ class Departments extends Component
     public $delete_id;
     public $search = '';
     public $deletingDepartmentName = '';
-
-    // Data
-    public $departments = [];
+    public $perPage = 10;
 
     protected $rules = [
         'name' => 'required|unique:departments,name',
@@ -35,19 +35,25 @@ class Departments extends Component
         'name.unique' => 'Nama bagian sudah terdaftar.',
     ];
 
-    public function updatedSearch()
-    {
-        $this->loadDepartments();
-    }
-
     public function mount()
     {
-        $this->loadDepartments();
+        // Initialize any required data
     }
 
     public function render()
     {
-        return view('livewire.departments');
+        $query = Department::query();
+
+        if ($this->search) {
+            $query->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('description', 'like', '%' . $this->search . '%');
+        }
+
+        $departments = $query->orderBy('name')->paginate($this->perPage);
+
+        return view('livewire.departments', [
+            'departments' => $departments,
+        ]);
     }
 
     // Modal methods
@@ -132,7 +138,6 @@ class Departments extends Component
             $this->closeModal();
         }
 
-        $this->loadDepartments();
     }
 
     public function deleteDepartment()
@@ -146,7 +151,6 @@ class Departments extends Component
         }
 
         $this->closeDeleteConfirmation();
-        $this->loadDepartments();
     }
 
     // Utility methods
@@ -162,18 +166,21 @@ class Departments extends Component
     public function resetSearch()
     {
         $this->search = '';
-        $this->loadDepartments();
+        $this->resetPage();
     }
 
-    public function loadDepartments()
+    public function gotoPage($page)
     {
-        $query = Department::query();
+        $this->setPage($page);
+    }
 
-        if ($this->search) {
-            $query->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('description', 'like', '%' . $this->search . '%');
-        }
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
 
-        $this->departments = $query->orderBy('name')->get();
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

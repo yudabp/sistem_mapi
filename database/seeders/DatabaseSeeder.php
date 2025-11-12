@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RoleAndPermissionSeeder::class,
             // DasboardTableSeeder::class,
+            // UniversalDataSeeder::class,
             VehicleNumbersTableSeeder::class,
             DivisionsTableSeeder::class,
             PksTableSeeder::class,
@@ -30,7 +31,6 @@ class DatabaseSeeder extends Seeder
             SalesTableSeeder::class,
             MasterDebtTypesSeeder::class,
             MasterBkkExpenseCategoriesSeeder::class,
-            // FinancialTransactionsTableSeeder::class,
             DebtsTableSeeder::class,
         ]);
     }

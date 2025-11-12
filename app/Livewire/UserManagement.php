@@ -66,9 +66,13 @@ class UserManagement extends Component
         $users = $query->paginate($this->perPage);
         $roles = Role::all();
 
+        // Get total active users for metrics (global statistics)
+        $totalActiveUsers = User::whereNotNull('email_verified_at')->count();
+
         return view('livewire.user-management', [
             'users' => $users,
             'roles' => $roles,
+            'totalActiveUsers' => $totalActiveUsers,
         ]);
     }
 
@@ -210,5 +214,25 @@ class UserManagement extends Component
             $this->showDeleteConfirmation = false;
             $this->deletingUserName = '';
         }
+    }
+
+    public function gotoPage($page)
+    {
+        $this->setPage($page);
+    }
+
+    public function updatedSearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedRoleFilter()
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage()
+    {
+        $this->resetPage();
     }
 }

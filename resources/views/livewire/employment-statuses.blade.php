@@ -50,9 +50,17 @@
         <!-- Data Table -->
         <div class="bg-white dark:bg-gray-800 rounded-sm border border-gray-200 dark:border-gray-700 shadow-sm">
             <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60 flex justify-between items-center">
-                <h2 class="font-semibold text-gray-800 dark:text-gray-100">Daftar Status Karyawan</h2>
-                <div class="text-sm text-gray-500 dark:text-gray-400">
-                    Total: {{ $employment_statuses->count() }} data
+                <div class="flex justify-between items-center w-full">
+                    <h2 class="font-semibold text-gray-800 dark:text-gray-100">Daftar Status Karyawan</h2>
+                    <div class="flex items-center space-x-2">
+                        <span class="text-sm text-gray-700 dark:text-gray-400">Tampilkan per halaman:</span>
+                        <select wire:model.live="perPage" class="text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="p-3">
@@ -61,7 +69,7 @@
                         <thead>
                             <tr class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/30">
                                 <th class="p-2 whitespace-nowrap text-left">Nama Status</th>
-                                <th class="p-2 whitespace-nowrap text-left">Nilai</th>
+                                <!-- <th class="p-2 whitespace-nowrap text-left">Nilai</th> -->
                                 <th class="p-2 whitespace-nowrap text-left">Deskripsi</th>
                                 <th class="p-2 whitespace-nowrap text-left">Status</th>
                                 <th class="p-2 whitespace-nowrap text-center">Aksi</th>
@@ -73,9 +81,9 @@
                                     <td class="p-2 whitespace-nowrap">
                                         <div class="font-medium text-gray-800 dark:text-gray-100">{{ $employmentStatus->name }}</div>
                                     </td>
-                                    <td class="p-2 whitespace-nowrap">
+                                    <!-- <td class="p-2 whitespace-nowrap">
                                         <div class="text-gray-600 dark:text-gray-400">{{ $employmentStatus->value }}</div>
-                                    </td>
+                                    </td> -->
                                     <td class="p-2 whitespace-nowrap">
                                         <div class="text-gray-600 dark:text-gray-400">{{ $employmentStatus->description ?? '-' }}</div>
                                     </td>
@@ -124,6 +132,14 @@
                         </tbody>
                     </table>
                 </div>
+
+                
+                <!-- Pagination Links -->
+                @if($employment_statuses && $employment_statuses->hasPages())
+                    <div class="mt-4 px-3">
+                        {{ $employment_statuses->links('pagination::livewire-tailwind') }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>
